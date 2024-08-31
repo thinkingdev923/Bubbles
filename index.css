@@ -1,0 +1,29 @@
+body {
+  --blue: #2e2d70;
+  --pink: #e79fae;
+  --red: #da4b34;
+  --yellow: #f5c347;
+  --turquoise: #8bcbf3;
+  --white: #fbfbf8;
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  background: var(--blue);
+  font: 500 100vmin -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@keyframes introAnimation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+canvas {
+  display: block;
+  animation: introAnimation 400ms 150ms ease-in-out both;
+  touch-action: none;
+}
