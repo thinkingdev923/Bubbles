@@ -69,30 +69,22 @@ restartGame();
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  if (gameOver) {
-    CTX.save();
-    CTX.translate(canvasWidth / 2, canvasHeight / 2);
-    CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
-    CTX.fillStyle = "#fff";
-    CTX.textAlign = "center";
-    CTX.fillText(`Final Level: ${level}`, 0, -32);
-    CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 0);
-    CTX.fillText(`Total Missed: ${ballsMissed}`, 0, 32);
-    CTX.restore();
-  } else {
-    getBallsInPlay().forEach((ballA) => {
-      ballA.update(deltaTime);
-      getBallsInPlay().forEach((ballB) => {
-        if (ballA !== ballB) {
-          const collision = checkBallCollision(ballA, ballB);
-          if (collision[0]) {
-            adjustBallPositions(ballA, ballB, collision[1]);
-            resolveBallCollision(ballA, ballB);
-          }
+  // Run collisions
+  getBallsInPlay().forEach((ballA) => {
+    ballA.update(deltaTime);
+    getBallsInPlay().forEach((ballB) => {
+      if (ballA !== ballB) {
+        const collision = checkBallCollision(ballA, ballB);
+        if (collision[0]) {
+          adjustBallPositions(ballA, ballB, collision[1]);
+          resolveBallCollision(ballA, ballB);
         }
-      });
+      }
     });
+  });
 
+  // Draw level + score text underneath balls
+  if (!gameOver) {
     CTX.save();
     CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
     CTX.fillStyle = "#fff";
@@ -103,8 +95,21 @@ animate((deltaTime) => {
     CTX.restore();
   }
 
+  // Draw balls and ripples
   ripples.forEach((r) => r.draw());
   balls.forEach((b) => b.draw(deltaTime));
+
+  // Draw end game info over balls
+  if (gameOver) {
+    CTX.save();
+    CTX.translate(canvasWidth / 2, canvasHeight / 2);
+    CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
+    CTX.fillStyle = "#fff";
+    CTX.textAlign = "center";
+    CTX.fillText(`Final Level: ${level}`, 0, -16);
+    CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 16);
+    CTX.restore();
+  }
 });
 
 function setLevel(passedLevel) {
