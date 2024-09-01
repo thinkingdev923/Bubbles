@@ -19,47 +19,31 @@ const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   attachNode: "#canvas",
 });
 let level;
+let totalClicks;
 let ballsPopped;
 let ballsMissed;
 let balls;
 let ripples;
 let gameOver;
 
-document.addEventListener("click", ({ clientX: x, clientY: y }) => {
+function handleClick({ clientX: x, clientY: y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
+  totalClicks++;
 
   if (collidingBall) {
     collidingBall.pop();
   } else {
     ripples.push(makeRipple(CTX, { x, y }));
   }
-});
+}
 
-document.addEventListener(
-  "touchstart",
-  (e) => {
-    for (let index = 0; index < e.touches.length; index++) {
-      const collidingBall = findBallAtPoint(balls, {
-        x: e.touches[index].clientX,
-        y: e.touches[index].clientY,
-      });
+function handleTouch(e) {
+  for (let index = 0; index < e.touches.length; index++) {
+    handleClick(e.touches[index]);
+  }
 
-      if (collidingBall) {
-        collidingBall.pop();
-      } else {
-        ripples.push(
-          makeRipple(CTX, {
-            x: e.touches[index].clientX,
-            y: e.touches[index].clientY,
-          })
-        );
-      }
-    }
-
-    e.preventDefault();
-  },
-  { passive: false }
-);
+  e.preventDefault();
+}
 
 document.addEventListener("touchmove", (e) => e.preventDefault(), {
   passive: false,
@@ -106,9 +90,19 @@ animate((deltaTime) => {
     CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
     CTX.fillStyle = "#fff";
     CTX.textAlign = "center";
-    CTX.fillText(`Final Level: ${level}`, 0, -32);
-    CTX.fillText(`Total Bubbles Played: ${ballsPopped + ballsMissed}`, 0, 0);
+    CTX.fillText(`Final Level: ${level}`, 0, -64);
+    CTX.fillText(`Total Bubbles Played: ${ballsPopped + ballsMissed}`, 0, -32);
+    CTX.fillText(`Total Clicks: ${totalClicks}`, 0, 0);
     CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 32);
+    CTX.fillText(
+      `Accuracy: ${
+        totalClicks > 0 ? Math.floor((ballsPopped / totalClicks) * 100) : 0
+      }%`,
+      0,
+      64
+    );
+    CTX.fillText(`Press Space to restart`, 0, 108);
+
     CTX.restore();
   }
 });
@@ -129,14 +123,26 @@ const onLevelEnd = () => {
 
 const onGameEnd = () => {
   gameOver = true;
+  document.removeEventListener("click", handleClick);
+  document.removeEventListener("touchstart", handleTouch, { passive: false });
+  document.addEventListener(
+    "keydown",
+    ({ key }) => {
+      if (key === " ") restartGame();
+    },
+    { once: true }
+  );
 };
 
 function restartGame() {
   gameOver = false;
+  totalClicks = 0;
   ballsPopped = 0;
   ballsMissed = 0;
   balls = [];
   setLevel(1);
+  document.addEventListener("click", handleClick);
+  document.addEventListener("touchstart", handleTouch, { passive: false });
 }
 
 function onPop() {
@@ -148,12 +154,14 @@ function onPop() {
 }
 
 function onMiss() {
-  ballsMissed++;
+  if (!gameOver) {
+    ballsMissed++;
 
-  if (ballsPopped - ballsMissed < 0) {
-    onGameEnd();
-  } else if (getBallsInPlay() <= 0) {
-    onLevelEnd();
+    if (ballsPopped - ballsMissed < 0) {
+      onGameEnd();
+    } else if (getBallsInPlay() <= 0) {
+      onLevelEnd();
+    }
   }
 }
 
