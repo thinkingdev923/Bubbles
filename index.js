@@ -106,8 +106,9 @@ animate((deltaTime) => {
     CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
     CTX.fillStyle = "#fff";
     CTX.textAlign = "center";
-    CTX.fillText(`Final Level: ${level}`, 0, -16);
-    CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 16);
+    CTX.fillText(`Final Level: ${level}`, 0, -32);
+    CTX.fillText(`Total Balls Played: ${ballsPopped + ballsMissed}`, 0, 0);
+    CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 32);
     CTX.restore();
   }
 });
