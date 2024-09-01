@@ -107,7 +107,7 @@ animate((deltaTime) => {
     CTX.fillStyle = "#fff";
     CTX.textAlign = "center";
     CTX.fillText(`Final Level: ${level}`, 0, -32);
-    CTX.fillText(`Total Balls Played: ${ballsPopped + ballsMissed}`, 0, 0);
+    CTX.fillText(`Total Bubbles Played: ${ballsPopped + ballsMissed}`, 0, 0);
     CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 32);
     CTX.restore();
   }
