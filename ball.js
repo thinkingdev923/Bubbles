@@ -6,7 +6,9 @@ export const makeBall = (
   CTX,
   canvasWidth,
   canvasHeight,
-  { startPosition, startVelocity, radius, fill }
+  { startPosition, startVelocity, radius, fill },
+  onPop,
+  onMiss
 ) => {
   let position = { ...startPosition };
   let velocity = { ...startVelocity };
@@ -28,20 +30,17 @@ export const makeBall = (
       position.y += deltaTimeMultiplier * velocity.y;
       velocity.y += deltaTimeMultiplier * GRAVITY;
 
+      if (position.y > canvasHeight) {
+        onMiss();
+        gone = true;
+      }
+
       if (position.x > canvasWidth - radius) {
         position.x = canvasWidth - radius;
         velocity.x *= -0.7;
       } else if (position.x < radius) {
         position.x = radius;
         velocity.x *= -0.7;
-      }
-
-      if (position.y > canvasHeight - radius) {
-        position.y = canvasHeight - radius;
-        velocity.y *= -0.7;
-      } else if (position.y < radius) {
-        position.y = radius + 1;
-        velocity.y *= -0.7;
       }
     }
   };
@@ -51,19 +50,27 @@ export const makeBall = (
     poppedTime = Date.now();
     poppedPieces = new Array(numberOfPopPieces).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
-      return makeBall(CTX, canvasWidth, canvasHeight, {
-        startPosition: {
-          x: position.x + Math.cos(randomAngle) * radius,
-          y: position.y + Math.sin(randomAngle) * radius,
+      return makeBall(
+        CTX,
+        canvasWidth,
+        canvasHeight,
+        {
+          startPosition: {
+            x: position.x + Math.cos(randomAngle) * radius,
+            y: position.y + Math.sin(randomAngle) * radius,
+          },
+          startVelocity: {
+            x: randomBetween(velocity.x - 3, velocity.x + 3),
+            y: randomBetween(velocity.y - 8, 0),
+          },
+          radius: randomBetween(1, 4),
+          fill,
         },
-        startVelocity: {
-          x: randomBetween(velocity.x - 3, velocity.x + 3),
-          y: randomBetween(velocity.y - 8, 0),
-        },
-        radius: randomBetween(1, 4),
-        fill,
-      });
+        () => {},
+        () => {}
+      );
     });
+    onPop();
   };
 
   const draw = (deltaTime, scale = 1) => {

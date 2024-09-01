@@ -10,48 +10,54 @@ import {
   adjustBallPositions,
   resolveBallCollision,
 } from "./ball.js";
+import { makeRipple } from "./ripple.js";
+import { randomColor } from "./colors.js";
 
 const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   width: window.innerWidth,
   height: window.innerHeight,
   attachNode: "#canvas",
 });
-const colors = ["#e79fae", "#da4b34", "#f5c347", "#8bcbf3", "#fbfbf8"];
-const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
-const ballNaxSize = 90;
-const ballMinSize = 44;
-const ballRadius = Math.max(
-  ballMinSize,
-  Math.min(ballNaxSize, canvasWidth / 10)
-);
+let balls;
+let ripples;
+let level;
+let ballsPopped;
+let ballsMissed;
 
-const makeNBalls = (num) =>
+const onPop = () => ballsPopped++;
+const onMiss = () => ballsMissed++;
+const makeRandomBalls = (num) =>
   new Array(num).fill().map(() =>
-    makeBall(CTX, canvasWidth, canvasHeight, {
-      startPosition: {
-        x: randomBetween(canvasWidth / 8, canvasWidth - canvasWidth / 8),
-        y: randomBetween(canvasHeight / 8, canvasHeight - canvasHeight / 8),
+    makeBall(
+      CTX,
+      canvasWidth,
+      canvasHeight,
+      {
+        startPosition: {
+          x: randomBetween(canvasWidth / 8, canvasWidth - canvasWidth / 8),
+          y: randomBetween(-canvasHeight, -44),
+        },
+        startVelocity: {
+          x: randomBetween(-6, 6),
+          y: 0,
+        },
+        radius: 44,
+        fill: randomColor(),
       },
-      startVelocity: {
-        x: randomBetween(-6, 6),
-        y: randomBetween(-6, -2),
-      },
-      radius: ballRadius,
-      fill: getRandomColor(),
-    })
+      onPop,
+      onMiss
+    )
   );
 
-const makeBallAtPoint = ({ x, y }) =>
-  makeBall(CTX, canvasWidth, canvasHeight, {
-    startPosition: { x: x, y: y },
-    startVelocity: { x: 0, y: 0 },
-    radius: ballRadius,
-    fill: getRandomColor(),
-  });
+const resetGame = () => {
+  balls = makeRandomBalls(1);
+  ripples = [];
+  level = 0;
+  ballsPopped = 0;
+  ballsMissed = 0;
+};
 
-const getValidBalls = () => balls.filter((b) => !b.isPopped());
-
-let balls = makeNBalls(10);
+const getUnpoppedBalls = () => balls.filter((b) => !b.isPopped());
 
 document.addEventListener("click", ({ clientX: x, clientY: y }) => {
   const collidingBall = findBallAtPoint(balls, { x, y });
@@ -59,7 +65,7 @@ document.addEventListener("click", ({ clientX: x, clientY: y }) => {
   if (collidingBall) {
     collidingBall.pop();
   } else {
-    balls.push(makeBallAtPoint({ x, y }));
+    ripples.push(makeRipple(CTX, { x, y }));
   }
 });
 
@@ -75,8 +81,8 @@ document.addEventListener(
       if (collidingBall) {
         collidingBall.pop();
       } else {
-        balls.push(
-          makeBallAtPoint({
+        ripples.push(
+          makeRipple(CTX, {
             x: e.touches[index].clientX,
             y: e.touches[index].clientY,
           })
@@ -93,13 +99,15 @@ document.addEventListener("touchmove", (e) => e.preventDefault(), {
   passive: false,
 });
 
+resetGame();
+
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  if (getValidBalls().length > 0) {
-    getValidBalls().forEach((ballA) => {
+  if (getUnpoppedBalls().length > 0) {
+    getUnpoppedBalls().forEach((ballA) => {
       ballA.update(deltaTime);
-      getValidBalls().forEach((ballB) => {
+      getUnpoppedBalls().forEach((ballB) => {
         if (ballA !== ballB) {
           const collision = checkBallCollision(ballA, ballB);
           if (collision[0]) {
@@ -109,7 +117,13 @@ animate((deltaTime) => {
         }
       });
     });
-
-    balls.forEach((b) => b.draw(deltaTime, 1));
   }
+
+  ripples.forEach((r) => r.draw());
+  balls.forEach((b) => b.draw(deltaTime));
+
+  CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
+  CTX.fillStyle = "#fff";
+  CTX.fillText(`Level: ${level}`, 8, 32);
+  CTX.fillText(`Score: ${ballsPopped - ballsMissed}`, 8, 64);
 });
