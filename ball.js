@@ -30,9 +30,9 @@ export const makeBall = (
       position.y += deltaTimeMultiplier * velocity.y;
       velocity.y += deltaTimeMultiplier * GRAVITY;
 
-      if (position.y > canvasHeight) {
-        onMiss();
+      if (position.y > canvasHeight + radius) {
         gone = true;
+        onMiss();
       }
 
       if (position.x > canvasWidth - radius) {
@@ -109,9 +109,9 @@ export const makeBall = (
     getPosition: () => position,
     getVelocity: () => velocity,
     isPopped: () => popped,
+    isGone: () => gone,
     getPopAnimationDuration: () => popAnimationDuration,
     getRadius: () => radius,
-    getFill: () => fill,
     setPosition: (passedPosition) => (position = passedPosition),
     setVelocity: (passedVelocity) => (velocity = passedVelocity),
   };

@@ -1,5 +1,4 @@
 # Gameplay:
-- Balls don't ricochet off top or bottom, only sides
 - Every level drops a set number of balls from the top of the screen over a time period of [ball count] seconds
 - Balls are dropped from above the screen
 - After every level we show an screen w/ the next level number and a countdown
