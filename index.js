@@ -115,7 +115,11 @@ animate((deltaTime) => {
 
 function setLevel(passedLevel) {
   level = passedLevel;
-  balls = makeRandomBalls(level); // level number == number of balls
+  const numNewBalls = Math.floor(level * 1.4);
+  // Allow popping animation to finish playing
+  balls = balls
+    .filter((b) => b.isPopped() && !b.isGone())
+    .concat(makeRandomBalls(numNewBalls));
   ripples = [];
 }
 
@@ -131,6 +135,7 @@ function restartGame() {
   gameOver = false;
   ballsPopped = 0;
   ballsMissed = 0;
+  balls = [];
   setLevel(1);
 }
 
