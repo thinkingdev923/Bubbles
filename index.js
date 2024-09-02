@@ -28,7 +28,7 @@ let ripples;
 let gameOver;
 let interstitialShowing;
 
-function handleClick({ clientX: x, clientY: y }) {
+function handleBallClick({ clientX: x, clientY: y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
   totalClicks++;
 
@@ -39,9 +39,9 @@ function handleClick({ clientX: x, clientY: y }) {
   }
 }
 
-function handleTouch(e) {
+function handleBallTouch(e) {
   for (let index = 0; index < e.touches.length; index++) {
-    handleClick(e.touches[index]);
+    handleBallClick(e.touches[index]);
   }
 
   e.preventDefault();
@@ -114,19 +114,21 @@ function advanceLevel() {
 
   interstitialShowing = true;
 
+  const handleAdvance = () => {
+    interstitialShowing = false;
+    // Allow popping animation to finish playing for previous level balls
+    balls = balls
+      .filter((b) => b.isPopped() && b.shouldRender())
+      .concat(makeRandomBalls(getNumBalls()));
+    ripples = [];
+  };
+
   // On interstitial continue
-  document.addEventListener(
-    "click",
-    () => {
-      interstitialShowing = false;
-      // Allow popping animation to finish playing for previous level balls
-      balls = balls
-        .filter((b) => b.isPopped() && b.shouldRender())
-        .concat(makeRandomBalls(getNumBalls()));
-      ripples = [];
-    },
-    { once: true }
-  );
+  document.addEventListener("click", handleAdvance, { once: true });
+  document.addEventListener("touchend", handleAdvance, {
+    passive: false,
+    once: true,
+  });
 }
 
 function restartGame() {
@@ -138,15 +140,23 @@ function restartGame() {
   balls = [];
   ripples = [];
   advanceLevel();
-  document.addEventListener("click", handleClick);
-  document.addEventListener("touchstart", handleTouch, { passive: false });
+  document.addEventListener("click", handleBallClick);
+  document.addEventListener("touchstart", handleBallTouch, { passive: false });
 }
 
 function onGameEnd() {
   gameOver = true;
-  document.removeEventListener("click", handleClick);
-  document.removeEventListener("touchstart", handleTouch, { passive: false });
+
+  document.removeEventListener("click", handleBallClick);
+  document.removeEventListener("touchstart", handleBallTouch, {
+    passive: false,
+  });
+
   document.addEventListener("click", restartGame, { once: true });
+  document.addEventListener("touchend", restartGame, {
+    passive: false,
+    once: true,
+  });
 }
 
 function onPop() {
