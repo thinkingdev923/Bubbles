@@ -125,7 +125,7 @@ function advanceLevel() {
 
   // On interstitial continue
   document.addEventListener("click", handleAdvance, { once: true });
-  document.addEventListener("touchend", handleAdvance, {
+  document.addEventListener("touchstart", handleAdvance, {
     passive: false,
     once: true,
   });
@@ -153,7 +153,7 @@ function onGameEnd() {
   });
 
   document.addEventListener("click", restartGame, { once: true });
-  document.addEventListener("touchend", restartGame, {
+  document.addEventListener("touchstart", restartGame, {
     passive: false,
     once: true,
   });
