@@ -6,25 +6,29 @@ export const makeBall = (
   CTX,
   canvasWidth,
   canvasHeight,
-  { startPosition, startVelocity, radius, fill },
+  { startPosition, startVelocity, radius, fill, delay = 0 },
   onPop,
   onMiss
 ) => {
-  let position = { ...startPosition };
-  let velocity = { ...startVelocity };
   const popAnimationDurationMax = 2400;
   const popAnimationDuration = randomBetween(
     popAnimationDurationMax - 800,
     popAnimationDurationMax
   );
   const numberOfPopPieces = 60;
+  const ballStart = Date.now();
+
+  let position = { ...startPosition };
+  let velocity = { ...startVelocity };
   let popped = false;
   let poppedTime = false;
   let poppedPieces = [];
   let gone = false;
 
+  const shouldRender = () => !gone && Date.now() - ballStart > delay;
+
   const update = (deltaTime) => {
-    if (!gone) {
+    if (shouldRender()) {
       const deltaTimeMultiplier = deltaTime / INTERVAL;
       position.x += deltaTimeMultiplier * velocity.x;
       position.y += deltaTimeMultiplier * velocity.y;
@@ -61,7 +65,7 @@ export const makeBall = (
           },
           startVelocity: {
             x: randomBetween(velocity.x - 3, velocity.x + 3),
-            y: randomBetween(velocity.y - 8, 0),
+            y: randomBetween(velocity.y - 3, velocity.y + 3),
           },
           radius: randomBetween(1, 4),
           fill,
@@ -89,7 +93,7 @@ export const makeBall = (
           p.draw(deltaTime, transition(1, 0, scaleProgress, easeOutCubic));
         });
       }
-    } else if (!gone) {
+    } else if (shouldRender()) {
       CTX.save();
       CTX.fillStyle = fill;
       CTX.translate(position.x, position.y);
@@ -109,7 +113,8 @@ export const makeBall = (
     getPosition: () => position,
     getVelocity: () => velocity,
     isPopped: () => popped,
-    isGone: () => gone,
+    isRemaining: () => !popped && !gone,
+    shouldRender,
     getPopAnimationDuration: () => popAnimationDuration,
     getRadius: () => radius,
     setPosition: (passedPosition) => (position = passedPosition),

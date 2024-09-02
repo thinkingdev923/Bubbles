@@ -12,6 +12,7 @@ import {
 } from "./ball.js";
 import { makeRipple } from "./ripple.js";
 import { randomColor } from "./colors.js";
+import { centerTextBlock } from "./centerTextBlock.js";
 
 const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   width: window.innerWidth,
@@ -25,6 +26,7 @@ let ballsMissed;
 let balls;
 let ripples;
 let gameOver;
+let interstitialShowing;
 
 function handleClick({ clientX: x, clientY: y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
@@ -67,15 +69,24 @@ animate((deltaTime) => {
     });
   });
 
+  // Draw interstitial if active
+  if (interstitialShowing) {
+    centerTextBlock(CTX, canvasWidth, canvasHeight, [
+      `Tap to pop bubbles`,
+      `${getNumBalls()} bubbles`,
+      `Pop bonus: ${getPopBonus()} | Miss penalty: ${getMissPenalty()}`,
+      `Click to continue to level ${level}`,
+    ]);
+  }
   // Draw level + score text underneath balls
-  if (!gameOver) {
+  else if (!gameOver) {
     CTX.save();
     CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
     CTX.fillStyle = "#fff";
     CTX.fillText(`Level: ${level}`, 8, 32);
     CTX.translate(canvasWidth - 8, 0);
     CTX.textAlign = "right";
-    CTX.fillText(`Score: ${ballsPopped - ballsMissed}`, 0, 32);
+    CTX.fillText(`♥ ${calculateScore()}`, 0, 32);
     CTX.restore();
   }
 
@@ -85,71 +96,64 @@ animate((deltaTime) => {
 
   // Draw end game info over balls
   if (gameOver) {
-    CTX.save();
-    CTX.translate(canvasWidth / 2, canvasHeight / 2);
-    CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
-    CTX.fillStyle = "#fff";
-    CTX.textAlign = "center";
-    CTX.fillText(`Final Level: ${level}`, 0, -64);
-    CTX.fillText(`Total Bubbles Played: ${ballsPopped + ballsMissed}`, 0, -32);
-    CTX.fillText(`Total Clicks: ${totalClicks}`, 0, 0);
-    CTX.fillText(`Total Popped: ${ballsPopped}`, 0, 32);
-    CTX.fillText(
+    centerTextBlock(CTX, canvasWidth, canvasHeight, [
+      `Final Level: ${level}`,
+      `Total Bubbles Played: ${ballsPopped + ballsMissed}`,
+      `Total Clicks: ${totalClicks}`,
+      `Total Popped: ${ballsPopped}`,
       `Accuracy: ${
         totalClicks > 0 ? Math.floor((ballsPopped / totalClicks) * 100) : 0
       }%`,
-      0,
-      64
-    );
-    CTX.fillText(`Press Space to restart`, 0, 108);
-
-    CTX.restore();
+      `Click to restart`,
+    ]);
   }
 });
 
-function setLevel(passedLevel) {
-  level = passedLevel;
-  const numNewBalls = Math.floor(level * 1.4);
-  // Allow popping animation to finish playing
-  balls = balls
-    .filter((b) => b.isPopped() && !b.isGone())
-    .concat(makeRandomBalls(numNewBalls));
-  ripples = [];
-}
+function advanceLevel() {
+  level = level ? level + 1 : 1;
 
-const onLevelEnd = () => {
-  setLevel(level + 1);
-};
+  interstitialShowing = true;
 
-const onGameEnd = () => {
-  gameOver = true;
-  document.removeEventListener("click", handleClick);
-  document.removeEventListener("touchstart", handleTouch, { passive: false });
+  // On interstitial continue
   document.addEventListener(
-    "keydown",
-    ({ key }) => {
-      if (key === " ") restartGame();
+    "click",
+    () => {
+      interstitialShowing = false;
+      // Allow popping animation to finish playing for previous level balls
+      balls = balls
+        .filter((b) => b.isPopped() && b.shouldRender())
+        .concat(makeRandomBalls(getNumBalls()));
+      ripples = [];
     },
     { once: true }
   );
-};
+}
 
 function restartGame() {
   gameOver = false;
+  level = false;
   totalClicks = 0;
   ballsPopped = 0;
   ballsMissed = 0;
   balls = [];
-  setLevel(1);
+  ripples = [];
+  advanceLevel();
   document.addEventListener("click", handleClick);
   document.addEventListener("touchstart", handleTouch, { passive: false });
+}
+
+function onGameEnd() {
+  gameOver = true;
+  document.removeEventListener("click", handleClick);
+  document.removeEventListener("touchstart", handleTouch, { passive: false });
+  document.addEventListener("click", restartGame, { once: true });
 }
 
 function onPop() {
   ballsPopped++;
 
-  if (getBallsInPlay() <= 0) {
-    onLevelEnd();
+  if (getBallsRemaining() <= 0) {
+    advanceLevel();
   }
 }
 
@@ -157,15 +161,16 @@ function onMiss() {
   if (!gameOver) {
     ballsMissed++;
 
-    if (ballsPopped - ballsMissed < 0) {
+    if (calculateScore() < 0) {
       onGameEnd();
-    } else if (getBallsInPlay() <= 0) {
-      onLevelEnd();
+    } else if (getBallsRemaining() <= 0) {
+      advanceLevel();
     }
   }
 }
 
 function makeRandomBalls(num) {
+  const radius = 44;
   return new Array(num).fill().map(() =>
     makeBall(
       CTX,
@@ -174,14 +179,15 @@ function makeRandomBalls(num) {
       {
         startPosition: {
           x: randomBetween(canvasWidth / 8, canvasWidth - canvasWidth / 8),
-          y: randomBetween(-canvasHeight, -44),
+          y: -radius,
         },
         startVelocity: {
-          x: randomBetween(-6, 6),
+          x: randomBetween(-12, 12),
           y: 0,
         },
-        radius: 44,
+        radius,
         fill: randomColor(),
+        delay: randomBetween(0, num * 1000),
       },
       onPop,
       onMiss
@@ -190,5 +196,27 @@ function makeRandomBalls(num) {
 }
 
 function getBallsInPlay() {
-  return balls.filter((b) => !b.isPopped() && !b.isGone());
+  return balls.filter((b) => b.isRemaining() && b.shouldRender());
+}
+
+function getBallsRemaining() {
+  return balls.filter((b) => b.isRemaining());
+}
+
+function getNumBalls() {
+  return Math.floor(level * 1.4);
+}
+
+function getPopBonus() {
+  return 1;
+}
+
+function getMissPenalty() {
+  return level;
+}
+
+function calculateScore() {
+  const pointsAddedForPop = ballsPopped * getPopBonus();
+  const pointsDeductedForMiss = ballsMissed * getMissPenalty();
+  return pointsAddedForPop - pointsDeductedForMiss;
 }
