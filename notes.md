@@ -4,20 +4,12 @@
 - After every level we show an screen w/ the next level number and a countdown
 
 # Rules:
-- We keep track of level and of "ball count"
-- For every ball tapped, ball count increases
-- For every ball that passes the bottom of the screen, ball count decreases
+- You start with 10 lives
+- Every ball that you miss reduces your lives by 1
+- Once in a while a "life" ball will appear but traveling very fast, and tapping it will gain you an extra life
 - Once all balls in a round have either been tapped or passed the bottom, the level increases
-- If ball count goes negative, game over
-- If all balls in a round pass the bottom of the screen, game over
+- If lives goes negative, game over
 - When the game is over, we show a score screen w/ share and restart
-  - If the game is over on the first round, we just restart
-
-# Instructions:
-- Progressive disclosure. First instruction is "click/tap the ball to increase your score" with a countdown
-- After first round where a ball passed the bottom: "if a ball passes the bottom your score decreases"
-- If they get to <=0: "If your score hits 0 the game is over"
-- If they miss all the balls "missing all the balls ends the game"
 
 # Interaction ideas:
 - Missed balls animate to the score tracker at the bottom of the screen
