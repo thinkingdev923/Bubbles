@@ -64,9 +64,10 @@ restartGame();
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasWidth, canvasHeight);
 
+  balls.forEach((b) => b.update(deltaTime));
+
   // Run collisions
   getBallsInPlay().forEach((ballA) => {
-    ballA.update(deltaTime);
     getBallsInPlay().forEach((ballB) => {
       if (ballA !== ballB) {
         const collision = checkBallCollision(ballA, ballB);
