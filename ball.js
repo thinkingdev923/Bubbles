@@ -1,11 +1,6 @@
 import { GRAVITY, INTERVAL } from "./constants.js";
-import {
-  progress,
-  clampedProgress,
-  transition,
-  randomBetween,
-} from "./helpers.js";
-import { easeInCubic, easeInOutSine, easeOutCubic } from "./easings.js";
+import { progress, transition, randomBetween } from "./helpers.js";
+import { easeOutCubic } from "./easings.js";
 
 export const makeBall = (
   CTX,
@@ -41,7 +36,6 @@ export const makeBall = (
 
       if (position.y > canvasHeight + radius) {
         gone = true;
-
         if (!popped) onMiss();
       }
 
@@ -58,10 +52,13 @@ export const makeBall = (
   const pop = () => {
     popped = true;
     poppedTime = Date.now();
-    poppedPieces = new Array(numberOfPopPieces).fill().map(() => {
+
+    const outerPoppedPieces = new Array(numberOfPopPieces).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
-      const maxSize = 6;
-      const randomSize = randomBetween(1, maxSize);
+      const minSize = 2;
+      const maxSize = 8;
+      const innerMargin = 12;
+      const randomSize = randomBetween(minSize, maxSize);
       const randomSpeedMultiplier = transition(
         7,
         1.2,
@@ -74,12 +71,12 @@ export const makeBall = (
         canvasHeight,
         {
           startPosition: {
-            x: position.x + Math.cos(randomAngle) * (radius - maxSize),
-            y: position.y + Math.sin(randomAngle) * (radius - maxSize),
+            x: position.x + Math.cos(randomAngle) * (radius - innerMargin),
+            y: position.y + Math.sin(randomAngle) * (radius - innerMargin),
           },
           startVelocity: {
-            x: velocity.x + Math.cos(randomAngle) * randomSpeedMultiplier,
-            y: velocity.y + Math.sin(randomAngle) * randomSpeedMultiplier,
+            x: velocity.x / 2 + Math.cos(randomAngle) * randomSpeedMultiplier,
+            y: velocity.y / 2 + Math.sin(randomAngle) * randomSpeedMultiplier,
           },
           radius: randomSize,
           fill,
@@ -88,6 +85,43 @@ export const makeBall = (
         () => {}
       );
     });
+    const innerPoppedPieces = new Array(numberOfPopPieces / 2)
+      .fill()
+      .map(() => {
+        const randomAngle = Math.random() * Math.PI * 2;
+        const minSize = 6;
+        const maxSize = 14;
+        const innerMargin = 22;
+        const randomSize = randomBetween(minSize, maxSize);
+        const randomSpeedMultiplier = transition(
+          8,
+          2,
+          progress(1, maxSize, randomSize)
+        );
+
+        return makeBall(
+          CTX,
+          canvasWidth,
+          canvasHeight,
+          {
+            startPosition: {
+              x: position.x + Math.cos(randomAngle) * (radius - innerMargin),
+              y: position.y + Math.sin(randomAngle) * (radius - innerMargin),
+            },
+            startVelocity: {
+              x: velocity.x / 2 + Math.cos(randomAngle) * randomSpeedMultiplier,
+              y: velocity.y / 2 + Math.sin(randomAngle) * randomSpeedMultiplier,
+            },
+            radius: randomSize,
+            fill,
+          },
+          () => {},
+          () => {}
+        );
+      });
+
+    poppedPieces = outerPoppedPieces.concat(innerPoppedPieces);
+
     onPop();
   };
 
@@ -97,39 +131,6 @@ export const makeBall = (
       if (timeSincePopped > popAnimationDurationMax) {
         gone = true;
       } else {
-        const rootBallScaleDuration = popAnimationDurationMax / 8;
-
-        if (timeSincePopped < rootBallScaleDuration) {
-          const rootBallAnimationProgress = clampedProgress(
-            0,
-            rootBallScaleDuration,
-            timeSincePopped
-          );
-          const scaleTransition = transition(
-            0,
-            1.5,
-            rootBallAnimationProgress,
-            easeOutCubic
-          );
-          const lineWidthTransition = transition(
-            8,
-            0,
-            rootBallAnimationProgress,
-            easeOutCubic
-          );
-
-          CTX.save();
-          CTX.strokeStyle = fill;
-          CTX.lineWidth = lineWidthTransition;
-          CTX.translate(position.x, position.y);
-          CTX.scale(scaleTransition, scaleTransition);
-          CTX.beginPath();
-          CTX.arc(0, 0, radius, 0, 2 * Math.PI);
-          CTX.closePath();
-          CTX.stroke();
-          CTX.restore();
-        }
-
         poppedPieces.forEach((p) => {
           const scaleProgress = progress(
             0,
