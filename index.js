@@ -33,6 +33,18 @@ let ripples;
 let gameOver;
 let interstitialShowing;
 
+const [pluck1, pluck2, pluck3, pluck4, pluck5, pluck6, missWomp] = [
+  new Audio("./sounds/pluck1.mp3"),
+  new Audio("./sounds/pluck2.mp3"),
+  new Audio("./sounds/pluck3.mp3"),
+  new Audio("./sounds/pluck4.mp3"),
+  new Audio("./sounds/pluck5.mp3"),
+  new Audio("./sounds/pluck6.mp3"),
+  new Audio("./sounds/miss.mp3"),
+];
+
+const plucks = [pluck1, pluck2, pluck3, pluck4, pluck5, pluck6];
+
 function handleBallClick({ clientX: x, clientY: y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
   clicksTotal++;
@@ -40,6 +52,7 @@ function handleBallClick({ clientX: x, clientY: y }) {
 
   if (collidingBall) {
     collidingBall.pop();
+    plucks[Math.floor(Math.random() * plucks.length)].play();
   } else {
     ripples.push(makeRipple(CTX, { x, y }));
   }
@@ -213,6 +226,8 @@ function onMiss() {
     ballsMissedTotal++;
     ballsMissedRound++;
     lives--;
+
+    missWomp.play();
 
     if (!firstMissLevel) firstMissLevel = level;
 
