@@ -65,9 +65,9 @@ export const makeBall = (
       const randomSpeedMultiplier = transition(
         7,
         1.2,
-        progress(1, maxSize, randomSize),
+        progress(1, maxSize, randomSize)
       );
-      
+
       return makeBall(
         CTX,
         canvasWidth,
