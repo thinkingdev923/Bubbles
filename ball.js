@@ -60,8 +60,14 @@ export const makeBall = (
     poppedTime = Date.now();
     poppedPieces = new Array(numberOfPopPieces).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
-      const randomSpeedMultiplier = randomBetween(0.8, 3);
       const maxSize = 6;
+      const randomSize = randomBetween(1, maxSize);
+      const randomSpeedMultiplier = transition(
+        7,
+        1.2,
+        progress(1, maxSize, randomSize),
+      );
+      
       return makeBall(
         CTX,
         canvasWidth,
@@ -75,7 +81,7 @@ export const makeBall = (
             x: velocity.x + Math.cos(randomAngle) * randomSpeedMultiplier,
             y: velocity.y + Math.sin(randomAngle) * randomSpeedMultiplier,
           },
-          radius: randomBetween(1, maxSize),
+          radius: randomSize,
           fill,
         },
         () => {},
