@@ -41,7 +41,8 @@ export const makeBall = (
 
       if (position.y > canvasHeight + radius) {
         gone = true;
-        onMiss();
+
+        if (!popped) onMiss();
       }
 
       if (position.x > canvasWidth - radius) {
