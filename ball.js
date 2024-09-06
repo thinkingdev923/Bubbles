@@ -1,12 +1,20 @@
 import { GRAVITY, INTERVAL } from "./constants.js";
 import { progress, transition, randomBetween } from "./helpers.js";
 import { easeOutCubic } from "./easings.js";
+import { drawTrajectory } from "./trajectory.js";
 
 export const makeBall = (
   CTX,
   canvasWidth,
   canvasHeight,
-  { startPosition, startVelocity, radius, fill, delay = 0 },
+  {
+    startPosition,
+    startVelocity,
+    radius,
+    fill,
+    delay = 0,
+    shouldDrawTrajectory = false,
+  },
   onPop,
   onMiss
 ) => {
@@ -142,6 +150,8 @@ export const makeBall = (
         });
       }
     } else if (shouldRender()) {
+      if (shouldDrawTrajectory)
+        drawTrajectory(CTX, canvasWidth, canvasHeight, position, velocity);
       CTX.save();
       CTX.fillStyle = fill;
       CTX.translate(position.x, position.y);

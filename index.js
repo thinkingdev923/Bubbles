@@ -14,6 +14,7 @@ import { makeRipple } from "./ripple.js";
 import { randomColor } from "./colors.js";
 import { centerTextBlock } from "./centerTextBlock.js";
 import { makeAudioManager } from "./audio.js";
+import { makeCountdown } from "./countdown.js";
 
 const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   width: window.innerWidth,
@@ -33,6 +34,7 @@ let lives;
 let balls;
 let ripples;
 let gameOver;
+let gameOverCountdown;
 let interstitialShowing;
 
 function handleBallClick({ clientX: x, clientY: y }) {
@@ -45,6 +47,7 @@ function handleBallClick({ clientX: x, clientY: y }) {
     audioManager.playRandomPluck();
   } else {
     ripples.push(makeRipple(CTX, { x, y }));
+    audioManager.playRandomFireworks();
   }
 }
 
@@ -140,15 +143,15 @@ animate((deltaTime) => {
       `Accuracy: ${
         clicksTotal > 0 ? Math.floor((ballsPoppedTotal / clicksTotal) * 100) : 0
       }%`,
-      `Click to restart`,
+      `Click to restart in ${gameOverCountdown.getSecondsRemaining()}s`,
     ]);
   }
 });
 
 function advanceLevel() {
   level = level ? level + 1 : 1;
-
   interstitialShowing = true;
+  audioManager.playLevel();
 
   const handleAdvance = () => {
     interstitialShowing = false;
@@ -172,6 +175,7 @@ function advanceLevel() {
 
 function restartGame() {
   gameOver = false;
+  gameOverCountdown = false;
   level = false;
   clicksTotal = 0;
   ballsPoppedTotal = 0;
@@ -190,16 +194,19 @@ function restartGame() {
 
 function onGameEnd() {
   gameOver = true;
+  audioManager.playLose();
 
   document.removeEventListener("click", handleBallClick);
   document.removeEventListener("touchstart", handleBallTouch, {
     passive: false,
   });
 
-  document.addEventListener("click", restartGame, { once: true });
-  document.addEventListener("touchstart", restartGame, {
-    passive: false,
-    once: true,
+  gameOverCountdown = makeCountdown(5, () => {
+    document.addEventListener("click", restartGame, { once: true });
+    document.addEventListener("touchstart", restartGame, {
+      passive: false,
+      once: true,
+    });
   });
 }
 
@@ -217,7 +224,6 @@ function onMiss() {
     ballsMissedTotal++;
     ballsMissedRound++;
     lives--;
-
     audioManager.playMiss();
 
     if (!firstMissLevel) firstMissLevel = level;
@@ -249,6 +255,7 @@ function makeRandomBalls(num) {
         radius,
         fill: randomColor(),
         delay: randomBetween(0, num * 400),
+        shouldDrawTrajectory: false,
       },
       onPop,
       onMiss
