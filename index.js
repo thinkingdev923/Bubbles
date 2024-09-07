@@ -1,8 +1,8 @@
 import {
   animate,
   generateCanvas,
-  randomBetween,
   findBallAtPoint,
+  randomBetween,
 } from "./helpers.js";
 import {
   makeBall,
@@ -11,10 +11,12 @@ import {
   resolveBallCollision,
 } from "./ball.js";
 import { makeRipple } from "./ripple.js";
-import { randomColor } from "./colors.js";
 import { centerTextBlock } from "./centerTextBlock.js";
 import { makeAudioManager } from "./audio.js";
 import { makeCountdown } from "./countdown.js";
+import { makeLifeManager } from "./lives.js";
+import { makeLevelManager } from "./level.js";
+import { randomColor } from "./colors.js";
 
 const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   width: window.innerWidth,
@@ -22,7 +24,8 @@ const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   attachNode: "#canvas",
 });
 const audioManager = makeAudioManager();
-let level;
+const lifeManager = makeLifeManager(CTX, canvasWidth, canvasHeight);
+const levelManager = makeLevelManager(CTX, canvasWidth, onLevelEnd, onAdvance);
 let clicksTotal;
 let ballsPoppedTotal;
 let ballsMissedTotal;
@@ -30,7 +33,6 @@ let clicksRound;
 let ballsPoppedRound;
 let ballsMissedRound;
 let firstMissLevel;
-let lives;
 let balls;
 let ripples;
 let gameOver;
@@ -84,12 +86,12 @@ animate((deltaTime) => {
 
   // Draw interstitial if active
   if (interstitialShowing) {
-    level === 1
+    levelManager.getLevel() === 1
       ? centerTextBlock(CTX, canvasWidth, canvasHeight, [
           `Click the bubble`,
           `Click to continue`,
         ])
-      : firstMissLevel && firstMissLevel === level - 1
+      : firstMissLevel && firstMissLevel === levelManager.getLevel() - 1
       ? centerTextBlock(CTX, canvasWidth, canvasHeight, [
           `If you miss a ball you lose a life`,
           `Click to continue`,
@@ -107,27 +109,10 @@ animate((deltaTime) => {
   }
 
   // Draw level text underneath balls if interstitial is not showing
-  else if (!gameOver) {
-    CTX.save();
-    CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
-    CTX.fillStyle = "#fff";
-    CTX.fillText(`Level: ${level}`, 8, 32);
-    CTX.translate(canvasWidth - 8, 0);
-    CTX.textAlign = "right";
-    CTX.fillText(`♥ ${lives}`, 0, 32);
-    CTX.restore();
-  }
+  else if (!gameOver) levelManager.draw();
 
   // Always draw lives
-  if (!gameOver) {
-    CTX.save();
-    CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
-    CTX.fillStyle = "#fff";
-    CTX.textAlign = "right";
-    CTX.translate(canvasWidth - 8, 0);
-    CTX.fillText(`♥ ${lives}`, 0, 32);
-    CTX.restore();
-  }
+  if (!gameOver) lifeManager.draw();
 
   // Draw balls and ripples
   ripples.forEach((r) => r.draw());
@@ -136,7 +121,7 @@ animate((deltaTime) => {
   // Draw end game info over balls
   if (gameOver) {
     centerTextBlock(CTX, canvasWidth, canvasHeight, [
-      `Max Level Reached: ${level}`,
+      `Max Level Reached: ${levelManager.getLevel()}`,
       `Total Bubbles Played: ${ballsPoppedTotal + ballsMissedTotal}`,
       `Total Clicks: ${clicksTotal}`,
       `Total Popped: ${ballsPoppedTotal}`,
@@ -148,35 +133,9 @@ animate((deltaTime) => {
   }
 });
 
-function advanceLevel() {
-  level = level ? level + 1 : 1;
-  interstitialShowing = true;
-  audioManager.playLevel();
-
-  const handleAdvance = () => {
-    interstitialShowing = false;
-    clicksRound = 0;
-    ballsPoppedRound = 0;
-    ballsMissedRound = 0;
-    // Allow popping animation to finish playing for previous level balls
-    balls = balls
-      .filter((b) => b.isPopped() && b.shouldRender())
-      .concat(makeRandomBalls(getNumBalls()));
-    ripples = [];
-  };
-
-  // On interstitial continue
-  document.addEventListener("click", handleAdvance, { once: true });
-  document.addEventListener("touchstart", handleAdvance, {
-    passive: false,
-    once: true,
-  });
-}
-
 function restartGame() {
   gameOver = false;
   gameOverCountdown = false;
-  level = false;
   clicksTotal = 0;
   ballsPoppedTotal = 0;
   ballsMissedTotal = 0;
@@ -184,10 +143,12 @@ function restartGame() {
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
   firstMissLevel = false;
-  lives = 10;
   balls = [];
   ripples = [];
-  advanceLevel();
+  levelManager.reset();
+  lifeManager.reset();
+
+  levelManager.advanceLevel();
   document.addEventListener("click", handleBallClick);
   document.addEventListener("touchstart", handleBallTouch, { passive: false });
 }
@@ -210,12 +171,29 @@ function onGameEnd() {
   });
 }
 
+function onLevelEnd() {
+  interstitialShowing = true;
+  audioManager.playLevel();
+}
+
+function onAdvance() {
+  interstitialShowing = false;
+  clicksRound = 0;
+  ballsPoppedRound = 0;
+  ballsMissedRound = 0;
+  // Allow popping animation to finish playing for previous level balls
+  balls = balls
+    .filter((b) => b.isPopped() && b.shouldRender())
+    .concat(makeRandomBalls(getNumBalls()));
+  ripples = [];
+}
+
 function onPop() {
   ballsPoppedTotal++;
   ballsPoppedRound++;
 
   if (getBallsRemaining() <= 0) {
-    advanceLevel();
+    levelManager.advanceLevel();
   }
 }
 
@@ -223,17 +201,29 @@ function onMiss() {
   if (!gameOver) {
     ballsMissedTotal++;
     ballsMissedRound++;
-    lives--;
+    lifeManager.subtract();
     audioManager.playMiss();
 
-    if (!firstMissLevel) firstMissLevel = level;
+    if (!firstMissLevel) firstMissLevel = levelManager.getLevel();
 
-    if (lives <= 0) {
+    if (lifeManager.getLives() <= 0) {
       onGameEnd();
     } else if (getBallsRemaining() <= 0) {
-      advanceLevel();
+      levelManager.advanceLevel();
     }
   }
+}
+
+function getBallsInPlay() {
+  return balls.filter((b) => b.isRemaining() && b.shouldRender());
+}
+
+function getBallsRemaining() {
+  return balls.filter((b) => b.isRemaining());
+}
+
+function getNumBalls() {
+  return Math.floor(levelManager.getLevel() * 1.4);
 }
 
 function makeRandomBalls(num) {
@@ -261,16 +251,4 @@ function makeRandomBalls(num) {
       onMiss
     )
   );
-}
-
-function getBallsInPlay() {
-  return balls.filter((b) => b.isRemaining() && b.shouldRender());
-}
-
-function getBallsRemaining() {
-  return balls.filter((b) => b.isRemaining());
-}
-
-function getNumBalls() {
-  return Math.floor(level * 1.4);
 }
