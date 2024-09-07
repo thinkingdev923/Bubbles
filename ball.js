@@ -61,6 +61,13 @@ export const makeBall = (
     popped = true;
     poppedTime = Date.now();
 
+    // A popped ball is composed of many tiny ball objects. The first frame after
+    // the pop, we want them to cluster together to form a shape that still looks
+    // mostly like the ball, and then we want each of them to explode outwards.
+    // This is accomplished by creating a ring of small to medium sized balls around
+    // the outer edge, and also a cluster of larger balls in a smaller ring close to
+    // the center of the popped ball. They all move outwards at different speeds.
+
     const outerPoppedPieces = new Array(numberOfPopPieces).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
       const minSize = 2;
@@ -82,9 +89,12 @@ export const makeBall = (
             x: position.x + Math.cos(randomAngle) * (radius - innerMargin),
             y: position.y + Math.sin(randomAngle) * (radius - innerMargin),
           },
+          // Popped pieces retain some of the velocity of the parent ball, but
+          // mostly go straight out from the center of the ball at the given
+          // randomAngle
           startVelocity: {
-            x: velocity.x / 2 + Math.cos(randomAngle) * randomSpeedMultiplier,
-            y: velocity.y / 2 + Math.sin(randomAngle) * randomSpeedMultiplier,
+            x: velocity.x / 4 + Math.cos(randomAngle) * randomSpeedMultiplier,
+            y: velocity.y / 4 + Math.sin(randomAngle) * randomSpeedMultiplier,
           },
           radius: randomSize,
           fill,
