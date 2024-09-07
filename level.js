@@ -1,24 +1,61 @@
 import { yellow } from "./colors.js";
+import { centerTextBlock } from "./centerTextBlock.js";
 
-export const makeLevelManager = (CTX, canvasWidth, onLevelEnd, onAdvance) => {
+export const makeLevelManager = (
+  CTX,
+  canvasWidth,
+  canvasHeight,
+  onLevelEnd,
+  onAdvance
+) => {
   let level;
+  let interstitialShowing;
+  let firstMissLevel;
   const reset = () => {
     level = false;
+    interstitialShowing = false;
+    firstMissLevel = false;
   };
   reset();
 
   const advanceLevel = () => {
     level = level ? level + 1 : 1;
+    interstitialShowing = true;
     onLevelEnd();
 
-    document.addEventListener("click", onAdvance, { once: true });
-    document.addEventListener("touchstart", onAdvance, {
+    const advance = (e) => {
+      interstitialShowing = false;
+      onAdvance(e);
+    };
+
+    document.addEventListener("click", advance, { once: true });
+    document.addEventListener("touchstart", advance, {
       passive: false,
       once: true,
     });
   };
 
-  const draw = () => {
+  const setFirstMiss = () => {
+    if (!firstMissLevel) firstMissLevel = level;
+  };
+
+  const drawInterstitialMessage = ({
+    initialMessage,
+    firstMissMessage,
+    defaultMessage,
+  }) => {
+    if (interstitialShowing) {
+      if (level === 1) {
+        initialMessage();
+      } else if (firstMissLevel && firstMissLevel === level - 1) {
+        firstMissMessage();
+      } else {
+        defaultMessage();
+      }
+    }
+  };
+
+  const drawLevelNumber = () => {
     CTX.save();
     CTX.font = "600 14px -apple-system, BlinkMacSystemFont, sans-serif";
     CTX.fillStyle = yellow;
@@ -32,7 +69,9 @@ export const makeLevelManager = (CTX, canvasWidth, onLevelEnd, onAdvance) => {
   return {
     reset,
     getLevel: () => level,
-    draw,
+    drawInterstitialMessage,
+    drawLevelNumber,
     advanceLevel,
+    setFirstMiss,
   };
 };

@@ -25,19 +25,23 @@ const [CTX, canvasWidth, canvasHeight] = generateCanvas({
 });
 const audioManager = makeAudioManager();
 const lifeManager = makeLifeManager(CTX, canvasWidth, canvasHeight);
-const levelManager = makeLevelManager(CTX, canvasWidth, onLevelEnd, onAdvance);
+const levelManager = makeLevelManager(
+  CTX,
+  canvasWidth,
+  canvasHeight,
+  onLevelEnd,
+  onAdvance
+);
 let clicksTotal;
 let ballsPoppedTotal;
 let ballsMissedTotal;
 let clicksRound;
 let ballsPoppedRound;
 let ballsMissedRound;
-let firstMissLevel;
 let balls;
 let ripples;
 let gameOver;
 let gameOverCountdown;
-let interstitialShowing;
 
 function handleBallClick({ clientX: x, clientY: y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
@@ -84,39 +88,40 @@ animate((deltaTime) => {
     });
   });
 
-  // Draw interstitial if active
-  if (interstitialShowing) {
-    levelManager.getLevel() === 1
-      ? centerTextBlock(CTX, canvasWidth, canvasHeight, [
-          `Click the bubble`,
-          `Click to continue`,
-        ])
-      : firstMissLevel && firstMissLevel === levelManager.getLevel() - 1
-      ? centerTextBlock(CTX, canvasWidth, canvasHeight, [
-          `If you miss a ball you lose a life`,
-          `Click to continue`,
-        ])
-      : centerTextBlock(CTX, canvasWidth, canvasHeight, [
-          `Total Clicks: ${clicksRound}`,
-          `Total Popped: ${ballsPoppedRound}`,
-          `Accuracy: ${
-            clicksRound > 0
-              ? Math.floor((ballsPoppedRound / clicksRound) * 100)
-              : 0
-          }%`,
-          `Click to continue`,
-        ]);
+  // Draw level +life text underneath balls
+  if (!gameOver) {
+    // Always draw lives
+    levelManager.drawLevelNumber();
+    lifeManager.draw();
   }
-
-  // Draw level text underneath balls if interstitial is not showing
-  else if (!gameOver) levelManager.draw();
-
-  // Always draw lives
-  if (!gameOver) lifeManager.draw();
 
   // Draw balls and ripples
   ripples.forEach((r) => r.draw());
   balls.forEach((b) => b.draw(deltaTime));
+
+  levelManager.drawInterstitialMessage({
+    initialMessage: () =>
+      centerTextBlock(CTX, canvasWidth, canvasHeight, [
+        `Pop the bubble`,
+        `Click to continue`,
+      ]),
+    firstMissMessage: () =>
+      centerTextBlock(CTX, canvasWidth, canvasHeight, [
+        `If you miss a bubble you lose a life`,
+        `Click to continue`,
+      ]),
+    defaultMessage: () =>
+      centerTextBlock(CTX, canvasWidth, canvasHeight, [
+        `Total Clicks: ${clicksRound}`,
+        `Total Popped: ${ballsPoppedRound}`,
+        `Accuracy: ${
+          clicksRound > 0
+            ? Math.floor((ballsPoppedRound / clicksRound) * 100)
+            : 0
+        }%`,
+        `Click to continue`,
+      ]),
+  });
 
   // Draw end game info over balls
   if (gameOver) {
@@ -142,7 +147,6 @@ function restartGame() {
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
-  firstMissLevel = false;
   balls = [];
   ripples = [];
   levelManager.reset();
@@ -172,12 +176,10 @@ function onGameEnd() {
 }
 
 function onLevelEnd() {
-  interstitialShowing = true;
   audioManager.playLevel();
 }
 
 function onAdvance() {
-  interstitialShowing = false;
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
@@ -203,8 +205,7 @@ function onMiss() {
     ballsMissedRound++;
     lifeManager.subtract();
     audioManager.playMiss();
-
-    if (!firstMissLevel) firstMissLevel = levelManager.getLevel();
+    levelManager.setFirstMiss();
 
     if (lifeManager.getLives() <= 0) {
       onGameEnd();
