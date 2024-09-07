@@ -24,6 +24,7 @@ export const makeLifeManager = (CTX, canvasWidth, canvasHeight) => {
     const width = 72;
     const height = 38;
     const textVerticalOffset = 1;
+    const marginFromBottom = 64;
 
     CTX.save();
     CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
@@ -33,7 +34,7 @@ export const makeLifeManager = (CTX, canvasWidth, canvasHeight) => {
     CTX.textAlign = "center";
     CTX.textBaseline = "middle";
 
-    CTX.translate(canvasWidth / 2, canvasHeight - 50);
+    CTX.translate(canvasWidth / 2, canvasHeight - marginFromBottom);
     CTX.beginPath();
     CTX.roundRect(-width / 2, 0, width, height, height);
     CTX.stroke();

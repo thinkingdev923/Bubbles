@@ -1,5 +1,4 @@
 import { yellow } from "./colors.js";
-import { centerTextBlock } from "./centerTextBlock.js";
 
 export const makeLevelManager = (
   CTX,
@@ -61,7 +60,7 @@ export const makeLevelManager = (
     CTX.fillStyle = yellow;
     CTX.letterSpacing = "1px";
     CTX.textAlign = "center";
-    CTX.translate(canvasWidth / 2, 20);
+    CTX.translate(canvasWidth / 2, 24);
     CTX.fillText(`LEVEL ${level}`, 0, 0);
     CTX.restore();
   };
