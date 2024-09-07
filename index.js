@@ -188,6 +188,7 @@ function onAdvance() {
     .filter((b) => b.isPopped() && b.shouldRender())
     .concat(makeRandomBalls(getNumBalls()));
   ripples = [];
+  audioManager.initialize();
 }
 
 function onPop() {

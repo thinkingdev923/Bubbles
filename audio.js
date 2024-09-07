@@ -24,9 +24,18 @@ export const makeAudioManager = () => {
     return audioBuffer;
   }
 
-  const _initialize = (e) => {
+  const initialize = () => {
     if (!hasInitialized) {
       hasInitialized = true;
+
+      // Play silence in a loop in the background on instantiation. Playing some
+      // audio continuously with the HTML audio API will allow audio via the Web
+      // Audio API to play on the main sound channel in iOS, rather than the
+      // ringer channel.
+      silenceAudio = new Audio("./sounds/silence.mp3");
+      silenceAudio.loop = true;
+      silenceAudio.play();
+
       audioCTX = new AudioContext();
       pluck1Buffer = _loadFile(audioCTX, "./sounds/pluck1.mp3");
       pluck2Buffer = _loadFile(audioCTX, "./sounds/pluck2.mp3");
@@ -42,25 +51,8 @@ export const makeAudioManager = () => {
       missBuffer = _loadFile(audioCTX, "./sounds/miss.mp3");
       loseBuffer = _loadFile(audioCTX, "./sounds/lose.mp3");
       levelBuffer = _loadFile(audioCTX, "./sounds/level.mp3");
-
-      // Play silence in a loop in the background on instantiation. Playing some
-      // audio continuously with the HTML audio API will allow audio via the Web
-      // Audio API to play on the main sound channel in iOS, rather than the
-      // ringer channel.
-      silenceAudio = new Audio("./sounds/silence.mp3");
-      silenceAudio.loop = true;
-      silenceAudio.play();
     }
   };
-
-  document.addEventListener("touchend", _initialize, { once: true });
-  document.addEventListener(
-    "click",
-    ({ isTrusted }) => {
-      if (isTrusted) _initialize();
-    },
-    { once: true }
-  );
 
   async function _playTrack(audioBuffer, loop = true) {
     const playBuffer = (buffer) => {
@@ -78,7 +70,7 @@ export const makeAudioManager = () => {
         playBuffer(e[1])
       );
     } else {
-      return Promise.all([_initialize(), audioBuffer]).then((e) =>
+      return Promise.all([initialize(), audioBuffer]).then((e) =>
         playBuffer(e[1])
       );
     }
@@ -121,6 +113,7 @@ export const makeAudioManager = () => {
   };
 
   return {
+    initialize,
     playRandomPluck,
     playRandomFireworks,
     playMiss,
