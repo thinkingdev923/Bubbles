@@ -17,6 +17,7 @@ import { makeCountdown } from "./countdown.js";
 import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
 import { randomColor } from "./colors.js";
+import { drawScore } from "./score.js";
 
 const [CTX, canvasWidth, canvasHeight] = generateCanvas({
   width: window.innerWidth,
@@ -40,7 +41,6 @@ let ballsPoppedRound;
 let ballsMissedRound;
 let balls;
 let ripples;
-let gameOver;
 let gameOverCountdown;
 
 function handleBallClick({ clientX: x, clientY: y }) {
@@ -89,7 +89,7 @@ animate((deltaTime) => {
   });
 
   // Draw level +life text underneath balls
-  if (!gameOver) {
+  if (!levelManager.isGameOver()) {
     // Always draw lives
     levelManager.drawLevelNumber();
     lifeManager.draw();
@@ -101,45 +101,40 @@ animate((deltaTime) => {
 
   levelManager.drawInterstitialMessage({
     initialMessage: () =>
-      centerTextBlock(CTX, canvasWidth, canvasHeight, [
-        `Pop the bubble`,
-        `Click to continue`,
-      ]),
+      centerTextBlock(CTX, canvasWidth, canvasHeight, [`Pop the bubble`]),
     firstMissMessage: () =>
       centerTextBlock(CTX, canvasWidth, canvasHeight, [
-        `If you miss a bubble you lose a life`,
-        `Click to continue`,
+        `Miss a bubble, lose a life`,
       ]),
-    defaultMessage: () =>
-      centerTextBlock(CTX, canvasWidth, canvasHeight, [
-        `Total Clicks: ${clicksRound}`,
-        `Total Popped: ${ballsPoppedRound}`,
-        `Accuracy: ${
-          clicksRound > 0
-            ? Math.floor((ballsPoppedRound / clicksRound) * 100)
-            : 0
-        }%`,
-        `Click to continue`,
-      ]),
+    defaultMessage: (timeElapsed) =>
+      drawScore(
+        CTX,
+        canvasWidth,
+        canvasHeight,
+        clicksRound,
+        ballsPoppedRound,
+        ballsMissedRound,
+        timeElapsed
+      ),
+    endGameMessage: (timeElapsed) => {
+      drawScore(
+        CTX,
+        canvasWidth,
+        canvasHeight,
+        clicksTotal,
+        ballsPoppedTotal,
+        ballsMissedTotal,
+        timeElapsed
+      );
+      CTX.save();
+      CTX.translate(canvasWidth / 2, canvasHeight - 200);
+      gameOverCountdown.draw();
+      CTX.restore();
+    },
   });
-
-  // Draw end game info over balls
-  if (gameOver) {
-    centerTextBlock(CTX, canvasWidth, canvasHeight, [
-      `Max Level Reached: ${levelManager.getLevel()}`,
-      `Total Bubbles Played: ${ballsPoppedTotal + ballsMissedTotal}`,
-      `Total Clicks: ${clicksTotal}`,
-      `Total Popped: ${ballsPoppedTotal}`,
-      `Accuracy: ${
-        clicksTotal > 0 ? Math.floor((ballsPoppedTotal / clicksTotal) * 100) : 0
-      }%`,
-      `Click to restart in ${gameOverCountdown.getSecondsRemaining()}s`,
-    ]);
-  }
 });
 
 function restartGame() {
-  gameOver = false;
   gameOverCountdown = false;
   clicksTotal = 0;
   ballsPoppedTotal = 0;
@@ -151,22 +146,19 @@ function restartGame() {
   ripples = [];
   levelManager.reset();
   lifeManager.reset();
-
   levelManager.advanceLevel();
-  document.addEventListener("click", handleBallClick);
-  document.addEventListener("touchstart", handleBallTouch, { passive: false });
 }
 
 function onGameEnd() {
-  gameOver = true;
   audioManager.playLose();
+  levelManager.onGameOver();
 
   document.removeEventListener("click", handleBallClick);
   document.removeEventListener("touchstart", handleBallTouch, {
     passive: false,
   });
 
-  gameOverCountdown = makeCountdown(5, () => {
+  gameOverCountdown = makeCountdown(CTX, 5, () => {
     document.addEventListener("click", restartGame, { once: true });
     document.addEventListener("touchstart", restartGame, {
       passive: false,
@@ -177,6 +169,10 @@ function onGameEnd() {
 
 function onLevelEnd() {
   audioManager.playLevel();
+  document.removeEventListener("click", handleBallClick);
+  document.removeEventListener("touchstart", handleBallTouch, {
+    passive: false,
+  });
 }
 
 function onAdvance() {
@@ -189,6 +185,10 @@ function onAdvance() {
     .concat(makeRandomBalls(getNumBalls()));
   ripples = [];
   audioManager.initialize();
+  document.addEventListener("click", handleBallClick);
+  document.addEventListener("touchstart", handleBallTouch, {
+    passive: false,
+  });
 }
 
 function onPop() {
@@ -201,7 +201,7 @@ function onPop() {
 }
 
 function onMiss() {
-  if (!gameOver) {
+  if (!levelManager.isGameOver()) {
     ballsMissedTotal++;
     ballsMissedRound++;
     lifeManager.subtract();

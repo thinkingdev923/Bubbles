@@ -1,6 +1,7 @@
 import { red } from "./colors.js";
-import { easeInCubic, easeInOutSine } from "./easings.js";
+import { easeInOutSine } from "./easings.js";
 import { clampedProgress, transition } from "./helpers.js";
+import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
 
 export const makeLifeManager = (CTX, canvasWidth, canvasHeight) => {
   let lives;
@@ -27,7 +28,7 @@ export const makeLifeManager = (CTX, canvasWidth, canvasHeight) => {
     const marginFromBottom = 64;
 
     CTX.save();
-    CTX.font = "500 24px -apple-system, BlinkMacSystemFont, sans-serif";
+    CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
     CTX.fillStyle = red;
     CTX.strokeStyle = red;
     CTX.lineWidth = 3;

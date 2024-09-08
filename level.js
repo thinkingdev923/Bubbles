@@ -1,4 +1,5 @@
 import { yellow } from "./colors.js";
+import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 
 export const makeLevelManager = (
   CTX,
@@ -9,21 +10,27 @@ export const makeLevelManager = (
 ) => {
   let level;
   let interstitialShowing;
+  let interstitialStart;
   let firstMissLevel;
+  let gameOver;
+
   const reset = () => {
     level = false;
     interstitialShowing = false;
     firstMissLevel = false;
+    gameOver = false;
   };
   reset();
 
   const advanceLevel = () => {
     level = level ? level + 1 : 1;
     interstitialShowing = true;
+    interstitialStart = Date.now();
     onLevelEnd();
 
     const advance = (e) => {
       interstitialShowing = false;
+      interstitialStart = false;
       onAdvance(e);
     };
 
@@ -34,6 +41,11 @@ export const makeLevelManager = (
     });
   };
 
+  const onGameOver = () => {
+    interstitialShowing = true;
+    gameOver = true;
+  };
+
   const setFirstMiss = () => {
     if (!firstMissLevel) firstMissLevel = level;
   };
@@ -42,21 +54,26 @@ export const makeLevelManager = (
     initialMessage,
     firstMissMessage,
     defaultMessage,
+    endGameMessage,
   }) => {
     if (interstitialShowing) {
-      if (level === 1) {
-        initialMessage();
+      const interstitialTimeElapsed = Date.now() - interstitialStart;
+
+      if (gameOver) {
+        endGameMessage(interstitialTimeElapsed);
+      } else if (level === 1) {
+        initialMessage(interstitialTimeElapsed);
       } else if (firstMissLevel && firstMissLevel === level - 1) {
-        firstMissMessage();
+        firstMissMessage(interstitialTimeElapsed);
       } else {
-        defaultMessage();
+        defaultMessage(interstitialTimeElapsed);
       }
     }
   };
 
   const drawLevelNumber = () => {
     CTX.save();
-    CTX.font = "600 14px -apple-system, BlinkMacSystemFont, sans-serif";
+    CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
     CTX.fillStyle = yellow;
     CTX.letterSpacing = "1px";
     CTX.textAlign = "center";
@@ -72,5 +89,7 @@ export const makeLevelManager = (
     drawLevelNumber,
     advanceLevel,
     setFirstMiss,
+    onGameOver,
+    isGameOver: () => gameOver,
   };
 };
