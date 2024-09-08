@@ -19,7 +19,7 @@ import { makeLevelManager } from "./level.js";
 import { randomColor } from "./colors.js";
 import { drawScore } from "./score.js";
 
-const [CTX, canvasWidth, canvasHeight] = generateCanvas({
+const [CTX, canvasWidth, canvasHeight, canvasEl] = generateCanvas({
   width: window.innerWidth,
   height: window.innerHeight,
   attachNode: "#canvas",
@@ -153,8 +153,9 @@ function onGameEnd() {
   audioManager.playLose();
   levelManager.onGameOver();
 
-  document.removeEventListener("click", handleBallClick);
-  document.removeEventListener("touchstart", handleBallTouch, {
+  canvasEl.removeEventListener("click", handleBallClick, { capture: true });
+  canvasEl.removeEventListener("touchstart", handleBallTouch, {
+    capture: true,
     passive: false,
   });
 
@@ -169,8 +170,9 @@ function onGameEnd() {
 
 function onLevelEnd() {
   audioManager.playLevel();
-  document.removeEventListener("click", handleBallClick);
-  document.removeEventListener("touchstart", handleBallTouch, {
+  canvasEl.removeEventListener("click", handleBallClick, { capture: true });
+  canvasEl.removeEventListener("touchstart", handleBallTouch, {
+    capture: true,
     passive: false,
   });
 }
@@ -184,11 +186,15 @@ function onAdvance() {
     .filter((b) => b.isPopped() && b.shouldRender())
     .concat(makeRandomBalls(getNumBalls()));
   ripples = [];
-  audioManager.initialize();
-  document.addEventListener("click", handleBallClick);
-  document.addEventListener("touchstart", handleBallTouch, {
+
+  canvasEl.addEventListener("click", handleBallClick, { capture: true });
+  canvasEl.addEventListener("touchstart", handleBallTouch, {
+    capture: true,
     passive: false,
   });
+
+  // Call on first interaction. Subsequent calls are ignored.
+  audioManager.initialize();
 }
 
 function onPop() {
