@@ -88,10 +88,9 @@ animate((deltaTime) => {
   });
 
   // Draw level +life text underneath balls
-  if (!levelManager.isGameOver()) {
-    levelManager.drawLevelNumber();
-    lifeManager.draw();
-  }
+  levelManager.drawLevelNumber();
+
+  if (!levelManager.isGameOver()) lifeManager.draw();
 
   // Draw ripples and balls
   ripples.forEach((r) => r.draw());
