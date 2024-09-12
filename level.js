@@ -1,7 +1,7 @@
 import { yellow } from "./colors.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 
-export const makeLevelManager = (canvasManager, onLevelEnd, onAdvance) => {
+export const makeLevelManager = (canvasManager, onAdvance) => {
   const CTX = canvasManager.getContext();
   let level;
   let interstitialShowing;
@@ -23,7 +23,6 @@ export const makeLevelManager = (canvasManager, onLevelEnd, onAdvance) => {
     level = level ? level + 1 : 1;
     interstitialShowing = true;
     interstitialStart = Date.now();
-    onLevelEnd();
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {

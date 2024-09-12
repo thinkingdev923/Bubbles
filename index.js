@@ -25,11 +25,7 @@ const canvasManager = makeCanvasManager({
 });
 const audioManager = makeAudioManager();
 const lifeManager = makeLifeManager(canvasManager);
-const levelManager = makeLevelManager(
-  canvasManager,
-  onLevelEnd,
-  onLevelAdvance
-);
+const levelManager = makeLevelManager(canvasManager, onLevelAdvance);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
 let clicksTotal;
@@ -57,13 +53,13 @@ function restartGame() {
 restartGame();
 
 document.addEventListener("pointerdown", (e) => {
-  if (levelManager.isInterstitialShowing()) {
-    if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
-      levelManager.dismissInterstitialAndAdvanceLevel();
-    }
-  } else if (levelManager.isGameOver()) {
+  if (levelManager.isGameOver()) {
     if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
       restartGame();
+    }
+  } else if (levelManager.isInterstitialShowing()) {
+    if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
+      levelManager.dismissInterstitialAndAdvanceLevel();
     }
   } else {
     handleBallClick(e);
@@ -179,8 +175,6 @@ function onGameEnd() {
   audioManager.playLose();
   levelManager.onGameOver();
 }
-
-function onLevelEnd() {}
 
 function onLevelAdvance() {
   clicksRound = 0;
