@@ -6,43 +6,55 @@ import { randomColor, background } from "./colors.js";
 export const makeContinueButtonManager = (canvasManager) => {
   const CTX = canvasManager.getContext();
   const buttonPath = new Path2D();
-  const buttonWidth = 240;
-  const buttonHeight = 72;
+  const buttonWidth = 260;
+  const buttonHeight = 80;
   const lifeIndicatorClearanceOffset = 65;
-  const margin = 24;
+  const margin = 27;
   let withinDelay;
   let buttonColor = randomColor();
 
+  const applyButtonTransforms = () => {
+    CTX.translate(
+      canvasManager.getWidth() / 2,
+      canvasManager.getHeight() -
+        lifeIndicatorClearanceOffset -
+        margin -
+        buttonHeight / 2
+    );
+  };
+
   buttonPath.roundRect(
-    canvasManager.getWidth() / 2 - buttonWidth / 2,
-    canvasManager.getHeight() -
-      lifeIndicatorClearanceOffset -
-      margin -
-      buttonHeight,
+    -buttonWidth / 2,
+    -buttonHeight / 2,
     buttonWidth,
     buttonHeight,
     12
   );
 
   const wasButtonClicked = (x, y) => {
-    buttonColor = randomColor();
-
-    return (
-      withinDelay &&
-      CTX.isPointInPath(
-        buttonPath,
-        x * canvasManager.getScaleFactor(),
-        y * canvasManager.getScaleFactor()
-      )
+    CTX.save();
+    applyButtonTransforms();
+    const clicked = CTX.isPointInPath(
+      buttonPath,
+      x * canvasManager.getScaleFactor(),
+      y * canvasManager.getScaleFactor()
     );
+    CTX.restore();
+
+    // As a side effect of tapping but missing the button, change
+    // its color to draw attention
+    if (!clicked) buttonColor = randomColor();
+
+    return withinDelay && clicked;
   };
 
   const draw = (msElapsed, delay, text = "Continue") => {
     withinDelay = msElapsed - delay > 0;
-    const introProgress = clampedProgress(0, 800, msElapsed - delay);
-    const wipeProgress = clampedProgress(0, 300, msElapsed - delay);
+    const introProgress = clampedProgress(0, 1000, msElapsed - delay);
+    const wipeProgress = clampedProgress(0, 450, msElapsed - delay);
     const fadeIn = transition(0, 1, introProgress, easeOutQuart);
     const animateUp = transition(12, 0, introProgress, easeOutQuart);
+    const animateScale = transition(0.9, 1, introProgress, easeOutQuart);
     const rotateIn = transition(Math.PI / 12, 0, introProgress, easeOutQuart);
     const buttonBackgroundWipe = transition(
       0,
@@ -51,28 +63,17 @@ export const makeContinueButtonManager = (canvasManager) => {
     );
 
     CTX.save();
-
-    // Draw button in non-transformed position of path (aside from a brief
-    // rise animation). This is so we can use isPointInPath on this rect,
-    // which is unaffected by transforms, and have it synced with the
-    // displayed position of the button.
+    applyButtonTransforms();
     CTX.strokeStyle = buttonColor;
     CTX.lineWidth = 4;
     CTX.globalAlpha = fadeIn;
     CTX.translate(0, animateUp);
+    CTX.rotate(rotateIn);
+    CTX.scale(animateScale, animateScale);
     CTX.stroke(buttonPath);
     CTX.clip(buttonPath);
 
-    // Now translate to the center of the button and perform animations and
-    // render text
-    CTX.translate(
-      canvasManager.getWidth() / 2,
-      canvasManager.getHeight() -
-        lifeIndicatorClearanceOffset -
-        margin -
-        buttonHeight / 2
-    );
-
+    // Draw fill as a circular wipe
     CTX.save();
     CTX.fillStyle = buttonColor;
     CTX.rotate(-Math.PI / 2);
@@ -81,7 +82,7 @@ export const makeContinueButtonManager = (canvasManager) => {
     CTX.fill();
     CTX.restore();
 
-    // Rotate text only
+    // Rotate text in addition to button
     CTX.rotate(rotateIn);
     CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
     CTX.fillStyle = background;
