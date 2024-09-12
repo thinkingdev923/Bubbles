@@ -64,11 +64,7 @@ document.addEventListener("pointerdown", ({ clientX: x, clientY: y }) => {
 
 document.addEventListener("mousemove", ({ clientX: x, clientY: y }) => {
   if (levelManager.isInterstitialShowing()) {
-    continueButtonManager.handleHover(
-      { x, y },
-      () => {},
-      () => {}
-    );
+    continueButtonManager.handleHover({ x, y });
   }
 });
 
