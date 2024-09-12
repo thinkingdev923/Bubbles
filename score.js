@@ -78,10 +78,12 @@ function drawBallCount(CTX, count, verb, color, msElapsed) {
   const ballRise = transition(12, 0, animationProgress, easeOutQuart);
   const textRise = transition(42, 36, animationProgress, easeOutQuart);
   const appear = transition(0, 1, animationProgress, easeOutQuart);
+  const unblur = transition(8, 0, animationProgress, easeOutQuart);
 
   CTX.save();
   CTX.globalAlpha = appear;
   CTX.fillStyle = color;
+  CTX.filter = `blur(${unblur}px)`;
   CTX.translate(0, ballRise);
   CTX.scale(ballGrow, ballGrow);
   CTX.beginPath();
