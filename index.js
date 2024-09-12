@@ -16,8 +16,8 @@ import { randomColor } from "./colors.js";
 import { drawScore } from "./score.js";
 
 const canvasManager = makeCanvasManager({
-  width: window.innerWidth,
-  height: window.innerHeight,
+  initialWidth: window.innerWidth,
+  initialHeight: window.innerHeight,
   attachNode: "#canvas",
 });
 const audioManager = makeAudioManager();
