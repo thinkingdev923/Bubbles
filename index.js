@@ -15,9 +15,6 @@ import { centerTextBlock } from "./centerTextBlock.js";
 import { randomColor } from "./colors.js";
 import { drawScore } from "./score.js";
 
-// TODO make into canvas manager that handles screen size changes
-// Pass reference into all other closures so they can call the current
-// width/height whenever
 const canvasManager = makeCanvasManager({
   width: window.innerWidth,
   height: window.innerHeight,
