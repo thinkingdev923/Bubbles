@@ -2,7 +2,7 @@ import { drawPieChart } from "./piechart.js";
 import { yellow, red } from "./colors.js";
 import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
-import { easeInOutBack, easeInOutSine, easeOutQuart } from "./easings.js";
+import { easeOutQuart } from "./easings.js";
 
 export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
   const CTX = canvasManager.getContext();
