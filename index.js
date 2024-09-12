@@ -56,7 +56,7 @@ function restartGame() {
 }
 restartGame();
 
-document.addEventListener("click", (e) => {
+document.addEventListener("pointerdown", (e) => {
   if (levelManager.isInterstitialShowing()) {
     if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
       levelManager.dismissInterstitialAndAdvanceLevel();
@@ -69,42 +69,6 @@ document.addEventListener("click", (e) => {
     handleBallClick(e);
   }
 });
-
-document.addEventListener(
-  "touchstart",
-  (e) => {
-    if (levelManager.isInterstitialShowing()) {
-      for (let index = 0; index < e.touches.length; index++) {
-        if (
-          continueButtonManager.wasButtonClicked(
-            e.touches[index].clientX,
-            e.touches[index].clientY
-          )
-        ) {
-          levelManager.dismissInterstitialAndAdvanceLevel();
-          break;
-        }
-      }
-    } else if (levelManager.isGameOver()) {
-      for (let index = 0; index < e.touches.length; index++) {
-        if (
-          continueButtonManager.wasButtonClicked(
-            e.touches[index].clientX,
-            e.touches[index].clientY
-          )
-        ) {
-          restartGame();
-          break;
-        }
-      }
-    } else {
-      handleBallTouch(e);
-    }
-  },
-  {
-    passive: false,
-  }
-);
 
 document.addEventListener("touchmove", (e) => e.preventDefault(), {
   passive: false,
@@ -184,14 +148,6 @@ function handleBallClick({ clientX: x, clientY: y }) {
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playRandomFireworks();
   }
-}
-
-function handleBallTouch(e) {
-  for (let index = 0; index < e.touches.length; index++) {
-    handleBallClick(e.touches[index]);
-  }
-
-  e.preventDefault();
 }
 
 function onPop() {
