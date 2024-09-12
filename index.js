@@ -63,6 +63,16 @@ document.addEventListener("pointerdown", (e) => {
   }
 });
 
+document.addEventListener("keydown", ({ key }) => {
+  const validKey = key === " " || key === "Enter";
+
+  if (validKey && levelManager.isGameOver()) {
+    restartGame();
+  } else if (validKey && levelManager.isInterstitialShowing()) {
+    levelManager.dismissInterstitialAndAdvanceLevel();
+  }
+});
+
 document.addEventListener("touchmove", (e) => e.preventDefault(), {
   passive: false,
 });
