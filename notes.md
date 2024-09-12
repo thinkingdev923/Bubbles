@@ -1,14 +1,10 @@
-# Gameplay:
-- Every level drops a set number of balls from the top of the screen over a time period of [ball count] seconds
-- Balls are dropped from above the screen
-- After every level we show an screen w/ the next level number and a countdown
-
 # Rules:
 - You start with 10 lives
+- Every level a predefined set of balls drop from the top of the screen
 - Every ball that you miss reduces your lives by 1
 - Once in a while a "life" ball will appear but traveling very fast, and tapping it will gain you an extra life
 - Once all balls in a round have either been tapped or passed the bottom, the level increases
-- If lives goes negative, game over
+- If lives goes to zero, game over
 - When the game is over, we show a score screen w/ share and restart
 
 # Interaction ideas:
