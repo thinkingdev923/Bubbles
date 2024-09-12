@@ -127,7 +127,7 @@ animate((deltaTime) => {
         ballsMissedTotal,
         msElapsed
       );
-      continueButtonManager.draw(msElapsed, 2000, "Restart");
+      continueButtonManager.draw(msElapsed, 2000, "Play Again");
     },
   });
 });
