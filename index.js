@@ -100,7 +100,7 @@ animate((deltaTime) => {
   levelManager.drawInterstitialMessage({
     initialMessage: (msElapsed) => {
       centerTextBlock(canvasManager, [`Pop the bubble`]);
-      continueButtonManager.draw(msElapsed, 0);
+      continueButtonManager.draw(msElapsed, 0, "Play");
     },
     firstMissMessage: (msElapsed) => {
       centerTextBlock(canvasManager, [`Miss a bubble, lose a life`]);
