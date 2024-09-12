@@ -3,7 +3,8 @@ import { easeInOutSine } from "./easings.js";
 import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
 
-export const makeLifeManager = (CTX, canvasWidth, canvasHeight) => {
+export const makeLifeManager = (canvasManager) => {
+  const CTX = canvasManager.getContext();
   let lives;
   let previousLivesValue;
   let lastSubtractStart;
@@ -35,7 +36,10 @@ export const makeLifeManager = (CTX, canvasWidth, canvasHeight) => {
     CTX.textAlign = "center";
     CTX.textBaseline = "middle";
 
-    CTX.translate(canvasWidth / 2, canvasHeight - marginFromBottom);
+    CTX.translate(
+      canvasManager.getWidth() / 2,
+      canvasManager.getHeight() - marginFromBottom
+    );
     CTX.beginPath();
     CTX.roundRect(-width / 2, 0, width, height, height);
     CTX.stroke();

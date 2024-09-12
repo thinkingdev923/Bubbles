@@ -1,12 +1,11 @@
 import { GRAVITY } from "./constants.js";
 
 export const drawTrajectory = (
-  CTX,
-  canvasWidth,
-  canvasHeight,
+  canvasManager,
   currentPosition,
   currentVelocity
 ) => {
+  const CTX = canvasManager.getContext();
   // Iterate on ballistic properties until hitting the ground, and push these
   // points into an array to draw later
   const generateTrajectoryPoints = () => {
@@ -16,8 +15,8 @@ export const drawTrajectory = (
     const segments = [];
 
     while (
-      projectedYPosition <= canvasHeight + 100 &&
-      projectedXPosition <= canvasWidth + 100 &&
+      projectedYPosition <= canvasManager.getHeight() + 100 &&
+      projectedXPosition <= canvasManager.getWidth() + 100 &&
       projectedXPosition >= -100
     ) {
       segments.push({ x: projectedXPosition, y: projectedYPosition });

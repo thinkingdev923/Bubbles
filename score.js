@@ -4,22 +4,19 @@ import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
 import { easeOutQuart } from "./easings.js";
 
-export const drawScore = (
-  CTX,
-  canvasWidth,
-  canvasHeight,
-  clicks,
-  popped,
-  missed,
-  timeElapsed
-) => {
-  const sizeOfPieChart = Math.min(canvasWidth, canvasHeight) / 2;
+export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
+  const CTX = canvasManager.getContext();
+  const sizeOfPieChart =
+    Math.min(canvasManager.getWidth(), canvasManager.getHeight()) / 2;
   const pieChartLineWidth = 12;
   const sizeOfBallCount = 64;
   const bottomLegendOffset = 8;
 
   CTX.save();
-  CTX.translate(canvasWidth / 2, canvasHeight / 2 - sizeOfBallCount / 2);
+  CTX.translate(
+    canvasManager.getWidth() / 2,
+    canvasManager.getHeight() / 2 - sizeOfBallCount / 2
+  );
 
   CTX.save();
   CTX.translate(0, -sizeOfBallCount / 5);
@@ -41,7 +38,7 @@ export const drawScore = (
           transition(
             0,
             popped,
-            clampedProgress(0, 800, timeElapsed),
+            clampedProgress(0, 800, msElapsed),
             easeOutQuart
           )
         ),

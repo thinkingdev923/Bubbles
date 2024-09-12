@@ -2,10 +2,11 @@ import { easeOutCirc, easeInCubic } from "./easings.js";
 import { progress, transition } from "./helpers.js";
 import { red } from "./colors.js";
 
-export const makeRipple = (CTX, startPosition) => {
-  let position = { ...startPosition };
+export const makeRipple = (canvasManager, startPosition) => {
+  const CTX = canvasManager.getContext();
   const rippleDuration = 800;
   const rippleStart = Date.now();
+  let position = { ...startPosition };
   let gone = false;
 
   const draw = () => {

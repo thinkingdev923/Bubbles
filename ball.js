@@ -4,9 +4,7 @@ import { easeOutCubic } from "./easings.js";
 import { drawTrajectory } from "./trajectory.js";
 
 export const makeBall = (
-  CTX,
-  canvasWidth,
-  canvasHeight,
+  canvasManager,
   {
     startPosition,
     startVelocity,
@@ -18,6 +16,7 @@ export const makeBall = (
   onPop,
   onMiss
 ) => {
+  const CTX = canvasManager.getContext();
   const popAnimationDurationMax = 2400;
   const popAnimationDuration = randomBetween(
     popAnimationDurationMax - 800,
@@ -42,13 +41,13 @@ export const makeBall = (
       position.y += deltaTimeMultiplier * velocity.y;
       velocity.y += deltaTimeMultiplier * GRAVITY;
 
-      if (position.y > canvasHeight + radius) {
+      if (position.y > canvasManager.getHeight() + radius) {
         gone = true;
         if (!popped) onMiss();
       }
 
-      if (position.x > canvasWidth - radius) {
-        position.x = canvasWidth - radius;
+      if (position.x > canvasManager.getWidth() - radius) {
+        position.x = canvasManager.getWidth() - radius;
         velocity.x *= -0.7;
       } else if (position.x < radius) {
         position.x = radius;
@@ -81,9 +80,7 @@ export const makeBall = (
       );
 
       return makeBall(
-        CTX,
-        canvasWidth,
-        canvasHeight,
+        canvasManager,
         {
           startPosition: {
             x: position.x + Math.cos(randomAngle) * (radius - innerMargin),
@@ -118,9 +115,7 @@ export const makeBall = (
         );
 
         return makeBall(
-          CTX,
-          canvasWidth,
-          canvasHeight,
+          canvasManager,
           {
             startPosition: {
               x: position.x + Math.cos(randomAngle) * (radius - innerMargin),
@@ -161,7 +156,7 @@ export const makeBall = (
       }
     } else if (shouldRender()) {
       if (shouldDrawTrajectory)
-        drawTrajectory(CTX, canvasWidth, canvasHeight, position, velocity);
+        drawTrajectory(canvasManager, position, velocity);
       CTX.save();
       CTX.fillStyle = fill;
       CTX.translate(position.x, position.y);

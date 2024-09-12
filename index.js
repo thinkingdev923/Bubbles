@@ -1,9 +1,5 @@
-import {
-  animate,
-  generateCanvas,
-  findBallAtPoint,
-  randomBetween,
-} from "./helpers.js";
+import { makeCanvasManager } from "./canvas.js";
+import { animate, findBallAtPoint, randomBetween } from "./helpers.js";
 import {
   makeBall,
   checkBallCollision,
@@ -12,9 +8,9 @@ import {
 } from "./ball.js";
 import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
-import { makeCountdown } from "./countdown.js";
 import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
+import { makeContinueButtonManager } from "./continueButton.js";
 import { centerTextBlock } from "./centerTextBlock.js";
 import { randomColor } from "./colors.js";
 import { drawScore } from "./score.js";
@@ -22,20 +18,20 @@ import { drawScore } from "./score.js";
 // TODO make into canvas manager that handles screen size changes
 // Pass reference into all other closures so they can call the current
 // width/height whenever
-const [CTX, canvasWidth, canvasHeight, canvasEl] = generateCanvas({
+const canvasManager = makeCanvasManager({
   width: window.innerWidth,
   height: window.innerHeight,
   attachNode: "#canvas",
 });
 const audioManager = makeAudioManager();
-const lifeManager = makeLifeManager(CTX, canvasWidth, canvasHeight);
+const lifeManager = makeLifeManager(canvasManager);
 const levelManager = makeLevelManager(
-  CTX,
-  canvasWidth,
-  canvasHeight,
+  canvasManager,
   onLevelEnd,
-  onAdvance
+  onLevelAdvance
 );
+const continueButtonManager = makeContinueButtonManager(canvasManager);
+const CTX = canvasManager.getContext();
 let clicksTotal;
 let ballsPoppedTotal;
 let ballsMissedTotal;
@@ -44,13 +40,31 @@ let ballsPoppedRound;
 let ballsMissedRound;
 let balls;
 let ripples;
-let gameOverCountdown;
+
+function restartGame() {
+  clicksTotal = 0;
+  ballsPoppedTotal = 0;
+  ballsMissedTotal = 0;
+  clicksRound = 0;
+  ballsPoppedRound = 0;
+  ballsMissedRound = 0;
+  balls = [];
+  ripples = [];
+  lifeManager.reset();
+  levelManager.reset();
+  levelManager.showLevelInterstitial();
+}
+restartGame();
 
 document.addEventListener("click", (e) => {
   if (levelManager.isInterstitialShowing()) {
-    levelManager.dismissInterstitialAndAdvanceLevel();
+    if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
+      levelManager.dismissInterstitialAndAdvanceLevel();
+    }
   } else if (levelManager.isGameOver()) {
-    restartGame();
+    if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
+      restartGame();
+    }
   } else {
     handleBallClick(e);
   }
@@ -60,9 +74,29 @@ document.addEventListener(
   "touchstart",
   (e) => {
     if (levelManager.isInterstitialShowing()) {
-      levelManager.dismissInterstitialAndAdvanceLevel();
+      for (let index = 0; index < e.touches.length; index++) {
+        if (
+          continueButtonManager.wasButtonClicked(
+            e.touches[index].clientX,
+            e.touches[index].clientY
+          )
+        ) {
+          levelManager.dismissInterstitialAndAdvanceLevel();
+          break;
+        }
+      }
     } else if (levelManager.isGameOver()) {
-      restartGame();
+      for (let index = 0; index < e.touches.length; index++) {
+        if (
+          continueButtonManager.wasButtonClicked(
+            e.touches[index].clientX,
+            e.touches[index].clientY
+          )
+        ) {
+          restartGame();
+          break;
+        }
+      }
     } else {
       handleBallTouch(e);
     }
@@ -76,14 +110,13 @@ document.addEventListener("touchmove", (e) => e.preventDefault(), {
   passive: false,
 });
 
-restartGame();
-
 animate((deltaTime) => {
-  CTX.clearRect(0, 0, canvasWidth, canvasHeight);
+  CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
+  // Calculate new positions for all balls
   balls.forEach((b) => b.update(deltaTime));
 
-  // Run collisions
+  // Run collision detection
   const ballsInPlay = balls.filter((b) => b.isRemaining() && b.shouldRender());
   ballsInPlay.forEach((ballA) => {
     ballsInPlay.forEach((ballB) => {
@@ -99,46 +132,42 @@ animate((deltaTime) => {
 
   // Draw level +life text underneath balls
   if (!levelManager.isGameOver()) {
-    // Always draw lives
     levelManager.drawLevelNumber();
     lifeManager.draw();
   }
 
-  // Draw balls and ripples
+  // Draw ripples and balls
   ripples.forEach((r) => r.draw());
   balls.forEach((b) => b.draw(deltaTime));
 
   levelManager.drawInterstitialMessage({
-    initialMessage: () =>
-      centerTextBlock(CTX, canvasWidth, canvasHeight, [`Pop the bubble`]),
-    firstMissMessage: () =>
-      centerTextBlock(CTX, canvasWidth, canvasHeight, [
-        `Miss a bubble, lose a life`,
-      ]),
-    defaultMessage: (timeElapsed) =>
+    initialMessage: (msElapsed) => {
+      centerTextBlock(canvasManager, [`Pop the bubble`]);
+      continueButtonManager.draw(msElapsed, 0);
+    },
+    firstMissMessage: (msElapsed) => {
+      centerTextBlock(canvasManager, [`Miss a bubble, lose a life`]);
+      continueButtonManager.draw(msElapsed, 1000);
+    },
+    defaultMessage: (msElapsed) => {
       drawScore(
-        CTX,
-        canvasWidth,
-        canvasHeight,
+        canvasManager,
         clicksRound,
         ballsPoppedRound,
         ballsMissedRound,
-        timeElapsed
-      ),
-    endGameMessage: (timeElapsed) => {
+        msElapsed
+      );
+      continueButtonManager.draw(msElapsed, 2000);
+    },
+    endGameMessage: (msElapsed) => {
       drawScore(
-        CTX,
-        canvasWidth,
-        canvasHeight,
+        canvasManager,
         clicksTotal,
         ballsPoppedTotal,
         ballsMissedTotal,
-        timeElapsed
+        msElapsed
       );
-      CTX.save();
-      CTX.translate(canvasWidth / 2, canvasHeight - 200);
-      gameOverCountdown.draw();
-      CTX.restore();
+      continueButtonManager.draw(msElapsed, 2000, "Restart");
     },
   });
 });
@@ -152,7 +181,7 @@ function handleBallClick({ clientX: x, clientY: y }) {
     collidingBall.pop();
     audioManager.playRandomPluck();
   } else {
-    ripples.push(makeRipple(CTX, { x, y }));
+    ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playRandomFireworks();
   }
 }
@@ -190,33 +219,14 @@ function onMiss() {
   }
 }
 
-function restartGame() {
-  gameOverCountdown = false;
-  clicksTotal = 0;
-  ballsPoppedTotal = 0;
-  ballsMissedTotal = 0;
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
-  balls = [];
-  ripples = [];
-  levelManager.reset();
-  lifeManager.reset();
-  levelManager.showLevelInterstitial();
-}
-
 function onGameEnd() {
   audioManager.playLose();
   levelManager.onGameOver();
-
-  gameOverCountdown = makeCountdown(CTX, 5);
 }
 
-function onLevelEnd() {
-  audioManager.playLevel();
-}
+function onLevelEnd() {}
 
-function onAdvance() {
+function onLevelAdvance() {
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
@@ -229,18 +239,20 @@ function onAdvance() {
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
+  audioManager.playLevel();
 }
 
 function makeRandomBalls(num) {
   const radius = 44;
   return new Array(num).fill().map(() =>
     makeBall(
-      CTX,
-      canvasWidth,
-      canvasHeight,
+      canvasManager,
       {
         startPosition: {
-          x: randomBetween(canvasWidth / 8, canvasWidth - canvasWidth / 8),
+          x: randomBetween(
+            canvasManager.getWidth() / 8,
+            canvasManager.getWidth() - canvasManager.getWidth() / 8
+          ),
           y: -radius,
         },
         startVelocity: {

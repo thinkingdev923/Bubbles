@@ -1,13 +1,8 @@
 import { yellow } from "./colors.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 
-export const makeLevelManager = (
-  CTX,
-  canvasWidth,
-  canvasHeight,
-  onLevelEnd,
-  onAdvance
-) => {
+export const makeLevelManager = (canvasManager, onLevelEnd, onAdvance) => {
+  const CTX = canvasManager.getContext();
   let level;
   let interstitialShowing;
   let interstitialStart;
@@ -43,6 +38,7 @@ export const makeLevelManager = (
 
   const onGameOver = () => {
     interstitialShowing = true;
+    interstitialStart = Date.now();
     gameOver = true;
   };
 
@@ -57,16 +53,16 @@ export const makeLevelManager = (
     endGameMessage,
   }) => {
     if (interstitialShowing) {
-      const interstitialTimeElapsed = Date.now() - interstitialStart;
+      const msElapsed = Date.now() - interstitialStart;
 
       if (gameOver) {
-        endGameMessage(interstitialTimeElapsed);
+        endGameMessage(msElapsed);
       } else if (level === 1) {
-        initialMessage(interstitialTimeElapsed);
+        initialMessage(msElapsed);
       } else if (firstMissLevel && !hasShownFirstMissMessage) {
-        firstMissMessage(interstitialTimeElapsed);
+        firstMissMessage(msElapsed);
       } else {
-        defaultMessage(interstitialTimeElapsed);
+        defaultMessage(msElapsed);
       }
     }
   };
@@ -77,7 +73,7 @@ export const makeLevelManager = (
     CTX.fillStyle = yellow;
     CTX.letterSpacing = "1px";
     CTX.textAlign = "center";
-    CTX.translate(canvasWidth / 2, 24);
+    CTX.translate(canvasManager.getWidth() / 2, 24);
     CTX.fillText(`LEVEL ${level}`, 0, 0);
     CTX.restore();
   };
