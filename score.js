@@ -2,7 +2,7 @@ import { drawPieChart } from "./piechart.js";
 import { yellow, red } from "./colors.js";
 import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
-import { easeOutQuart } from "./easings.js";
+import { easeInOutBack, easeInOutSine, easeOutQuart } from "./easings.js";
 
 export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
   const CTX = canvasManager.getContext();
@@ -11,11 +11,14 @@ export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
   const pieChartLineWidth = 12;
   const sizeOfBallCount = 64;
   const bottomLegendOffset = 8;
+  const offsetForContinueButton = 32;
 
   CTX.save();
   CTX.translate(
     canvasManager.getWidth() / 2,
-    canvasManager.getHeight() / 2 - sizeOfBallCount / 2
+    canvasManager.getHeight() / 2 -
+      sizeOfBallCount / 2 -
+      offsetForContinueButton
   );
 
   CTX.save();
@@ -24,7 +27,8 @@ export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
     CTX,
     clicks,
     clicks > 1 ? `taps` : `tap`,
-    "rgba(255, 255, 255, .2)"
+    "rgba(255, 255, 255, .2)",
+    msElapsed - 100
   );
   CTX.restore();
 
@@ -38,7 +42,7 @@ export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
           transition(
             0,
             popped,
-            clampedProgress(0, 800, msElapsed),
+            clampedProgress(0, 1000, msElapsed),
             easeOutQuart
           )
         ),
@@ -54,7 +58,7 @@ export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
     -sizeOfPieChart / 2 - bottomLegendOffset,
     sizeOfPieChart / 2 + bottomLegendOffset
   );
-  drawBallCount(CTX, popped, "popped", yellow);
+  drawBallCount(CTX, popped, "popped", yellow, msElapsed - 220);
   CTX.restore();
 
   CTX.save();
@@ -62,26 +66,37 @@ export const drawScore = (canvasManager, clicks, popped, missed, msElapsed) => {
     sizeOfPieChart / 2 + bottomLegendOffset,
     sizeOfPieChart / 2 + bottomLegendOffset
   );
-  drawBallCount(CTX, missed, "missed", red);
+  drawBallCount(CTX, missed, "missed", red, msElapsed - 340);
   CTX.restore();
 
   CTX.restore();
 };
 
-function drawBallCount(CTX, count, verb, color) {
+function drawBallCount(CTX, count, verb, color, msElapsed) {
+  const animationProgress = clampedProgress(0, 800, msElapsed);
+  const ballGrow = transition(0.7, 1, animationProgress, easeOutQuart);
+  const ballRise = transition(12, 0, animationProgress, easeOutQuart);
+  const textRise = transition(42, 36, animationProgress, easeOutQuart);
+  const appear = transition(0, 1, animationProgress, easeOutQuart);
+
   CTX.save();
+  CTX.globalAlpha = appear;
   CTX.fillStyle = color;
+  CTX.translate(0, ballRise);
+  CTX.scale(ballGrow, ballGrow);
   CTX.beginPath();
   CTX.arc(0, 0, 18, 0, 2 * Math.PI);
   CTX.closePath();
   CTX.fill();
+  CTX.restore();
 
-  CTX.translate(0, 36);
+  CTX.save();
+  CTX.globalAlpha = appear;
+  CTX.translate(0, textRise);
   CTX.fillStyle = `rgba(255, 255, 255, 1)`;
   CTX.font = `${FONT_WEIGHT_NORMAL} 18px ${FONT}`;
   CTX.textAlign = "center";
   CTX.textBaseline = "middle";
   CTX.fillText(`${count} ${verb}`, 0, 0);
-
   CTX.restore();
 }
