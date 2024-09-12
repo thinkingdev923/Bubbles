@@ -13,6 +13,10 @@ body {
   font: 500 100vmin -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+.buttonHover {
+  cursor: pointer;
+}
+
 @keyframes introAnimation {
   from {
     opacity: 0;

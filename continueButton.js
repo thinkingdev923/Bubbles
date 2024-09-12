@@ -10,6 +10,7 @@ export const makeContinueButtonManager = (canvasManager) => {
   const buttonHeight = 80;
   const lifeIndicatorClearanceOffset = 65;
   const margin = 27;
+  let isHovering;
   let withinDelay;
   let buttonColor = randomColor();
 
@@ -31,21 +32,41 @@ export const makeContinueButtonManager = (canvasManager) => {
     12
   );
 
-  const wasButtonClicked = (x, y) => {
+  const pointInButton = ({ x, y }) => {
     CTX.save();
     applyButtonTransforms();
-    const clicked = CTX.isPointInPath(
+    const pointInPath = CTX.isPointInPath(
       buttonPath,
       x * canvasManager.getScaleFactor(),
       y * canvasManager.getScaleFactor()
     );
     CTX.restore();
 
-    // As a side effect of tapping but missing the button, change
-    // its color to draw attention
-    if (!clicked) buttonColor = randomColor();
+    return pointInPath;
+  };
 
-    return withinDelay && clicked;
+  const handleHover = (coordinates, callbackMouseOver, callbackMouseOut) => {
+    if (!isHovering && pointInButton(coordinates)) {
+      isHovering = true;
+      document.body.classList.add("buttonHover");
+      callbackMouseOver();
+    } else if (isHovering && !pointInButton(coordinates)) {
+      isHovering = false;
+      document.body.classList.remove("buttonHover");
+      callbackMouseOut();
+    }
+  };
+
+  const handleClick = (coordinates, callback) => {
+    if (withinDelay && pointInButton(coordinates)) {
+      isHovering = false;
+      document.body.classList.remove("buttonHover");
+      callback();
+    } else {
+      // As a side effect of tapping but missing the button, change
+      // its color to draw attention
+      buttonColor = randomColor();
+    }
   };
 
   const draw = (msElapsed, delay, text = "Continue") => {
@@ -94,6 +115,7 @@ export const makeContinueButtonManager = (canvasManager) => {
 
   return {
     draw,
-    wasButtonClicked,
+    handleClick,
+    handleHover,
   };
 };

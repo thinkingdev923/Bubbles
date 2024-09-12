@@ -49,17 +49,26 @@ function restartGame() {
 }
 restartGame();
 
-document.addEventListener("pointerdown", (e) => {
+document.addEventListener("pointerdown", ({ clientX: x, clientY: y }) => {
   if (levelManager.isGameOver()) {
-    if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
-      restartGame();
-    }
+    continueButtonManager.handleClick({ x, y }, restartGame);
   } else if (levelManager.isInterstitialShowing()) {
-    if (continueButtonManager.wasButtonClicked(e.clientX, e.clientY)) {
-      levelManager.dismissInterstitialAndAdvanceLevel();
-    }
+    continueButtonManager.handleClick(
+      { x, y },
+      levelManager.dismissInterstitialAndAdvanceLevel
+    );
   } else {
-    handleBallClick(e);
+    handleBallClick({ x, y });
+  }
+});
+
+document.addEventListener("mousemove", ({ clientX: x, clientY: y }) => {
+  if (levelManager.isInterstitialShowing()) {
+    continueButtonManager.handleHover(
+      { x, y },
+      () => {},
+      () => {}
+    );
   }
 });
 
@@ -138,7 +147,7 @@ animate((deltaTime) => {
   });
 });
 
-function handleBallClick({ clientX: x, clientY: y }) {
+function handleBallClick({ x, y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
   clicksTotal++;
   clicksRound++;
