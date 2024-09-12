@@ -12,33 +12,33 @@ export const makeLevelManager = (
   let interstitialShowing;
   let interstitialStart;
   let firstMissLevel;
+  let hasShownFirstMissMessage;
   let gameOver;
 
   const reset = () => {
     level = false;
     interstitialShowing = false;
     firstMissLevel = false;
+    hasShownFirstMissMessage = false;
     gameOver = false;
   };
   reset();
 
-  const advanceLevel = () => {
+  const showLevelInterstitial = () => {
     level = level ? level + 1 : 1;
     interstitialShowing = true;
     interstitialStart = Date.now();
     onLevelEnd();
+  };
 
-    const advance = (e) => {
-      interstitialShowing = false;
-      interstitialStart = false;
-      onAdvance(e);
-    };
+  const dismissInterstitialAndAdvanceLevel = () => {
+    if (firstMissLevel && !hasShownFirstMissMessage) {
+      hasShownFirstMissMessage = true;
+    }
 
-    document.addEventListener("click", advance, { once: true });
-    document.addEventListener("touchstart", advance, {
-      passive: false,
-      once: true,
-    });
+    interstitialShowing = false;
+    interstitialStart = false;
+    onAdvance();
   };
 
   const onGameOver = () => {
@@ -47,7 +47,7 @@ export const makeLevelManager = (
   };
 
   const setFirstMiss = () => {
-    if (!firstMissLevel) firstMissLevel = level;
+    firstMissLevel = true;
   };
 
   const drawInterstitialMessage = ({
@@ -63,7 +63,7 @@ export const makeLevelManager = (
         endGameMessage(interstitialTimeElapsed);
       } else if (level === 1) {
         initialMessage(interstitialTimeElapsed);
-      } else if (firstMissLevel && firstMissLevel === level - 1) {
+      } else if (firstMissLevel && !hasShownFirstMissMessage) {
         firstMissMessage(interstitialTimeElapsed);
       } else {
         defaultMessage(interstitialTimeElapsed);
@@ -86,8 +86,10 @@ export const makeLevelManager = (
     reset,
     getLevel: () => level,
     drawInterstitialMessage,
+    isInterstitialShowing: () => interstitialShowing,
     drawLevelNumber,
-    advanceLevel,
+    showLevelInterstitial,
+    dismissInterstitialAndAdvanceLevel,
     setFirstMiss,
     onGameOver,
     isGameOver: () => gameOver,

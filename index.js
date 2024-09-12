@@ -11,14 +11,17 @@ import {
   resolveBallCollision,
 } from "./ball.js";
 import { makeRipple } from "./ripple.js";
-import { centerTextBlock } from "./centerTextBlock.js";
 import { makeAudioManager } from "./audio.js";
 import { makeCountdown } from "./countdown.js";
 import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
+import { centerTextBlock } from "./centerTextBlock.js";
 import { randomColor } from "./colors.js";
 import { drawScore } from "./score.js";
 
+// TODO make into canvas manager that handles screen size changes
+// Pass reference into all other closures so they can call the current
+// width/height whenever
 const [CTX, canvasWidth, canvasHeight, canvasEl] = generateCanvas({
   width: window.innerWidth,
   height: window.innerHeight,
@@ -43,41 +46,47 @@ let balls;
 let ripples;
 let gameOverCountdown;
 
-function handleBallClick({ clientX: x, clientY: y }) {
-  const collidingBall = findBallAtPoint(balls, { x, y });
-  clicksTotal++;
-  clicksRound++;
-
-  if (collidingBall) {
-    collidingBall.pop();
-    audioManager.playRandomPluck();
+document.addEventListener("click", (e) => {
+  if (levelManager.isInterstitialShowing()) {
+    levelManager.dismissInterstitialAndAdvanceLevel();
+  } else if (levelManager.isGameOver()) {
+    restartGame();
   } else {
-    ripples.push(makeRipple(CTX, { x, y }));
-    audioManager.playRandomFireworks();
+    handleBallClick(e);
   }
-}
+});
 
-function handleBallTouch(e) {
-  for (let index = 0; index < e.touches.length; index++) {
-    handleBallClick(e.touches[index]);
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    if (levelManager.isInterstitialShowing()) {
+      levelManager.dismissInterstitialAndAdvanceLevel();
+    } else if (levelManager.isGameOver()) {
+      restartGame();
+    } else {
+      handleBallTouch(e);
+    }
+  },
+  {
+    passive: false,
   }
-
-  e.preventDefault();
-}
+);
 
 document.addEventListener("touchmove", (e) => e.preventDefault(), {
   passive: false,
 });
 
 restartGame();
+
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasWidth, canvasHeight);
 
   balls.forEach((b) => b.update(deltaTime));
 
   // Run collisions
-  getBallsInPlay().forEach((ballA) => {
-    getBallsInPlay().forEach((ballB) => {
+  const ballsInPlay = balls.filter((b) => b.isRemaining() && b.shouldRender());
+  ballsInPlay.forEach((ballA) => {
+    ballsInPlay.forEach((ballB) => {
       if (ballA !== ballB) {
         const collision = checkBallCollision(ballA, ballB);
         if (collision[0]) {
@@ -134,67 +143,26 @@ animate((deltaTime) => {
   });
 });
 
-function restartGame() {
-  gameOverCountdown = false;
-  clicksTotal = 0;
-  ballsPoppedTotal = 0;
-  ballsMissedTotal = 0;
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
-  balls = [];
-  ripples = [];
-  levelManager.reset();
-  lifeManager.reset();
-  levelManager.advanceLevel();
+function handleBallClick({ clientX: x, clientY: y }) {
+  const collidingBall = findBallAtPoint(balls, { x, y });
+  clicksTotal++;
+  clicksRound++;
+
+  if (collidingBall) {
+    collidingBall.pop();
+    audioManager.playRandomPluck();
+  } else {
+    ripples.push(makeRipple(CTX, { x, y }));
+    audioManager.playRandomFireworks();
+  }
 }
 
-function onGameEnd() {
-  audioManager.playLose();
-  levelManager.onGameOver();
+function handleBallTouch(e) {
+  for (let index = 0; index < e.touches.length; index++) {
+    handleBallClick(e.touches[index]);
+  }
 
-  canvasEl.removeEventListener("click", handleBallClick, { capture: true });
-  canvasEl.removeEventListener("touchstart", handleBallTouch, {
-    capture: true,
-    passive: false,
-  });
-
-  gameOverCountdown = makeCountdown(CTX, 5, () => {
-    document.addEventListener("click", restartGame, { once: true });
-    document.addEventListener("touchstart", restartGame, {
-      passive: false,
-      once: true,
-    });
-  });
-}
-
-function onLevelEnd() {
-  audioManager.playLevel();
-  canvasEl.removeEventListener("click", handleBallClick, { capture: true });
-  canvasEl.removeEventListener("touchstart", handleBallTouch, {
-    capture: true,
-    passive: false,
-  });
-}
-
-function onAdvance() {
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
-  // Allow popping animation to finish playing for previous level balls
-  balls = balls
-    .filter((b) => b.isPopped() && b.shouldRender())
-    .concat(makeRandomBalls(getNumBalls()));
-  ripples = [];
-
-  canvasEl.addEventListener("click", handleBallClick, { capture: true });
-  canvasEl.addEventListener("touchstart", handleBallTouch, {
-    capture: true,
-    passive: false,
-  });
-
-  // Call on first interaction. Subsequent calls are ignored.
-  audioManager.initialize();
+  e.preventDefault();
 }
 
 function onPop() {
@@ -202,7 +170,7 @@ function onPop() {
   ballsPoppedRound++;
 
   if (getBallsRemaining() <= 0) {
-    levelManager.advanceLevel();
+    levelManager.showLevelInterstitial();
   }
 }
 
@@ -217,21 +185,50 @@ function onMiss() {
     if (lifeManager.getLives() <= 0) {
       onGameEnd();
     } else if (getBallsRemaining() <= 0) {
-      levelManager.advanceLevel();
+      levelManager.showLevelInterstitial();
     }
   }
 }
 
-function getBallsInPlay() {
-  return balls.filter((b) => b.isRemaining() && b.shouldRender());
+function restartGame() {
+  gameOverCountdown = false;
+  clicksTotal = 0;
+  ballsPoppedTotal = 0;
+  ballsMissedTotal = 0;
+  clicksRound = 0;
+  ballsPoppedRound = 0;
+  ballsMissedRound = 0;
+  balls = [];
+  ripples = [];
+  levelManager.reset();
+  lifeManager.reset();
+  levelManager.showLevelInterstitial();
 }
 
-function getBallsRemaining() {
-  return balls.filter((b) => b.isRemaining());
+function onGameEnd() {
+  audioManager.playLose();
+  levelManager.onGameOver();
+
+  gameOverCountdown = makeCountdown(CTX, 5);
 }
 
-function getNumBalls() {
-  return Math.floor(levelManager.getLevel() * 1.4);
+function onLevelEnd() {
+  audioManager.playLevel();
+}
+
+function onAdvance() {
+  clicksRound = 0;
+  ballsPoppedRound = 0;
+  ballsMissedRound = 0;
+  const numBalls = Math.floor(levelManager.getLevel() * 1.4);
+  // Allow popping animation to finish playing for previous level balls
+  balls = balls
+    .filter((b) => b.isPopped() && b.shouldRender())
+    .concat(makeRandomBalls(numBalls));
+  ripples = [];
+
+  // Call on first interaction. Subsequent calls are ignored.
+  audioManager.initialize();
 }
 
 function makeRandomBalls(num) {
@@ -259,4 +256,8 @@ function makeRandomBalls(num) {
       onMiss
     )
   );
+}
+
+function getBallsRemaining() {
+  return balls.filter((b) => b.isRemaining());
 }
