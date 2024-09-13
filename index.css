@@ -1,10 +1,5 @@
 body {
-  --blue: #2e2d70;
-  --pink: #e79fae;
-  --red: #da4b34;
-  --yellow: #f5c347;
-  --turquoise: #8bcbf3;
-  --white: #fbfbf8;
+  --blue: #2d2d74;
   margin: 0;
   overflow: hidden;
   user-select: none;
