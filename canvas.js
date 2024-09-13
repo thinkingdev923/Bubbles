@@ -25,7 +25,6 @@ export const makeCanvasManager = ({
     width = window.innerWidth;
     height = window.innerHeight;
     setCanvasSize();
-    console.log("test");
   });
 
   return {

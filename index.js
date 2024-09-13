@@ -1,7 +1,6 @@
 import { makeCanvasManager } from "./canvas.js";
-import { animate, findBallAtPoint, randomBetween } from "./helpers.js";
+import { animate, findBallAtPoint } from "./helpers.js";
 import {
-  makeBall,
   checkBallCollision,
   adjustBallPositions,
   resolveBallCollision,
@@ -12,8 +11,8 @@ import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
 import { makeContinueButtonManager } from "./continueButton.js";
 import { centerTextBlock } from "./centerTextBlock.js";
-import { randomColor } from "./colors.js";
 import { drawScore } from "./score.js";
+import { levels, makeLevelBalls } from "./levelData.js";
 
 const canvasManager = makeCanvasManager({
   initialWidth: window.innerWidth,
@@ -191,44 +190,17 @@ function onLevelAdvance() {
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
-  const numBalls = Math.floor(levelManager.getLevel() * 1.4);
+  ripples = [];
+
+  const levelData = levels[levelManager.getLevel() - 1];
   // Allow popping animation to finish playing for previous level balls
   balls = balls
     .filter((b) => b.isPopped() && b.shouldRender())
-    .concat(makeRandomBalls(numBalls));
-  ripples = [];
+    .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
   audioManager.playLevel();
-}
-
-function makeRandomBalls(num) {
-  const radius = 44;
-  return new Array(num).fill().map(() =>
-    makeBall(
-      canvasManager,
-      {
-        startPosition: {
-          x: randomBetween(
-            canvasManager.getWidth() / 8,
-            canvasManager.getWidth() - canvasManager.getWidth() / 8
-          ),
-          y: -radius,
-        },
-        startVelocity: {
-          x: randomBetween(-12, 12),
-          y: 0,
-        },
-        radius,
-        fill: randomColor(),
-        delay: randomBetween(0, num * 400),
-        shouldDrawTrajectory: false,
-      },
-      onPop,
-      onMiss
-    )
-  );
 }
 
 function getBallsRemaining() {
