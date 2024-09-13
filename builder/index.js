@@ -1,28 +1,49 @@
-import { makeRowHTML } from "./html.js";
+import { makeCellHTML, makeGravityHTML, makeRowHTML } from "./html.js";
+import { GRAVITY } from "../constants.js";
 
-const levelData = [
-  {
-    name: "LEVEL 1",
-    gravity: 0.05,
-    balls: [[0, { x: 2, y: 1 }, 0, 0, 0, 0]],
-  },
-  {
-    name: "LEVEL 2",
-    gravity: 0.07,
-    balls: [
-      [0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }],
-      [{ x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0],
-      [0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }],
-    ],
-  },
-];
+let levelData = {
+  name: "LEVEL NAME",
+  gravity: GRAVITY,
+  balls: [[0, 0, 0, 0, 0, 0]],
+};
 
-const levelNodes = [];
+const drawLevel = ({ gravity, balls }) => {
+  const rootNode = document.querySelector("#layout-preview");
+  rootNode.innerHTML = "";
 
-levelData[1].balls.forEach((row) => {
-  levelNodes.push(makeRowHTML(row));
+  const newNodes = [];
+
+  balls.forEach((row, rowIndex) => newNodes.push(makeRowHTML(row, rowIndex)));
+
+  newNodes.forEach((levelNode) => {
+    document.querySelector("#layout-preview").appendChild(levelNode);
+  });
+
+  const gravityInfo = makeGravityHTML(gravity);
+  document.querySelector("#layout-preview").appendChild(gravityInfo);
+};
+
+const makeEmptyRow = () => {
+  return [0, 0, 0, 0, 0, 0];
+};
+
+const fillCell = (rowIndex, cellIndex) => {
+  levelData.balls[rowIndex][cellIndex] = { x: 0, y: 0 };
+};
+
+document.querySelector("#addRow").addEventListener("click", () => {
+  levelData.balls = [makeEmptyRow()].concat(levelData.balls);
+  drawLevel(levelData);
 });
 
-levelNodes.forEach((levelNode) => {
-  document.querySelector("#layout-preview").appendChild(levelNode);
+document.addEventListener("click", ({ target }) => {
+  if (target.classList.contains("preview-cell--empty")) {
+    fillCell(
+      target.getAttribute("data-row-index"),
+      target.getAttribute("data-cell-index")
+    );
+    drawLevel(levelData);
+  }
 });
+
+drawLevel(levelData);

@@ -1,6 +1,6 @@
 import { randomColorName } from "../colors.js";
 
-export const makeCellHTML = (cellData) => {
+export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
   const cell = document.createElement("div");
   cell.classList.add("preview-cell");
 
@@ -20,7 +20,7 @@ export const makeCellHTML = (cellData) => {
 
     const vY = document.createElement("div");
     vY.classList.add("preview-cell-velocity-y");
-    vX.innerText = cellData.y;
+    vY.innerText = cellData.y;
 
     velocity.appendChild(vX);
     velocity.appendChild(vY);
@@ -31,15 +31,20 @@ export const makeCellHTML = (cellData) => {
     cell.classList.add("preview-cell--empty");
   }
 
+  cell.setAttribute("data-row-index", rowIndex);
+  cell.setAttribute("data-cell-index", cellIndex);
+
   return cell;
 };
 
-export const makeRowHTML = (rowData) => {
+export const makeRowHTML = (rowData, rowIndex) => {
   const row = document.createElement("div");
   row.classList.add("preview-row");
 
   const cells = [];
-  rowData.forEach((cellData) => cells.push(makeCellHTML(cellData)));
+  rowData.forEach((cellData, cellIndex) =>
+    cells.push(makeCellHTML(cellData, rowIndex, cellIndex))
+  );
 
   const actions = document.createElement("div");
   actions.classList.add("preview-row-actions");
@@ -56,6 +61,14 @@ export const makeRowHTML = (rowData) => {
     row.appendChild(c);
   });
   row.appendChild(actions);
+
+  return row;
+};
+
+export const makeGravityHTML = (gravity) => {
+  const row = document.createElement("div");
+  row.classList.add("layout-gravity");
+  row.innerText = gravity;
 
   return row;
 };
