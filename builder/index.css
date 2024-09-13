@@ -6,7 +6,6 @@ body {
   --turquoise: #79caec;
   --white: #fcf6e8;
   margin: 0;
-  overflow: hidden;
   user-select: none;
   touch-action: none;
   background: var(--blue);
@@ -22,27 +21,34 @@ canvas {
 .layout {
   display: flex;
   flex-direction: column;
-  grid-gap: 16px;
-  padding: 32px;
-  box-sizing: border-box;
   align-items: center;
-  min-height: 100vh;
 }
 
 .layout-preview {
+  --ball-size: 60px;
   display: flex;
   flex: 1;
   flex-direction: column;
-  grid-gap: 24px;
+  grid-gap: 48px;
+  padding: 48px 0 144px;
 }
 
 .preview-row {
   display: flex;
   grid-gap: 8px;
+  border-radius: 100px;
+  outline-offset: 2px;
+  outline-width: 0px;
+  outline-color: rgba(0, 0, 0, 0);
+  transition: all 0.15s ease-out;
+}
+
+.preview-row:has(.preview-row-actions-delete:hover) {
+  outline-offset: 18px;
+  outline: 2px solid var(--red);
 }
 
 .preview-cell {
-  --ball-size: 60px;
   height: var(--ball-size);
   position: relative;
   display: flex;
@@ -118,10 +124,28 @@ canvas {
   content: "Y";
 }
 
+.preview-row-actions {
+  display: flex;
+  grid-gap: 8px;
+}
+
+.preview-row-actions-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ball-size);
+  height: var(--ball-size);
+  cursor: pointer;
+}
+
 .actions {
   display: flex;
   width: 100%;
+  padding: 0 32px 32px;
+  box-sizing: border-box;
   grid-gap: 16px;
+  position: fixed;
+  bottom: 0;
 }
 
 .actions-button {
@@ -135,7 +159,8 @@ canvas {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color transform 0.15s ease-in-out;
+  transition: all 0.15s ease-in-out;
+  backdrop-filter: blur(32px);
 }
 
 .actions-button:hover {
