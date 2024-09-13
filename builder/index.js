@@ -27,8 +27,8 @@ const makeEmptyRow = () => {
   return [0, 0, 0, 0, 0, 0];
 };
 
-const fillCell = (rowIndex, cellIndex) => {
-  levelData.balls[rowIndex][cellIndex] = { x: 0, y: 0 };
+const fillCell = (rowIndex, cellIndex, content) => {
+  levelData.balls[rowIndex][cellIndex] = content;
 };
 
 document.querySelector("#addRow").addEventListener("click", () => {
@@ -40,7 +40,15 @@ document.addEventListener("click", ({ target }) => {
   if (target.classList.contains("preview-cell--empty")) {
     fillCell(
       target.getAttribute("data-row-index"),
-      target.getAttribute("data-cell-index")
+      target.getAttribute("data-cell-index"),
+      { x: 0, y: 0 }
+    );
+    drawLevel(levelData);
+  } else if (target.classList.contains("preview-cell-ball")) {
+    fillCell(
+      target.getAttribute("data-row-index"),
+      target.getAttribute("data-cell-index"),
+      0
     );
     drawLevel(levelData);
   }

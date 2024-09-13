@@ -10,6 +10,8 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
       "preview-cell-ball",
       `preview-cell-ball--${randomColorName()}`
     );
+    ball.setAttribute("data-row-index", rowIndex);
+    ball.setAttribute("data-cell-index", cellIndex);
 
     const velocity = document.createElement("div");
     velocity.classList.add("preview-cell-velocity");
