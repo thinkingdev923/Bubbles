@@ -1,9 +1,16 @@
-export const pink = "#e79fae";
-export const red = "#da4b34";
-export const yellow = "#f5c347";
-export const turquoise = "#8bcbf3";
-export const white = "#fbfbf8";
-export const background = "#2e2d70";
+export const pink = "#EA98AA";
+export const red = "#DF432A";
+export const yellow = "#F4BF2A";
+export const turquoise = "#79CAEC";
+export const white = "#FCF6E8";
+
+export const medblue = "#4555A5";
+export const green = "#92C262";
+export const purple = "#B565A9";
+export const orange = "#F38121";
+export const teal = "#51BFA4";
+
+export const background = "#2D2D74";
 
 const colors = [pink, red, yellow, turquoise, white];
 
