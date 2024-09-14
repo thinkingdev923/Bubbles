@@ -83,7 +83,7 @@ canvas {
   flex: 1;
   flex-direction: column;
   grid-gap: 48px;
-  padding: 48px 0 144px;
+  padding: 48px 0 160px;
 }
 
 .preview-row {
