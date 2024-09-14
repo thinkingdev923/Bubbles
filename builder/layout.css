@@ -1,0 +1,118 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.layout-preview {
+  --ball-size: 60px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  grid-gap: 48px;
+  padding: 48px 0 160px;
+}
+
+.preview-row {
+  display: flex;
+  grid-gap: 8px;
+  border-radius: 100px;
+  outline-offset: 2px;
+  outline-width: 0px;
+  outline-color: rgba(0, 0, 0, 0);
+  transition: all 0.15s ease-out;
+}
+
+.preview-row:has(.preview-row-actions-delete:hover) {
+  outline-offset: 18px;
+  outline: 2px solid var(--red);
+}
+
+.preview-cell {
+  height: var(--ball-size);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
+}
+
+.preview-cell:hover {
+  transform: scale(1.1);
+}
+
+.preview-cell--empty::after {
+  content: "";
+  width: var(--ball-size);
+  height: var(--ball-size);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--ball-size);
+  transition: background-color 0.1s ease-in-out;
+}
+
+.preview-cell--empty:hover::after {
+  content: "";
+  width: var(--ball-size);
+  height: var(--ball-size);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--ball-size);
+}
+
+.preview-cell-ball {
+  width: var(--ball-size);
+  height: var(--ball-size);
+  border-radius: var(--ball-size);
+}
+
+.preview-cell-velocity {
+  font-size: 12px;
+  color: var(--white);
+  position: absolute;
+  top: 100%;
+  display: flex;
+  grid-gap: 4px;
+  font-weight: 600;
+}
+
+.preview-cell-velocity-x::before {
+  content: "X";
+}
+
+.preview-cell-velocity-y::before {
+  content: "Y";
+}
+
+.preview-row-actions {
+  display: flex;
+  grid-gap: 8px;
+}
+
+.preview-row-actions-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ball-size);
+  height: var(--ball-size);
+  cursor: pointer;
+  transition: transform 0.15s ease-out;
+}
+
+.preview-row-actions-delete:hover {
+  transform: scale(1.1);
+}
+
+.layout-gravity {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.layout-gravity::before {
+  content: "GRAVITY";
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  opacity: 0.65;
+}

@@ -1,15 +1,11 @@
-import { randomColorName } from "../colors.js";
-
 export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
   const cell = document.createElement("div");
   cell.classList.add("preview-cell");
 
   if (cellData) {
     const ball = document.createElement("div");
-    ball.classList.add(
-      "preview-cell-ball",
-      `preview-cell-ball--${randomColorName()}`
-    );
+    ball.classList.add("preview-cell-ball");
+    ball.setAttribute("style", `background-color: ${cellData.color}`);
     ball.setAttribute("data-row-index", rowIndex);
     ball.setAttribute("data-cell-index", cellIndex);
 
@@ -18,11 +14,11 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
 
     const vX = document.createElement("div");
     vX.classList.add("preview-cell-velocity-x");
-    vX.innerText = cellData.x;
+    vX.innerText = cellData.velocity.x;
 
     const vY = document.createElement("div");
     vY.classList.add("preview-cell-velocity-y");
-    vY.innerText = cellData.y;
+    vY.innerText = cellData.velocity.y;
 
     velocity.appendChild(vX);
     velocity.appendChild(vY);
