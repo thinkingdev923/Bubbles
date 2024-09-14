@@ -66,6 +66,10 @@
   border-radius: var(--ball-size);
 }
 
+.preview-cell-ball--selected {
+  outline: 2px solid red;
+}
+
 .preview-cell-velocity {
   font-size: 12px;
   color: var(--white);
@@ -77,6 +81,7 @@
   grid-gap: 4px;
   font-weight: 600;
   text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
 
 .preview-cell-velocity-x::before {

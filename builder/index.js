@@ -13,6 +13,9 @@ const levelDataEl = document.querySelector("#levelData");
 const layoutPreviewEl = document.querySelector("#layout-preview");
 const addRowEl = document.querySelector("#addRow");
 const copyToClipboardEl = document.querySelector("#copyToClipboard");
+let selectedBallEl;
+let selectedBallRow;
+let selectedBallCell;
 
 const populateLevelData = () => {
   gameLevels.forEach((level, levelIndex) => {
@@ -50,6 +53,16 @@ const fillCell = (rowIndex, cellIndex, content) => {
   currentlyDisplayedData.balls[rowIndex][cellIndex] = content;
 };
 
+const selectCell = (row, cell) => {
+  drawLevel();
+  selectedBallEl = document.querySelector(
+    `.preview-cell-ball[data-row-index="${row}"][data-cell-index="${cell}"]`
+  );
+  selectedBallRow = selectedBallEl.getAttribute("data-row-index");
+  selectedBallCell = selectedBallEl.getAttribute("data-cell-index");
+  selectedBallEl.classList.add("preview-cell-ball--selected");
+};
+
 const deleteRow = (rowIndex) => {
   currentlyDisplayedData.balls.splice(rowIndex, 1);
 };
@@ -68,7 +81,9 @@ addRowEl.addEventListener("click", addRow);
 
 copyToClipboardEl.addEventListener("click", copyRow);
 
-document.addEventListener("keydown", ({ key, repeat }) => {
+document.addEventListener("keydown", (e) => {
+  const { shiftKey, key, repeat } = e;
+
   if (!repeat) {
     if (key === "r") {
       addRow();
@@ -79,6 +94,47 @@ document.addEventListener("keydown", ({ key, repeat }) => {
       copyToClipboardEl.classList.add("actionsBottom-button--active");
     }
   }
+
+  if (selectedBallRow && selectedBallCell) {
+    const ball =
+      currentlyDisplayedData.balls[selectedBallRow][selectedBallCell];
+
+    if (key === "Backspace") fillCell(selectedBallRow, selectedBallCell, 0);
+    if (key === "ArrowUp") ball.velocity.y--;
+    if (key === "ArrowRight") ball.velocity.x++;
+    if (key === "ArrowDown") ball.velocity.y++;
+    if (key === "ArrowLeft") ball.velocity.x--;
+
+    if (shiftKey && key === "Tab" && parseInt(selectedBallCell) > 0) {
+      const prevBallCellIndex = currentlyDisplayedData.balls[
+        selectedBallRow
+      ].findIndex((c, i) => i < parseInt(selectedBallCell) && !!c);
+      if (prevBallCellIndex >= 0)
+        selectCell(selectedBallRow, prevBallCellIndex);
+    } else if (
+      key === "Tab" &&
+      parseInt(selectedBallCell) <
+        currentlyDisplayedData.balls[selectedBallRow].length - 1
+    ) {
+      const nextBallCellIndex = currentlyDisplayedData.balls[
+        selectedBallRow
+      ].findIndex((c, i) => i > parseInt(selectedBallCell) && !!c);
+      if (nextBallCellIndex >= 0)
+        selectCell(selectedBallRow, nextBallCellIndex);
+    }
+
+    if (key === "Escape") {
+      drawLevel();
+      selectedBallEl = null;
+      selectedBallRow = null;
+      selectedBallCell = null;
+    } else {
+      // Reselect to redraw level + reselect cell
+      selectCell(selectedBallRow, selectedBallCell);
+    }
+  }
+
+  e.preventDefault();
 });
 
 document.addEventListener("keyup", ({ key }) => {
@@ -100,14 +156,15 @@ document.addEventListener("click", ({ target }) => {
       clickedEl.getAttribute("data-cell-index"),
       makeRandomBallData()
     );
-    drawLevel();
-  } else if (elIsBall) {
-    fillCell(
+    selectCell(
       clickedEl.getAttribute("data-row-index"),
-      clickedEl.getAttribute("data-cell-index"),
-      0
+      clickedEl.getAttribute("data-cell-index")
     );
-    drawLevel();
+  } else if (elIsBall) {
+    selectCell(
+      clickedEl.getAttribute("data-row-index"),
+      clickedEl.getAttribute("data-cell-index")
+    );
   } else if (elIsDelete) {
     deleteRow(clickedEl.getAttribute("data-row-index"));
     drawLevel();
@@ -116,40 +173,6 @@ document.addEventListener("click", ({ target }) => {
       gameLevels[clickedEl.getAttribute("data-level-index")];
     drawLevel();
   }
-});
-
-let dragTargetBallOrigin;
-let dragTargetBallRow;
-let dragTargetBallCell;
-const handleBallDrag = ({ clientX, clientY }) => {
-  const ball =
-    currentlyDisplayedData.balls[dragTargetBallRow][dragTargetBallCell];
-  const movementXAdjusted = -(dragTargetBallOrigin.x - clientX) / 10;
-  const movementYAdjusted = -(dragTargetBallOrigin.y - clientY) / 10;
-  ball.velocity = {
-    x: Math.round(movementXAdjusted * 10) / 10,
-    y: Math.round(movementYAdjusted * 10) / 10,
-  };
-  drawLevel();
-};
-
-document.addEventListener("mousedown", ({ target, clientX, clientY }) => {
-  const clickedEl = target.closest("div");
-  const elIsBall = clickedEl.classList.contains("preview-cell-ball");
-
-  if (elIsBall) {
-    dragTargetBallOrigin = { x: clientX, y: clientY };
-    dragTargetBallRow = clickedEl.getAttribute("data-row-index");
-    dragTargetBallCell = clickedEl.getAttribute("data-cell-index");
-    document.addEventListener("mousemove", handleBallDrag);
-  }
-});
-
-document.addEventListener("mouseup", () => {
-  dragTargetBallOrigin = null;
-  dragTargetBallRow = null;
-  dragTargetBallCell = null;
-  document.removeEventListener("mousemove", handleBallDrag);
 });
 
 drawLevel();
