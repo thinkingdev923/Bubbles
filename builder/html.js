@@ -1,3 +1,24 @@
+export const makeLevelLinkHTML = (levelData, levelIndex) => {
+  const level = document.createElement("div");
+  level.classList.add("levelData-level");
+  level.setAttribute("data-level-index", levelIndex);
+
+  const indexNum = document.createElement("div");
+  indexNum.classList.add("levelData-level-index");
+  indexNum.setAttribute("data-level-index", levelIndex);
+  indexNum.innerText = levelIndex;
+
+  const levelName = document.createElement("div");
+  levelName.classList.add("levelData-level-name");
+  levelName.setAttribute("data-level-index", levelIndex);
+  levelName.innerText = levelData.name;
+
+  level.appendChild(indexNum);
+  level.appendChild(levelName);
+
+  return level;
+};
+
 export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
   const cell = document.createElement("div");
   cell.classList.add("preview-cell");

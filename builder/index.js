@@ -1,18 +1,28 @@
-import { makeGravityHTML, makeRowHTML } from "./html.js";
+import { makeGravityHTML, makeRowHTML, makeLevelLinkHTML } from "./html.js";
 import { GRAVITY } from "../constants.js";
 import { randomColor } from "../colors.js";
+import { levels as gameLevels } from "../levelData.js";
 
-let levelData = {
+let currentlyDisplayedData = {
   name: "LEVEL NAME",
   gravity: GRAVITY,
   balls: [[0, 0, 0, 0, 0, 0]],
 };
 
+const levelDataEl = document.querySelector("#levelData");
 const layoutPreviewEl = document.querySelector("#layout-preview");
 const addRowEl = document.querySelector("#addRow");
 const copyToClipboardEl = document.querySelector("#copyToClipboard");
 
-const drawLevel = ({ gravity, balls }) => {
+const populateLevelData = () => {
+  gameLevels.forEach((level, levelIndex) => {
+    levelDataEl.appendChild(makeLevelLinkHTML(level, levelIndex));
+  });
+};
+
+const drawLevel = () => {
+  const gravity = currentlyDisplayedData.gravity;
+  const balls = currentlyDisplayedData.balls;
   layoutPreviewEl.innerHTML = "";
 
   const newNodes = [];
@@ -37,19 +47,22 @@ const makeRandomBallData = () => ({
 });
 
 const fillCell = (rowIndex, cellIndex, content) => {
-  levelData.balls[rowIndex][cellIndex] = content;
+  currentlyDisplayedData.balls[rowIndex][cellIndex] = content;
 };
 
 const deleteRow = (rowIndex) => {
-  levelData.balls.splice(rowIndex, 1);
+  currentlyDisplayedData.balls.splice(rowIndex, 1);
 };
 
 const addRow = () => {
-  levelData.balls = [makeEmptyRow()].concat(levelData.balls);
-  drawLevel(levelData);
+  currentlyDisplayedData.balls = [makeEmptyRow()].concat(
+    currentlyDisplayedData.balls
+  );
+  drawLevel();
 };
 
-const copyRow = () => navigator.clipboard.writeText(JSON.stringify(levelData));
+const copyRow = () =>
+  navigator.clipboard.writeText(JSON.stringify(currentlyDisplayedData));
 
 addRowEl.addEventListener("click", addRow);
 
@@ -79,6 +92,7 @@ document.addEventListener("click", ({ target }) => {
   const elIsEmptyCell = clickedEl.classList.contains("preview-cell--empty");
   const elIsBall = clickedEl.classList.contains("preview-cell-ball");
   const elIsDelete = clickedEl.classList.contains("preview-row-actions-delete");
+  const elIsLevel = clickedEl.hasAttribute("data-level-index");
 
   if (elIsEmptyCell) {
     fillCell(
@@ -86,38 +100,45 @@ document.addEventListener("click", ({ target }) => {
       clickedEl.getAttribute("data-cell-index"),
       makeRandomBallData()
     );
-    drawLevel(levelData);
+    drawLevel();
   } else if (elIsBall) {
     fillCell(
       clickedEl.getAttribute("data-row-index"),
       clickedEl.getAttribute("data-cell-index"),
       0
     );
-    drawLevel(levelData);
+    drawLevel();
   } else if (elIsDelete) {
     deleteRow(clickedEl.getAttribute("data-row-index"));
-    drawLevel(levelData);
+    drawLevel();
+  } else if (elIsLevel) {
+    currentlyDisplayedData =
+      gameLevels[clickedEl.getAttribute("data-level-index")];
+    drawLevel();
   }
 });
 
+let dragTargetBallOrigin;
 let dragTargetBallRow;
 let dragTargetBallCell;
-const handleBallDrag = ({ movementX, movementY }) => {
-  const ball = levelData.balls[dragTargetBallRow][dragTargetBallCell];
-  const movementXAdjusted = movementX / 100;
-  const movementYAdjusted = movementY / 100;
+const handleBallDrag = ({ clientX, clientY }) => {
+  const ball =
+    currentlyDisplayedData.balls[dragTargetBallRow][dragTargetBallCell];
+  const movementXAdjusted = (dragTargetBallOrigin.x - clientX) / 10;
+  const movementYAdjusted = (dragTargetBallOrigin.y - clientY) / 10;
   ball.velocity = {
-    x: Math.round((ball.velocity.x + movementXAdjusted) * 100) / 100,
-    y: Math.round((ball.velocity.y + movementYAdjusted) * 100) / 100,
+    x: Math.round(movementXAdjusted * 10) / 10,
+    y: Math.round(movementYAdjusted * 10) / 10,
   };
-  drawLevel(levelData);
+  drawLevel();
 };
 
-document.addEventListener("mousedown", ({ target }) => {
+document.addEventListener("mousedown", ({ target, clientX, clientY }) => {
   const clickedEl = target.closest("div");
   const elIsBall = clickedEl.classList.contains("preview-cell-ball");
 
   if (elIsBall) {
+    dragTargetBallOrigin = { x: clientX, y: clientY };
     dragTargetBallRow = clickedEl.getAttribute("data-row-index");
     dragTargetBallCell = clickedEl.getAttribute("data-cell-index");
     document.addEventListener("mousemove", handleBallDrag);
@@ -125,9 +146,11 @@ document.addEventListener("mousedown", ({ target }) => {
 });
 
 document.addEventListener("mouseup", () => {
+  dragTargetBallOrigin = null;
   dragTargetBallRow = null;
   dragTargetBallCell = null;
   document.removeEventListener("mousemove", handleBallDrag);
 });
 
-drawLevel(levelData);
+drawLevel();
+populateLevelData();

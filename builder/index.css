@@ -1,5 +1,6 @@
 @import url("actions.css");
 @import url("layout.css");
+@import url("levels.css");
 
 body {
   --blue: #2d2d74;
@@ -13,6 +14,7 @@ body {
   touch-action: none;
   background: var(--blue);
   font: 400 18px -apple-system, BlinkMacSystemFont, sans-serif;
+  font-variant-numeric: tabular-nums;
   color: var(--white);
 }
 
