@@ -67,7 +67,8 @@
 }
 
 .preview-cell-ball--selected {
-  outline: 2px solid red;
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
 }
 
 .preview-cell-velocity {
