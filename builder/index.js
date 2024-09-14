@@ -52,7 +52,9 @@ const addRow = () => {
 const copyRow = () => navigator.clipboard.writeText(JSON.stringify(levelData));
 
 addRowEl.addEventListener("click", addRow);
+
 copyToClipboardEl.addEventListener("click", copyRow);
+
 document.addEventListener("keydown", ({ key, repeat }) => {
   if (!repeat) {
     if (key === "r") {
@@ -96,6 +98,36 @@ document.addEventListener("click", ({ target }) => {
     deleteRow(clickedEl.getAttribute("data-row-index"));
     drawLevel(levelData);
   }
+});
+
+let dragTargetBallRow;
+let dragTargetBallCell;
+const handleBallDrag = ({ movementX, movementY }) => {
+  const ball = levelData.balls[dragTargetBallRow][dragTargetBallCell];
+  const movementXAdjusted = movementX / 100;
+  const movementYAdjusted = movementY / 100;
+  ball.velocity = {
+    x: Math.round((ball.velocity.x + movementXAdjusted) * 100) / 100,
+    y: Math.round((ball.velocity.y + movementYAdjusted) * 100) / 100,
+  };
+  drawLevel(levelData);
+};
+
+document.addEventListener("mousedown", ({ target }) => {
+  const clickedEl = target.closest("div");
+  const elIsBall = clickedEl.classList.contains("preview-cell-ball");
+
+  if (elIsBall) {
+    dragTargetBallRow = clickedEl.getAttribute("data-row-index");
+    dragTargetBallCell = clickedEl.getAttribute("data-cell-index");
+    document.addEventListener("mousemove", handleBallDrag);
+  }
+});
+
+document.addEventListener("mouseup", () => {
+  dragTargetBallRow = null;
+  dragTargetBallCell = null;
+  document.removeEventListener("mousemove", handleBallDrag);
 });
 
 drawLevel(levelData);
