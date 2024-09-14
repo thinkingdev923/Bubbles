@@ -124,8 +124,8 @@ let dragTargetBallCell;
 const handleBallDrag = ({ clientX, clientY }) => {
   const ball =
     currentlyDisplayedData.balls[dragTargetBallRow][dragTargetBallCell];
-  const movementXAdjusted = (dragTargetBallOrigin.x - clientX) / 10;
-  const movementYAdjusted = (dragTargetBallOrigin.y - clientY) / 10;
+  const movementXAdjusted = -(dragTargetBallOrigin.x - clientX) / 10;
+  const movementYAdjusted = -(dragTargetBallOrigin.y - clientY) / 10;
   ball.velocity = {
     x: Math.round(movementXAdjusted * 10) / 10,
     y: Math.round(movementYAdjusted * 10) / 10,
