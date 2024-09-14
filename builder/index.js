@@ -31,25 +31,38 @@ const fillCell = (rowIndex, cellIndex, content) => {
   levelData.balls[rowIndex][cellIndex] = content;
 };
 
+const deleteRow = (rowIndex) => {
+  levelData.balls.splice(rowIndex, 1);
+};
+
+const elIsEmptyCell = (el) => el.classList.contains("preview-cell--empty");
+const elIsBall = (el) => el.classList.contains("preview-cell-ball");
+const elIsDelete = (el) => el.classList.contains("preview-row-actions-delete");
+
 document.querySelector("#addRow").addEventListener("click", () => {
   levelData.balls = [makeEmptyRow()].concat(levelData.balls);
   drawLevel(levelData);
 });
 
 document.addEventListener("click", ({ target }) => {
-  if (target.classList.contains("preview-cell--empty")) {
+  const clickedEl = target.closest("div");
+
+  if (elIsEmptyCell(clickedEl)) {
     fillCell(
-      target.getAttribute("data-row-index"),
-      target.getAttribute("data-cell-index"),
+      clickedEl.getAttribute("data-row-index"),
+      clickedEl.getAttribute("data-cell-index"),
       { x: 0, y: 0 }
     );
     drawLevel(levelData);
-  } else if (target.classList.contains("preview-cell-ball")) {
+  } else if (elIsBall(clickedEl)) {
     fillCell(
-      target.getAttribute("data-row-index"),
-      target.getAttribute("data-cell-index"),
+      clickedEl.getAttribute("data-row-index"),
+      clickedEl.getAttribute("data-cell-index"),
       0
     );
+    drawLevel(levelData);
+  } else if (elIsDelete(clickedEl)) {
+    deleteRow(clickedEl.getAttribute("data-row-index"));
     drawLevel(levelData);
   }
 });

@@ -53,6 +53,7 @@ export const makeRowHTML = (rowData, rowIndex) => {
 
   const deleteAction = document.createElement("div");
   deleteAction.classList.add("preview-row-actions-delete");
+  deleteAction.setAttribute("data-row-index", rowIndex);
 
   const xImg = document.createElement("img");
   xImg.setAttribute("src", "../images/x.svg");
