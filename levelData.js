@@ -1,19 +1,23 @@
 import { makeBall } from "./ball.js";
-import { randomColor } from "./colors.js";
 
 export const levels = [
   {
     name: "LEVEL 1",
     gravity: 0.05,
-    balls: [[0, { x: 2, y: 1 }, 0, 0, 0, 0]],
+    balls: [[0, 0, { velocity: { x: 2, y: 1 }, color: "#FCF6E8" }, 0, 0, 0]],
   },
   {
     name: "LEVEL 2",
-    gravity: 0.07,
+    gravity: 0.05,
     balls: [
-      [0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }],
-      [{ x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0],
-      [0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }, 0, { x: 0, y: 1 }],
+      [
+        0,
+        { velocity: { x: -4.5, y: 1 }, color: "#79CAEC" },
+        0,
+        0,
+        { velocity: { x: 4.5, y: 1 }, color: "#DF432A" },
+        0,
+      ],
     ],
   },
 ];
@@ -47,9 +51,9 @@ export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
             canvasManager,
             {
               startPosition: { x: xPos, y: yPos },
-              startVelocity: { x: cell.x, y: cell.y },
+              startVelocity: { x: cell.velocity.x, y: cell.velocity.y },
               radius: ballSize,
-              fill: randomColor(),
+              fill: cell.color,
             },
             onPop,
             onMiss
