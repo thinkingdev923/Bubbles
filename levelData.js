@@ -33,7 +33,7 @@ export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
     const spaceBetweenRows = 44;
     const ballSize = 44;
     const verticalOffset = 16;
-    const inverseIndex = balls.length - rowIndex;
+    const inverseIndex = level.balls.length - rowIndex;
     const yPos =
       -verticalOffset -
       ballSize * inverseIndex -
