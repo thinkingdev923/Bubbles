@@ -44,6 +44,12 @@ document.querySelector("#addRow").addEventListener("click", () => {
   drawLevel(levelData);
 });
 
+document
+  .querySelector("#copyToClipboard")
+  .addEventListener("click", () =>
+    navigator.clipboard.writeText(JSON.stringify(levelData))
+  );
+
 document.addEventListener("click", ({ target }) => {
   const clickedEl = target.closest("div");
 
