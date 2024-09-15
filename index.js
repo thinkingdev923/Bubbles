@@ -14,6 +14,10 @@ import { centerTextBlock } from "./centerTextBlock.js";
 import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 
+const URLParams = new URLSearchParams(window.location.search);
+const previewData = decodeURIComponent(URLParams.get("level"));
+const previewDataPresent = !!window.location.search && previewData;
+
 const canvasManager = makeCanvasManager({
   initialWidth: window.innerWidth,
   initialHeight: window.innerHeight,
@@ -21,7 +25,10 @@ const canvasManager = makeCanvasManager({
 });
 const audioManager = makeAudioManager();
 const lifeManager = makeLifeManager(canvasManager);
-const levelManager = makeLevelManager(canvasManager, onLevelAdvance);
+const levelManager = makeLevelManager(
+  canvasManager,
+  previewDataPresent ? onPreviewAdvance : onLevelAdvance
+);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
 let clicksTotal;
@@ -101,7 +108,7 @@ animate((deltaTime) => {
     });
   });
 
-  // Draw level +life text underneath balls
+  // Draw level + life text underneath balls
   levelManager.drawLevelNumber();
 
   if (!levelManager.isGameOver()) lifeManager.draw();
@@ -193,6 +200,24 @@ function onLevelAdvance() {
   ripples = [];
 
   const levelData = levels[levelManager.getLevel() - 1];
+  // Allow popping animation to finish playing for previous level balls
+  balls = balls
+    .filter((b) => b.isPopped() && b.shouldRender())
+    .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
+
+  // Call on first interaction. Subsequent calls are ignored.
+  audioManager.initialize();
+  audioManager.playLevel();
+}
+
+function onPreviewAdvance() {
+  clicksRound = 0;
+  ballsPoppedRound = 0;
+  ballsMissedRound = 0;
+  ripples = [];
+
+  const levelData = JSON.parse(decodeURIComponent(previewData));
+
   // Allow popping animation to finish playing for previous level balls
   balls = balls
     .filter((b) => b.isPopped() && b.shouldRender())

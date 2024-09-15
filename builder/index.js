@@ -13,6 +13,7 @@ const levelDataEl = document.querySelector("#levelData");
 const layoutPreviewEl = document.querySelector("#layout-preview");
 const addRowEl = document.querySelector("#addRow");
 const copyToClipboardEl = document.querySelector("#copyToClipboard");
+const openPreviewEl = document.querySelector("#openPreview");
 let selectedBallEl;
 let selectedBallRow;
 let selectedBallCell;
@@ -84,6 +85,12 @@ addRowEl.addEventListener("click", addRow);
 
 copyToClipboardEl.addEventListener("click", copyRow);
 
+openPreviewEl.addEventListener("click", () => {
+  window.open(
+    `/?level=${encodeURIComponent(JSON.stringify(currentlyDisplayedData))}`
+  );
+});
+
 document.addEventListener("keydown", (e) => {
   const { shiftKey, key, repeat } = e;
 
@@ -126,7 +133,6 @@ document.addEventListener("keydown", (e) => {
         selectCell(selectedBallRow, nextBallCellIndex);
     }
 
-    if (key === "Escape") {
     if (key === "Escape" || key === "Backspace") {
       drawLevel();
       selectedBallEl = false;
