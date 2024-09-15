@@ -11,14 +11,8 @@ body {
   --white: #fcf6e8;
   margin: 0;
   user-select: none;
-  touch-action: none;
   background: var(--blue);
   font: 400 18px -apple-system, BlinkMacSystemFont, sans-serif;
   font-variant-numeric: tabular-nums;
   color: var(--white);
-}
-
-canvas {
-  display: block;
-  touch-action: none;
 }
