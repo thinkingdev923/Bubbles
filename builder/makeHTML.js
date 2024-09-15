@@ -1,6 +1,8 @@
-export const makeLevelLinkHTML = (levelData, levelIndex) => {
+export const makeLevelLinkHTML = (levelData, levelIndex, currentLevelData) => {
   const level = document.createElement("div");
   level.classList.add("levelData-level");
+  if (levelData.name === currentLevelData.name)
+    level.classList.add("levelData-level--selected");
   level.setAttribute("data-level-index", levelIndex);
 
   const indexNum = document.createElement("div");

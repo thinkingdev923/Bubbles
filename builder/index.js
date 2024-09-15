@@ -18,8 +18,11 @@ let selectedBallRow;
 let selectedBallCell;
 
 const populateLevelData = () => {
+  levelDataEl.innerHTML = "";
   gameLevels.forEach((level, levelIndex) => {
-    levelDataEl.appendChild(makeLevelLinkHTML(level, levelIndex));
+    levelDataEl.appendChild(
+      makeLevelLinkHTML(level, levelIndex, currentlyDisplayedData)
+    );
   });
 };
 
@@ -175,6 +178,7 @@ document.addEventListener("click", ({ target }) => {
     selectedBallRow = false;
     selectedBallCell = false;
     drawLevel();
+    populateLevelData();
   }
 });
 

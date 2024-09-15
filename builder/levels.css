@@ -3,6 +3,7 @@
   top: 12px;
   left: 12px;
   display: flex;
+  grid-gap: 2px;
 }
 
 .levelData-level {
@@ -12,6 +13,10 @@
   padding: 6px 12px;
   cursor: pointer;
   border-radius: 4px;
+}
+
+.levelData-level--selected {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .levelData-level:hover {
