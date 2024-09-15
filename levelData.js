@@ -57,7 +57,7 @@ export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
         // is not dense enough to have fun
         const cellWidth = canvasManager.getWidth() / row.length;
         const cellXPos = cellWidth * cellIndex;
-        const xPos = cellXPos + (cellWidth - ballSize) / 2;
+        const xPos = cellXPos + cellWidth / 2;
         balls.push(
           makeBall(
             canvasManager,
