@@ -86,8 +86,11 @@ addRowEl.addEventListener("click", addRow);
 copyToClipboardEl.addEventListener("click", copyRow);
 
 openPreviewEl.addEventListener("click", () => {
+  const newPath = window.location.pathname.replace("/builder/", "");
   window.open(
-    `/?level=${encodeURIComponent(JSON.stringify(currentlyDisplayedData))}`
+    `/${newPath}?level=${encodeURIComponent(
+      JSON.stringify(currentlyDisplayedData)
+    )}`
   );
 });
 
