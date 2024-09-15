@@ -1,7 +1,7 @@
 import { yellow } from "./colors.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 
-export const makeLevelManager = (canvasManager, onAdvance) => {
+export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   const CTX = canvasManager.getContext();
   let level;
   let interstitialShowing;
@@ -46,6 +46,7 @@ export const makeLevelManager = (canvasManager, onAdvance) => {
   };
 
   const drawInterstitialMessage = ({
+    previewMessage,
     initialMessage,
     firstMissMessage,
     defaultMessage,
@@ -54,7 +55,9 @@ export const makeLevelManager = (canvasManager, onAdvance) => {
     if (interstitialShowing) {
       const msElapsed = Date.now() - interstitialStart;
 
-      if (gameOver) {
+      if (isPreview) {
+        previewMessage(msElapsed);
+      } else if (gameOver) {
         endGameMessage(msElapsed);
       } else if (level === 1) {
         initialMessage(msElapsed);
@@ -73,7 +76,7 @@ export const makeLevelManager = (canvasManager, onAdvance) => {
     CTX.letterSpacing = "1px";
     CTX.textAlign = "center";
     CTX.translate(canvasManager.getWidth() / 2, 24);
-    CTX.fillText(`LEVEL ${level}`, 0, 0);
+    CTX.fillText(isPreview ? "PREVIEW" : `LEVEL ${level}`, 0, 0);
     CTX.restore();
   };
 

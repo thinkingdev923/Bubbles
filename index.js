@@ -15,7 +15,7 @@ import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 
 const URLParams = new URLSearchParams(window.location.search);
-const previewData = decodeURIComponent(URLParams.get("level"));
+const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
 const previewDataPresent = !!window.location.search && previewData;
 
 const canvasManager = makeCanvasManager({
@@ -27,7 +27,8 @@ const audioManager = makeAudioManager();
 const lifeManager = makeLifeManager(canvasManager);
 const levelManager = makeLevelManager(
   canvasManager,
-  previewDataPresent ? onPreviewAdvance : onLevelAdvance
+  previewDataPresent ? onPreviewAdvance : onLevelAdvance,
+  previewDataPresent
 );
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
@@ -118,6 +119,10 @@ animate((deltaTime) => {
   balls.forEach((b) => b.draw(deltaTime));
 
   levelManager.drawInterstitialMessage({
+    previewMessage: (msElapsed) => {
+      centerTextBlock(canvasManager, [`Preview of ${previewData.name}`]);
+      continueButtonManager.draw(msElapsed, 0, "Play Preview");
+    },
     initialMessage: (msElapsed) => {
       centerTextBlock(canvasManager, [`Pop the bubble`]);
       continueButtonManager.draw(msElapsed, 0, "Play");
@@ -216,12 +221,10 @@ function onPreviewAdvance() {
   ballsMissedRound = 0;
   ripples = [];
 
-  const levelData = JSON.parse(decodeURIComponent(previewData));
-
   // Allow popping animation to finish playing for previous level balls
   balls = balls
     .filter((b) => b.isPopped() && b.shouldRender())
-    .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
+    .concat(makeLevelBalls(canvasManager, previewData, onPop, onMiss));
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
