@@ -24,6 +24,7 @@ export const makeBall = (
   );
   const numberOfPopPieces = 60;
   const ballStart = Date.now();
+  const terminalVelocity = 12;
 
   let position = { ...startPosition };
   let velocity = { ...startVelocity };
@@ -38,7 +39,10 @@ export const makeBall = (
     if (shouldRender()) {
       const deltaTimeMultiplier = deltaTime / INTERVAL;
       position.x += deltaTimeMultiplier * velocity.x;
-      position.y += deltaTimeMultiplier * velocity.y;
+      position.y += Math.min(
+        deltaTimeMultiplier * velocity.y,
+        terminalVelocity
+      );
       velocity.y += deltaTimeMultiplier * GRAVITY;
 
       if (position.y > canvasManager.getHeight() + radius) {
