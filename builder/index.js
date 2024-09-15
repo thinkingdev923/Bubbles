@@ -108,7 +108,7 @@ document.addEventListener("keydown", (e) => {
     if (shiftKey && key === "Tab" && parseInt(selectedBallCell) > 0) {
       const prevBallCellIndex = currentlyDisplayedData.balls[
         selectedBallRow
-      ].findIndex((c, i) => i < parseInt(selectedBallCell) && !!c);
+      ].findLastIndex((c, i) => i < parseInt(selectedBallCell) && !!c);
       if (prevBallCellIndex >= 0)
         selectCell(selectedBallRow, prevBallCellIndex);
     } else if (
