@@ -25,6 +25,12 @@
   backdrop-filter: blur(32px);
 }
 
+@media (max-width: 540px) {
+  .actionsTop-button {
+    height: 72px;
+  }
+}
+
 .actionsTop-button:hover {
   background: rgba(255, 255, 255, 0.2);
 }
