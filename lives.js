@@ -10,7 +10,7 @@ export const makeLifeManager = (canvasManager) => {
   let lastSubtractStart;
 
   const reset = () => {
-    lives = 10;
+    lives = 5;
     previousLivesValue = false;
     lastSubtractStart = false;
   };
