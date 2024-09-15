@@ -127,6 +127,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (key === "Escape") {
+    if (key === "Escape" || key === "Backspace") {
       drawLevel();
       selectedBallEl = false;
       selectedBallRow = false;
