@@ -2,11 +2,14 @@
   position: absolute;
   top: 12px;
   left: 12px;
+  right: 12px;
   display: flex;
   grid-gap: 2px;
+  overflow-x: auto;
 }
 
 .levelData-level {
+  white-space: nowrap;
   font-size: 12px;
   display: flex;
   grid-gap: 4px;
