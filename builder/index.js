@@ -78,7 +78,7 @@ const addRow = () => {
 };
 
 const copyRow = () =>
-  navigator.clipboard.writeText(JSON.stringify(currentlyDisplayedData));
+  navigator.clipboard.writeText(`${JSON.stringify(currentlyDisplayedData)},`);
 
 addRowEl.addEventListener("click", addRow);
 
