@@ -124,6 +124,7 @@ document.addEventListener("keydown", (e) => {
       ].findLastIndex((c, i) => i < parseInt(selectedBallCell) && !!c);
       if (prevBallCellIndex >= 0)
         selectCell(selectedBallRow, prevBallCellIndex);
+      e.preventDefault();
     } else if (
       key === "Tab" &&
       parseInt(selectedBallCell) <
@@ -134,6 +135,7 @@ document.addEventListener("keydown", (e) => {
       ].findIndex((c, i) => i > parseInt(selectedBallCell) && !!c);
       if (nextBallCellIndex >= 0)
         selectCell(selectedBallRow, nextBallCellIndex);
+      e.preventDefault();
     }
 
     if (key === "Escape" || key === "Backspace") {
@@ -146,8 +148,6 @@ document.addEventListener("keydown", (e) => {
       selectCell(selectedBallRow, selectedBallCell);
     }
   }
-
-  e.preventDefault();
 });
 
 document.addEventListener("keyup", ({ key }) => {
