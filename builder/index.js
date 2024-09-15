@@ -1,4 +1,4 @@
-import { makeGravityHTML, makeRowHTML, makeLevelLinkHTML } from "./html.js";
+import { makeGravityHTML, makeRowHTML, makeLevelLinkHTML } from "./makeHTML.js";
 import { GRAVITY } from "../constants.js";
 import { randomColor } from "../colors.js";
 import { levels as gameLevels } from "../levelData.js";
@@ -125,9 +125,9 @@ document.addEventListener("keydown", (e) => {
 
     if (key === "Escape") {
       drawLevel();
-      selectedBallEl = null;
-      selectedBallRow = null;
-      selectedBallCell = null;
+      selectedBallEl = false;
+      selectedBallRow = false;
+      selectedBallCell = false;
     } else {
       // Reselect to redraw level + reselect cell
       selectCell(selectedBallRow, selectedBallCell);
@@ -171,6 +171,9 @@ document.addEventListener("click", ({ target }) => {
   } else if (elIsLevel) {
     currentlyDisplayedData =
       gameLevels[clickedEl.getAttribute("data-level-index")];
+    selectedBallEl = false;
+    selectedBallRow = false;
+    selectedBallCell = false;
     drawLevel();
   }
 });

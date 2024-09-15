@@ -35,10 +35,22 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
 
     const vX = document.createElement("div");
     vX.classList.add("preview-cell-velocity-x");
+    if (!!cellData.velocity.x)
+      vX.classList.add(
+        cellData.velocity.x < 0
+          ? "preview-cell-velocity-x--left"
+          : "preview-cell-velocity-x--right"
+      );
     vX.innerText = cellData.velocity.x;
 
     const vY = document.createElement("div");
     vY.classList.add("preview-cell-velocity-y");
+    if (!!cellData.velocity.y)
+      vY.classList.add(
+        cellData.velocity.y < 0
+          ? "preview-cell-velocity-y--up"
+          : "preview-cell-velocity-y--down"
+      );
     vY.innerText = cellData.velocity.y;
 
     velocity.appendChild(vX);
