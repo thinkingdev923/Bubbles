@@ -18,6 +18,10 @@ const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
 const previewDataPresent = !!window.location.search && previewData;
 
+if (previewDataPresent) {
+  document.title = `Preview for “${previewData.name}”`;
+}
+
 const canvasManager = makeCanvasManager({
   initialWidth: window.innerWidth,
   initialHeight: window.innerHeight,
@@ -120,7 +124,7 @@ animate((deltaTime) => {
 
   levelManager.drawInterstitialMessage({
     previewInitialMessage: (msElapsed) => {
-      centerTextBlock(canvasManager, [`Preview of ${previewData.name}`]);
+      centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
       continueButtonManager.draw(msElapsed, 0, "Play Preview");
     },
     initialMessage: (msElapsed) => {
