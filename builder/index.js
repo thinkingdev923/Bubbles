@@ -113,12 +113,12 @@ openPreviewEl.addEventListener("click", () => {
 });
 
 document.addEventListener("keydown", (e) => {
-  const { shiftKey, key, repeat } = e;
+  const { shiftKey, ctrlKey, key, repeat } = e;
 
   if (document.activeElement.tagName === "INPUT") return false;
 
   // Action keyboard shortcuts
-  if (!repeat && key === "r") {
+  if (!repeat && !shiftKey && !ctrlKey && key === "r") {
     addRow();
     addRowEl.classList.add("actionsTop-button--active");
   } else if (!repeat && key === "c") {
