@@ -1,4 +1,9 @@
-import { makeGravityHTML, makeRowHTML, makeLevelLinkHTML } from "./makeHTML.js";
+import {
+  makeGravityHTML,
+  makeRowHTML,
+  makeLevelLinkHTML,
+  makeNameHTML,
+} from "./makeHTML.js";
 import { GRAVITY } from "../constants.js";
 import { randomColor } from "../colors.js";
 import {
@@ -15,6 +20,8 @@ let currentlyDisplayedData = {
 };
 
 const levelDataEl = document.querySelector("#levelData");
+const layoutNameEl = document.querySelector("#layout-name");
+const layoutGravityEl = document.querySelector("#layout-gravity");
 const layoutPreviewEl = document.querySelector("#layout-preview");
 const addRowEl = document.querySelector("#addRow");
 const copyToClipboardEl = document.querySelector("#copyToClipboard");
@@ -33,15 +40,20 @@ const populateListOfLevels = () => {
 };
 
 const drawLevel = () => {
-  layoutPreviewEl.innerHTML = "";
+  layoutNameEl.innerHTML = "";
+  layoutNameEl.appendChild(makeNameHTML(currentlyDisplayedData.name));
 
+  layoutGravityEl.innerHTML = "";
+  layoutGravityEl.appendChild(makeGravityHTML(currentlyDisplayedData.gravity));
+
+  layoutPreviewEl.innerHTML = "";
   const newNodes = [];
-  const balls = currentlyDisplayedData.balls;
-  balls.forEach((row, rowIndex) => newNodes.push(makeRowHTML(row, rowIndex)));
+  currentlyDisplayedData.balls.forEach((row, rowIndex) =>
+    newNodes.push(makeRowHTML(row, rowIndex))
+  );
   newNodes.forEach((levelNode) => {
     layoutPreviewEl.appendChild(levelNode);
   });
-  layoutPreviewEl.appendChild(makeGravityHTML(currentlyDisplayedData.gravity));
 };
 
 const fillCell = (rowIndex, cellIndex, content) => {
@@ -80,6 +92,20 @@ const addRow = () => {
 
 const copyJSON = () =>
   navigator.clipboard.writeText(`${JSON.stringify(currentlyDisplayedData)},`);
+
+const updateName = (newName) => (currentlyDisplayedData.name = newName);
+
+const updateGravity = (newGrav) => (currentlyDisplayedData.gravity = newGrav);
+
+document.addEventListener("change", ({ target }) => {
+  const newVal = target.value;
+  const inputFor = target.getAttribute("data-input-for");
+
+  if (inputFor === "name") updateName(newVal);
+  else if (inputFor === "gravity") updateGravity(newVal);
+
+  drawLevel();
+});
 
 addRowEl.addEventListener("click", addRow);
 

@@ -21,6 +21,57 @@ export const makeLevelLinkHTML = (levelData, levelIndex, currentLevelData) => {
   return level;
 };
 
+export const makeNameHTML = (name) => {
+  const input = document.createElement("input");
+  input.setAttribute("type", "text");
+  input.setAttribute("maxlength", "40");
+  input.setAttribute("data-input-for", "name");
+  input.value = name;
+
+  return input;
+};
+
+export const makeGravityHTML = (gravity) => {
+  const input = document.createElement("input");
+  input.setAttribute("type", "range");
+  input.setAttribute("min", ".02");
+  input.setAttribute("max", ".1");
+  input.setAttribute("step", ".01");
+  input.setAttribute("data-input-for", "gravity");
+  input.value = gravity;
+
+  return input;
+};
+
+export const makeRowHTML = (rowData, rowIndex) => {
+  const row = document.createElement("div");
+  row.classList.add("preview-row");
+
+  const cells = [];
+  rowData.forEach((cellData, cellIndex) =>
+    cells.push(makeCellHTML(cellData, rowIndex, cellIndex))
+  );
+
+  const actions = document.createElement("div");
+  actions.classList.add("preview-row-actions");
+
+  const deleteAction = document.createElement("div");
+  deleteAction.classList.add("preview-row-actions-delete");
+  deleteAction.setAttribute("data-row-index", rowIndex);
+
+  const xImg = document.createElement("img");
+  xImg.setAttribute("src", "../images/x.svg");
+
+  deleteAction.appendChild(xImg);
+  actions.appendChild(deleteAction);
+  cells.forEach((c) => {
+    row.appendChild(c);
+  });
+  row.appendChild(actions);
+
+  return row;
+};
+
 export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
   const cell = document.createElement("div");
   cell.classList.add("preview-cell");
@@ -68,41 +119,4 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
   cell.setAttribute("data-cell-index", cellIndex);
 
   return cell;
-};
-
-export const makeRowHTML = (rowData, rowIndex) => {
-  const row = document.createElement("div");
-  row.classList.add("preview-row");
-
-  const cells = [];
-  rowData.forEach((cellData, cellIndex) =>
-    cells.push(makeCellHTML(cellData, rowIndex, cellIndex))
-  );
-
-  const actions = document.createElement("div");
-  actions.classList.add("preview-row-actions");
-
-  const deleteAction = document.createElement("div");
-  deleteAction.classList.add("preview-row-actions-delete");
-  deleteAction.setAttribute("data-row-index", rowIndex);
-
-  const xImg = document.createElement("img");
-  xImg.setAttribute("src", "../images/x.svg");
-
-  deleteAction.appendChild(xImg);
-  actions.appendChild(deleteAction);
-  cells.forEach((c) => {
-    row.appendChild(c);
-  });
-  row.appendChild(actions);
-
-  return row;
-};
-
-export const makeGravityHTML = (gravity) => {
-  const row = document.createElement("div");
-  row.classList.add("layout-gravity");
-  row.innerText = gravity;
-
-  return row;
 };

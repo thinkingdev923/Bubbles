@@ -2,6 +2,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  grid-gap: 32px;
+}
+
+.layout-name,
+.layout-gravity {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.layout-name::before,
+.layout-gravity::before {
+  content: "NAME";
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  opacity: 0.65;
+}
+
+.layout-gravity::before {
+  content: "GRAVITY";
 }
 
 .layout-preview {
@@ -127,18 +148,4 @@
 
 .preview-row-actions-delete:hover {
   transform: scale(1.1);
-}
-
-.layout-gravity {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.layout-gravity::before {
-  content: "GRAVITY";
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  opacity: 0.65;
 }
