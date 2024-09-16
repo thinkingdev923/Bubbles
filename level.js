@@ -9,6 +9,7 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   let firstMissLevel;
   let hasShownFirstMissMessage;
   let gameOver;
+  let hasShownPreviewInitialMessage;
 
   const reset = () => {
     level = false;
@@ -16,6 +17,7 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
     firstMissLevel = false;
     hasShownFirstMissMessage = false;
     gameOver = false;
+    hasShownPreviewInitialMessage = false;
   };
   reset();
 
@@ -26,6 +28,10 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {
+    if (isPreview) {
+      hasShownPreviewInitialMessage = true;
+    }
+
     if (firstMissLevel && !hasShownFirstMissMessage) {
       hasShownFirstMissMessage = true;
     }
@@ -46,7 +52,7 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   };
 
   const drawInterstitialMessage = ({
-    previewMessage,
+    previewInitialMessage,
     initialMessage,
     firstMissMessage,
     defaultMessage,
@@ -55,13 +61,13 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
     if (interstitialShowing) {
       const msElapsed = Date.now() - interstitialStart;
 
-      if (isPreview) {
-        previewMessage(msElapsed);
+      if (isPreview && !hasShownPreviewInitialMessage) {
+        previewInitialMessage(msElapsed);
       } else if (gameOver) {
         endGameMessage(msElapsed);
-      } else if (level === 1) {
+      } else if (level === 1 && !isPreview) {
         initialMessage(msElapsed);
-      } else if (firstMissLevel && !hasShownFirstMissMessage) {
+      } else if (firstMissLevel && !hasShownFirstMissMessage && !isPreview) {
         firstMissMessage(msElapsed);
       } else {
         defaultMessage(msElapsed);

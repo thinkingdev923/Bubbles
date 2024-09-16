@@ -119,7 +119,7 @@ animate((deltaTime) => {
   balls.forEach((b) => b.draw(deltaTime));
 
   levelManager.drawInterstitialMessage({
-    previewMessage: (msElapsed) => {
+    previewInitialMessage: (msElapsed) => {
       centerTextBlock(canvasManager, [`Preview of ${previewData.name}`]);
       continueButtonManager.draw(msElapsed, 0, "Play Preview");
     },
