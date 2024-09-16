@@ -1,9 +1,4 @@
-import {
-  makeGravityHTML,
-  makeRowHTML,
-  makeLevelLinkHTML,
-  makeNameHTML,
-} from "./makeHTML.js";
+import { makeRowHTML, makeLevelLinkHTML } from "./makeHTML.js";
 import { GRAVITY } from "../constants.js";
 import { randomColor } from "../colors.js";
 import {

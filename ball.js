@@ -10,6 +10,7 @@ export const makeBall = (
     startVelocity,
     radius,
     fill,
+    gravity = GRAVITY,
     delay = 0,
     shouldDrawTrajectory = false,
   },
@@ -43,7 +44,7 @@ export const makeBall = (
         deltaTimeMultiplier * velocity.y,
         terminalVelocity
       );
-      velocity.y += deltaTimeMultiplier * GRAVITY;
+      velocity.y += deltaTimeMultiplier * gravity;
 
       if (position.y > canvasManager.getHeight() + radius) {
         gone = true;
@@ -99,6 +100,7 @@ export const makeBall = (
           },
           radius: randomSize,
           fill,
+          gravity,
         },
         () => {},
         () => {}
@@ -131,6 +133,7 @@ export const makeBall = (
             },
             radius: randomSize,
             fill,
+            gravity,
           },
           () => {},
           () => {}
@@ -160,7 +163,7 @@ export const makeBall = (
       }
     } else if (shouldRender()) {
       if (shouldDrawTrajectory)
-        drawTrajectory(canvasManager, position, velocity);
+        drawTrajectory(canvasManager, position, velocity, gravity);
       CTX.save();
       CTX.fillStyle = fill;
       CTX.translate(position.x, position.y);

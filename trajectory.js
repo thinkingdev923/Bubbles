@@ -1,9 +1,8 @@
-import { GRAVITY } from "./constants.js";
-
 export const drawTrajectory = (
   canvasManager,
   currentPosition,
-  currentVelocity
+  currentVelocity,
+  gravity
 ) => {
   const CTX = canvasManager.getContext();
   // Iterate on ballistic properties until hitting the ground, and push these
@@ -23,7 +22,7 @@ export const drawTrajectory = (
 
       projectedYPosition += projectedYVelocity;
       projectedXPosition += currentVelocity.x;
-      projectedYVelocity += GRAVITY;
+      projectedYVelocity += gravity;
     }
 
     return segments;

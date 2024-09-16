@@ -179,6 +179,7 @@ export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
               startVelocity: { x: cell.velocity.x, y: cell.velocity.y },
               radius: ballSize,
               fill: cell.color,
+              gravity: level.gravity,
             },
             onPop,
             onMiss
