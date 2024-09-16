@@ -131,6 +131,22 @@ export const levels = [
   },
 ];
 
+export const makeLevelBall = ({ x, y }, color) => ({
+  velocity: { x, y },
+  color,
+});
+
+export const makeLevelEmptyCell = () => 0;
+
+export const makeLevelEmptyRow = () => [
+  makeLevelEmptyCell(),
+  makeLevelEmptyCell(),
+  makeLevelEmptyCell(),
+  makeLevelEmptyCell(),
+  makeLevelEmptyCell(),
+  makeLevelEmptyCell(),
+];
+
 export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
   const balls = [];
   level.balls.forEach((row, rowIndex) => {

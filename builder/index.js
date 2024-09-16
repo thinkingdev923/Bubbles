@@ -1,7 +1,12 @@
 import { makeGravityHTML, makeRowHTML, makeLevelLinkHTML } from "./makeHTML.js";
 import { GRAVITY } from "../constants.js";
 import { randomColor } from "../colors.js";
-import { levels as gameLevels } from "../levelData.js";
+import {
+  levels as gameLevels,
+  makeLevelBall,
+  makeLevelEmptyCell,
+  makeLevelEmptyRow,
+} from "../levelData.js";
 
 let currentlyDisplayedData = {
   name: "LEVEL NAME",
@@ -18,7 +23,7 @@ let selectedBallEl;
 let selectedBallRow;
 let selectedBallCell;
 
-const populateLevelData = () => {
+const populateListOfLevels = () => {
   levelDataEl.innerHTML = "";
   gameLevels.forEach((level, levelIndex) => {
     levelDataEl.appendChild(
@@ -28,37 +33,22 @@ const populateLevelData = () => {
 };
 
 const drawLevel = () => {
-  const gravity = currentlyDisplayedData.gravity;
-  const balls = currentlyDisplayedData.balls;
   layoutPreviewEl.innerHTML = "";
 
   const newNodes = [];
-
+  const balls = currentlyDisplayedData.balls;
   balls.forEach((row, rowIndex) => newNodes.push(makeRowHTML(row, rowIndex)));
-
   newNodes.forEach((levelNode) => {
     layoutPreviewEl.appendChild(levelNode);
   });
-
-  const gravityInfo = makeGravityHTML(gravity);
-  layoutPreviewEl.appendChild(gravityInfo);
+  layoutPreviewEl.appendChild(makeGravityHTML(currentlyDisplayedData.gravity));
 };
-
-const makeEmptyRow = () => {
-  return [0, 0, 0, 0, 0, 0];
-};
-
-const makeRandomBallData = () => ({
-  velocity: { x: 0, y: 0 },
-  color: randomColor(),
-});
 
 const fillCell = (rowIndex, cellIndex, content) => {
   currentlyDisplayedData.balls[rowIndex][cellIndex] = content;
 };
 
 const selectCell = (row, cell) => {
-  drawLevel();
   selectedBallEl = document.querySelector(
     `.preview-cell-ball[data-row-index="${row}"][data-cell-index="${cell}"]`
   );
@@ -67,23 +57,33 @@ const selectCell = (row, cell) => {
   selectedBallEl.classList.add("preview-cell-ball--selected");
 };
 
+const clearSelection = () => {
+  selectedBallEl = false;
+  selectedBallRow = false;
+  selectedBallCell = false;
+};
+
 const deleteRow = (rowIndex) => {
+  if (rowIndex === selectedBallRow) clearSelection();
+
   currentlyDisplayedData.balls.splice(rowIndex, 1);
 };
 
 const addRow = () => {
-  currentlyDisplayedData.balls = [makeEmptyRow()].concat(
+  currentlyDisplayedData.balls = [makeLevelEmptyRow()].concat(
     currentlyDisplayedData.balls
   );
   drawLevel();
+  if (selectedBallRow && selectedBallCell)
+    selectCell(parseInt(selectedBallRow) + 1, selectedBallCell);
 };
 
-const copyRow = () =>
+const copyJSON = () =>
   navigator.clipboard.writeText(`${JSON.stringify(currentlyDisplayedData)},`);
 
 addRowEl.addEventListener("click", addRow);
 
-copyToClipboardEl.addEventListener("click", copyRow);
+copyToClipboardEl.addEventListener("click", copyJSON);
 
 openPreviewEl.addEventListener("click", () => {
   const newHref = window.location.href.replace("/builder/", "");
@@ -98,25 +98,25 @@ document.addEventListener("keydown", (e) => {
   const { shiftKey, key, repeat } = e;
 
   // Action keyboard shortcuts
-  if (!repeat) {
-    if (key === "r") {
-      addRow();
-      addRowEl.classList.add("actionsTop-button--active");
-    }
-    if (key === "c") {
-      copyRow();
-      copyToClipboardEl.classList.add("actionsBottom-button--active");
-    }
+  if (!repeat && key === "r") {
+    addRow();
+    addRowEl.classList.add("actionsTop-button--active");
+  } else if (!repeat && key === "c") {
+    copyJSON();
+    copyToClipboardEl.classList.add("actionsBottom-button--active");
   }
 
   // Selected ball actions
-  if (selectedBallRow && selectedBallCell) {
+  else if (selectedBallRow && selectedBallCell) {
     const ball =
       currentlyDisplayedData.balls[selectedBallRow][selectedBallCell];
     const cellIndexInt = parseInt(selectedBallCell);
 
     // Adjust values
-    if (key === "Backspace") fillCell(selectedBallRow, selectedBallCell, 0);
+    if (key === "Backspace") {
+      fillCell(selectedBallRow, selectedBallCell, makeLevelEmptyCell());
+      clearSelection();
+    }
     if (key === "ArrowUp") ball.velocity.y--;
     if (key === "ArrowRight") ball.velocity.x++;
     if (key === "ArrowDown") ball.velocity.y++;
@@ -126,27 +126,29 @@ document.addEventListener("keydown", (e) => {
         const prevBallCellIndex = currentlyDisplayedData.balls[
           selectedBallRow
         ].findLastIndex((c, i) => i < cellIndexInt && !!c);
-        if (prevBallCellIndex !== -1)
+        if (prevBallCellIndex !== -1) {
+          drawLevel();
           selectCell(selectedBallRow, prevBallCellIndex);
+        }
       } else {
         const nextBallCellIndex = currentlyDisplayedData.balls[
           selectedBallRow
         ].findIndex((c, i) => i > cellIndexInt && !!c);
-        if (nextBallCellIndex !== -1)
+        if (nextBallCellIndex !== -1) {
+          drawLevel();
           selectCell(selectedBallRow, nextBallCellIndex);
+        }
       }
     }
 
     // Reset selection on escape or backspace
     if (key === "Escape" || key === "Backspace") {
-      selectedBallEl = false;
-      selectedBallRow = false;
-      selectedBallCell = false;
       drawLevel();
     }
 
     // Except on actions that change the selection, redraw + reselect
     if (key !== "Escape" && key !== "Backspace" && key !== "Tab") {
+      drawLevel();
       selectCell(selectedBallRow, selectedBallCell);
     }
 
@@ -180,13 +182,15 @@ document.addEventListener("click", ({ target }) => {
     fillCell(
       clickedEl.getAttribute("data-row-index"),
       clickedEl.getAttribute("data-cell-index"),
-      makeRandomBallData()
+      makeLevelBall({ x: 0, y: 0 }, randomColor())
     );
+    drawLevel();
     selectCell(
       clickedEl.getAttribute("data-row-index"),
       clickedEl.getAttribute("data-cell-index")
     );
   } else if (elIsBall) {
+    drawLevel();
     selectCell(
       clickedEl.getAttribute("data-row-index"),
       clickedEl.getAttribute("data-cell-index")
@@ -197,13 +201,10 @@ document.addEventListener("click", ({ target }) => {
   } else if (elIsLevel) {
     currentlyDisplayedData =
       gameLevels[clickedEl.getAttribute("data-level-index")];
-    selectedBallEl = false;
-    selectedBallRow = false;
-    selectedBallCell = false;
     drawLevel();
-    populateLevelData();
+    populateListOfLevels();
   }
 });
 
 drawLevel();
-populateLevelData();
+populateListOfLevels();
