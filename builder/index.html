@@ -48,11 +48,17 @@
       <div class="layout-meta">
         <div class="layout-meta-row">
           <div class="layout-meta-row-label">NAME</div>
-          <div id="layout-name"></div>
+          <input id="layout-name" type="text" maxlength="40" />
         </div>
         <div class="layout-meta-row">
           <div class="layout-meta-row-label">GRAVITY</div>
-          <div id="layout-gravity"></div>
+          <input
+            id="layout-gravity"
+            type="range"
+            min=".02"
+            max=".1"
+            step=".01"
+          />
         </div>
       </div>
       <div class="layout-preview" id="layout-preview"></div>

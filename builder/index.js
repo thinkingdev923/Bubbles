@@ -39,12 +39,13 @@ const populateListOfLevels = () => {
   });
 };
 
-const drawLevel = () => {
-  layoutNameEl.innerHTML = "";
-  layoutNameEl.appendChild(makeNameHTML(currentlyDisplayedData.name));
+const updateName = (newName) => (currentlyDisplayedData.name = newName);
 
-  layoutGravityEl.innerHTML = "";
-  layoutGravityEl.appendChild(makeGravityHTML(currentlyDisplayedData.gravity));
+const updateGravity = (newGrav) => (currentlyDisplayedData.gravity = newGrav);
+
+const drawLevel = () => {
+  layoutNameEl.value = currentlyDisplayedData.name;
+  layoutGravityEl.value = currentlyDisplayedData.gravity;
 
   layoutPreviewEl.innerHTML = "";
   const newNodes = [];
@@ -93,18 +94,14 @@ const addRow = () => {
 const copyJSON = () =>
   navigator.clipboard.writeText(`${JSON.stringify(currentlyDisplayedData)},`);
 
-const updateName = (newName) => (currentlyDisplayedData.name = newName);
+layoutNameEl.addEventListener("change", (e) => {
+  updateName(e.target.value);
+  e.preventDefault();
+});
 
-const updateGravity = (newGrav) => (currentlyDisplayedData.gravity = newGrav);
-
-document.addEventListener("change", ({ target }) => {
-  const newVal = target.value;
-  const inputFor = target.getAttribute("data-input-for");
-
-  if (inputFor === "name") updateName(newVal);
-  else if (inputFor === "gravity") updateGravity(newVal);
-
-  drawLevel();
+layoutGravityEl.addEventListener("change", (e) => {
+  updateGravity(e.target.value);
+  e.preventDefault();
 });
 
 addRowEl.addEventListener("click", addRow);
@@ -122,6 +119,8 @@ openPreviewEl.addEventListener("click", () => {
 
 document.addEventListener("keydown", (e) => {
   const { shiftKey, key, repeat } = e;
+
+  if (document.activeElement.tagName === "INPUT") return false;
 
   // Action keyboard shortcuts
   if (!repeat && key === "r") {
