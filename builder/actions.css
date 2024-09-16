@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 50px 0 0;
+  padding: 66px 32px 32px;
   box-sizing: border-box;
   grid-gap: 16px;
   bottom: 0;
@@ -10,25 +10,18 @@
 
 .actionsTop-button {
   display: flex;
-  width: 100%;
-  margin: 0 32px;
-  max-width: 500px;
   grid-gap: 8px;
+  padding: 16px;
+  width: 100%;
   align-items: center;
   justify-content: center;
-  height: 92px;
+  height: 44px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 100px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   -webkit-backdrop-filter: blur(32px);
   backdrop-filter: blur(32px);
-}
-
-@media (max-width: 540px) {
-  .actionsTop-button {
-    height: 72px;
-  }
 }
 
 .actionsTop-button:hover {

@@ -9,8 +9,8 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  grid-gap: 48px;
-  padding: 48px 0 160px;
+  grid-gap: 32px;
+  padding-bottom: 160px;
 }
 
 @media (max-width: 540px) {
@@ -30,7 +30,7 @@
 }
 
 .preview-row:has(.preview-row-actions-delete:hover) {
-  outline-offset: 18px;
+  outline-offset: 12px;
   outline: 2px solid var(--red);
 }
 
