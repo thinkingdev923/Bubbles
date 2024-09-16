@@ -97,6 +97,7 @@ openPreviewEl.addEventListener("click", () => {
 document.addEventListener("keydown", (e) => {
   const { shiftKey, key, repeat } = e;
 
+  // Action keyboard shortcuts
   if (!repeat) {
     if (key === "r") {
       addRow();
@@ -108,44 +109,56 @@ document.addEventListener("keydown", (e) => {
     }
   }
 
+  // Selected ball actions
   if (selectedBallRow && selectedBallCell) {
     const ball =
       currentlyDisplayedData.balls[selectedBallRow][selectedBallCell];
+    const cellIndexInt = parseInt(selectedBallCell);
 
+    // Adjust values
     if (key === "Backspace") fillCell(selectedBallRow, selectedBallCell, 0);
     if (key === "ArrowUp") ball.velocity.y--;
     if (key === "ArrowRight") ball.velocity.x++;
     if (key === "ArrowDown") ball.velocity.y++;
     if (key === "ArrowLeft") ball.velocity.x--;
-
-    if (shiftKey && key === "Tab" && parseInt(selectedBallCell) > 0) {
-      const prevBallCellIndex = currentlyDisplayedData.balls[
-        selectedBallRow
-      ].findLastIndex((c, i) => i < parseInt(selectedBallCell) && !!c);
-      if (prevBallCellIndex >= 0)
-        selectCell(selectedBallRow, prevBallCellIndex);
-      e.preventDefault();
-    } else if (
-      key === "Tab" &&
-      parseInt(selectedBallCell) <
-        currentlyDisplayedData.balls[selectedBallRow].length - 1
-    ) {
-      const nextBallCellIndex = currentlyDisplayedData.balls[
-        selectedBallRow
-      ].findIndex((c, i) => i > parseInt(selectedBallCell) && !!c);
-      if (nextBallCellIndex >= 0)
-        selectCell(selectedBallRow, nextBallCellIndex);
-      e.preventDefault();
+    if (key === "Tab") {
+      if (shiftKey) {
+        const prevBallCellIndex = currentlyDisplayedData.balls[
+          selectedBallRow
+        ].findLastIndex((c, i) => i < cellIndexInt && !!c);
+        if (prevBallCellIndex !== -1)
+          selectCell(selectedBallRow, prevBallCellIndex);
+      } else {
+        const nextBallCellIndex = currentlyDisplayedData.balls[
+          selectedBallRow
+        ].findIndex((c, i) => i > cellIndexInt && !!c);
+        if (nextBallCellIndex !== -1)
+          selectCell(selectedBallRow, nextBallCellIndex);
+      }
     }
 
+    // Reset selection on escape or backspace
     if (key === "Escape" || key === "Backspace") {
-      drawLevel();
       selectedBallEl = false;
       selectedBallRow = false;
       selectedBallCell = false;
-    } else {
-      // Reselect to redraw level + reselect cell
+      drawLevel();
+    }
+
+    // Except on actions that change the selection, redraw + reselect
+    if (key !== "Escape" && key !== "Backspace" && key !== "Tab") {
       selectCell(selectedBallRow, selectedBallCell);
+    }
+
+    // Prevent arrow key scrolling or tab-selecting the browser URL input
+    if (
+      key === "Tab" ||
+      key === "ArrowUp" ||
+      key === "ArrowRight" ||
+      key === "ArrowDown" ||
+      key === "ArrowLeft"
+    ) {
+      e.preventDefault();
     }
   }
 });
