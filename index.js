@@ -19,7 +19,18 @@ const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
 const previewDataPresent = !!window.location.search && previewData;
 
 if (previewDataPresent) {
-  document.title = `Preview for “${previewData.name}”`;
+  const previewTitle = `Bubbles! - “${previewData.name}”`;
+  const previewDesc = "Click to play this custom level preview";
+  document.title = previewTitle;
+  document
+    .querySelector('meta[property="og:title"]')
+    .setAttribute("content", previewTitle);
+  document
+    .querySelector('meta[name="description"]')
+    .setAttribute("content", previewDesc);
+  document
+    .querySelector('meta[property="og:description"]')
+    .setAttribute("content", previewDesc);
 }
 
 const canvasManager = makeCanvasManager({
