@@ -201,6 +201,7 @@ document.addEventListener("click", ({ target }) => {
   } else if (elIsLevel) {
     currentlyDisplayedData =
       gameLevels[clickedEl.getAttribute("data-level-index")];
+    clearSelection();
     drawLevel();
     populateListOfLevels();
   }
