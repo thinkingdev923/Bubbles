@@ -26,12 +26,14 @@ let selectedBallRow;
 let selectedBallCell;
 
 const populateListOfLevels = () => {
-  levelDataEl.innerHTML = "";
+  const allNodes = document.createDocumentFragment();
   gameLevels.forEach((level, levelIndex) => {
-    levelDataEl.appendChild(
+    allNodes.appendChild(
       makeLevelLinkHTML(level, levelIndex, currentlyDisplayedData)
     );
   });
+
+  levelDataEl.replaceChildren(allNodes);
 };
 
 const updateName = (newName) => (currentlyDisplayedData.name = newName);
@@ -42,14 +44,11 @@ const drawLevel = () => {
   layoutNameEl.value = currentlyDisplayedData.name;
   layoutGravityEl.value = currentlyDisplayedData.gravity;
 
-  layoutPreviewEl.innerHTML = "";
-  const newNodes = [];
+  const newNodes = document.createDocumentFragment();
   currentlyDisplayedData.balls.forEach((row, rowIndex) =>
-    newNodes.push(makeRowHTML(row, rowIndex))
+    newNodes.appendChild(makeRowHTML(row, rowIndex))
   );
-  newNodes.forEach((levelNode) => {
-    layoutPreviewEl.appendChild(levelNode);
-  });
+  layoutPreviewEl.replaceChildren(newNodes);
 };
 
 const fillCell = (rowIndex, cellIndex, content) => {
