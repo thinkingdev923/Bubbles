@@ -1,17 +1,7 @@
-.actionsTop {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 66px 32px 32px;
-  box-sizing: border-box;
-  grid-gap: 16px;
-  bottom: 0;
-}
-
 .actionsTop-button {
   display: flex;
   grid-gap: 8px;
-  padding: 16px;
+  padding: 16px 0;
   width: 100%;
   align-items: center;
   justify-content: center;

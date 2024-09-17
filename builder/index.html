@@ -38,28 +38,20 @@
   </head>
   <body>
     <div class="levelData" id="levelData"></div>
-    <div class="actionsTop">
-      <div class="actionsTop-button" id="addRow">
-        <div class="actionsTop-button-label">Add Row</div>
-        <div class="actionsTop-button-shortcut">(R)</div>
+    <div class="layout-meta">
+      <div class="layout-meta-row">
+        <div class="layout-meta-row-label">NAME</div>
+        <input id="layout-name" type="text" maxlength="40" />
+      </div>
+      <div class="layout-meta-row">
+        <div class="layout-meta-row-label">GRAVITY</div>
+        <input id="layout-gravity" type="range" min=".02" max=".1" step=".01" />
       </div>
     </div>
     <div class="layout">
-      <div class="layout-meta">
-        <div class="layout-meta-row">
-          <div class="layout-meta-row-label">NAME</div>
-          <input id="layout-name" type="text" maxlength="40" />
-        </div>
-        <div class="layout-meta-row">
-          <div class="layout-meta-row-label">GRAVITY</div>
-          <input
-            id="layout-gravity"
-            type="range"
-            min=".02"
-            max=".1"
-            step=".01"
-          />
-        </div>
+      <div class="actionsTop-button" id="addRow">
+        <div class="actionsTop-button-label">Add Row</div>
+        <div class="actionsTop-button-shortcut">(R)</div>
       </div>
       <div class="layout-preview" id="layout-preview"></div>
       <div class="actionsBottom">

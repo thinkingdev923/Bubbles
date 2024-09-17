@@ -113,6 +113,11 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
     cell.appendChild(velocity);
   } else {
     cell.classList.add("preview-cell--empty");
+
+    const plusImg = document.createElement("img");
+    plusImg.setAttribute("src", "../images/plus.svg");
+
+    cell.appendChild(plusImg);
   }
 
   cell.setAttribute("data-row-index", rowIndex);
