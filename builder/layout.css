@@ -13,6 +13,13 @@
   grid-gap: 32px;
 }
 
+@media (max-width: 540px) {
+  .layout-meta {
+    margin: 64px 16px 32px;
+    grid-gap: 16px;
+  }
+}
+
 .layout-meta-row {
   flex: 1;
   display: flex;

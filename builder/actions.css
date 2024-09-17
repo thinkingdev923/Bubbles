@@ -56,6 +56,12 @@
   bottom: 0;
 }
 
+@media (max-width: 540px) {
+  .actionsBottom {
+    padding: 0 16px 16px;
+  }
+}
+
 .actionsBottom-button {
   display: flex;
   grid-gap: 8px;

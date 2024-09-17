@@ -17,6 +17,12 @@ body {
   color: var(--white);
 }
 
+@media (max-width: 540px) {
+  body {
+    font-size: 16px;
+  }
+}
+
 img {
   display: block;
 }
