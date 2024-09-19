@@ -35,3 +35,5 @@ export const easeOutElastic = (x) => {
 export const easeOutQuart = (x) => 1 - Math.pow(1 - x, 4);
 
 export const easeOutCirc = (x) => Math.sqrt(1 - Math.pow(x - 1, 2));
+
+export const easeOutSine = (x) => Math.sin((x * Math.PI) / 2);

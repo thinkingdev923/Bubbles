@@ -10,7 +10,6 @@
 # Interaction ideas:
 - Missed balls animate to the score tracker at the bottom of the screen
 - Clicking a ball: ball shrinks, then expands rapidly; subtracted ball shape within that ball expands, until finally we trigger the current "pop" effect when the rendered ball is just a stroke
-- Holding mouse down: triggers a growing circle, releasing triggers a blast ripple that's bigger if you held down longer, pops lots of balls
 - Clicking and dragging: draws a line from origin to current mouse position; under mouse we show a circle that gets smaller the further you get from the origin (with min size). The longer the drag distance, the faster it travels
   - Once below a certain speed it no longer pops anything
 - Big touch with your thumb pad: just like holding your finger down

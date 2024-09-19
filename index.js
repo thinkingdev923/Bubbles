@@ -13,6 +13,8 @@ import { makeContinueButtonManager } from "./continueButton.js";
 import { centerTextBlock } from "./centerTextBlock.js";
 import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
+import { drawHoldBlastPreview, makeHoldBlast } from "./holdBlast.js";
+import { BLAST_HOLD_THRESHOLD } from "./constants.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -47,6 +49,10 @@ const levelManager = makeLevelManager(
 );
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
+let currentPointerID;
+let currentPointerPosition;
+let pointerHoldStart;
+let holdBlasts;
 let clicksTotal;
 let ballsPoppedTotal;
 let ballsMissedTotal;
@@ -57,6 +63,10 @@ let balls;
 let ripples;
 
 function restartGame() {
+  currentPointerID = null;
+  currentPointerPosition = null;
+  pointerHoldStart = 0;
+  holdBlasts = [];
   clicksTotal = 0;
   ballsPoppedTotal = 0;
   ballsMissedTotal = 0;
@@ -71,23 +81,54 @@ function restartGame() {
 }
 restartGame();
 
-document.addEventListener("pointerdown", ({ clientX: x, clientY: y }) => {
-  if (levelManager.isGameOver() || levelManager.isLastLevel()) {
-    continueButtonManager.handleClick({ x, y }, restartGame);
-  } else if (levelManager.isInterstitialShowing()) {
-    continueButtonManager.handleClick(
-      { x, y },
-      levelManager.dismissInterstitialAndAdvanceLevel
-    );
-  } else {
-    handleBallClick({ x, y });
-  }
-});
+document.addEventListener(
+  "pointerdown",
+  ({ pointerId, clientX: x, clientY: y }) => {
+    if (levelManager.isGameOver() || levelManager.isLastLevel()) {
+      continueButtonManager.handleClick({ x, y }, restartGame);
+    } else if (levelManager.isInterstitialShowing()) {
+      continueButtonManager.handleClick(
+        { x, y },
+        levelManager.dismissInterstitialAndAdvanceLevel
+      );
+    } else {
+      currentPointerID = pointerId;
+      currentPointerPosition = { x, y };
+      pointerHoldStart = Date.now();
 
-document.addEventListener("mousemove", ({ clientX: x, clientY: y }) => {
-  if (levelManager.isInterstitialShowing()) {
-    continueButtonManager.handleHover({ x, y });
+      handleBallClick({ x, y });
+    }
   }
+);
+
+document.addEventListener(
+  "pointerup",
+  ({ pointerId, clientX: x, clientY: y }) => {
+    if (pointerId === currentPointerID) {
+      if (
+        Date.now() - pointerHoldStart > BLAST_HOLD_THRESHOLD &&
+        !levelManager.isInterstitialShowing()
+      ) {
+        holdBlasts.push(
+          makeHoldBlast(canvasManager, { x, y }, Date.now() - pointerHoldStart)
+        );
+      }
+
+      currentPointerID = null;
+      pointerHoldStart = 0;
+    }
+  }
+);
+
+document.addEventListener("pointermove", (e) => {
+  const { clientX: x, clientY: y } = e;
+
+  currentPointerPosition = { x, y };
+
+  if (levelManager.isInterstitialShowing())
+    continueButtonManager.handleHover({ x, y });
+
+  e.preventDefault();
 });
 
 document.addEventListener("keydown", ({ key }) => {
@@ -100,18 +141,15 @@ document.addEventListener("keydown", ({ key }) => {
   }
 });
 
-document.addEventListener("touchmove", (e) => e.preventDefault(), {
-  passive: false,
-});
-
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
   // Calculate new positions for all balls
   balls.forEach((b) => b.update(deltaTime));
 
-  // Run collision detection
+  // Run collision detection on balls + holdBlasts
   const ballsInPlay = balls.filter((b) => b.isRemaining() && b.shouldRender());
+  const currentBlasts = holdBlasts.filter((b) => !b.isGone());
   ballsInPlay.forEach((ballA) => {
     ballsInPlay.forEach((ballB) => {
       if (ballA !== ballB) {
@@ -122,6 +160,11 @@ animate((deltaTime) => {
         }
       }
     });
+
+    currentBlasts.forEach((blast) => {
+      const collision = checkBallCollision(ballA, blast);
+      if (collision[0]) ballA.pop();
+    });
   });
 
   // Draw level + life text underneath balls
@@ -129,9 +172,22 @@ animate((deltaTime) => {
 
   if (!levelManager.isGameOver()) lifeManager.draw();
 
-  // Draw ripples and balls
+  // Draw ripples, balls, and hold blasts
   ripples.forEach((r) => r.draw());
+  holdBlasts.forEach((b) => b.draw());
   balls.forEach((b) => b.draw(deltaTime));
+
+  // Draw pointer hold circle
+  if (
+    currentPointerID &&
+    Date.now() - pointerHoldStart > BLAST_HOLD_THRESHOLD
+  ) {
+    drawHoldBlastPreview(
+      canvasManager,
+      currentPointerPosition,
+      pointerHoldStart
+    );
+  }
 
   levelManager.drawInterstitialMessage({
     previewInitialMessage: (msElapsed) => {
