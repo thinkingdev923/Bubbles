@@ -113,6 +113,7 @@ document.addEventListener(
         holdBlasts.push(
           makeHoldBlast(canvasManager, { x, y }, Date.now() - pointerHoldStart)
         );
+        audioManager.playRandomFireworks();
       }
 
       currentPointerID = null;
@@ -164,7 +165,10 @@ animate((deltaTime) => {
 
     currentBlasts.forEach((blast) => {
       const collision = checkBallCollision(ballA, blast);
-      if (collision[0]) ballA.pop();
+      if (collision[0]) {
+        ballA.pop();
+        audioManager.playRandomPluck();
+      }
     });
   });
 
