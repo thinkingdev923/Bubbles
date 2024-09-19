@@ -1,7 +1,6 @@
 import { red } from "./colors.js";
-import { easeInOutSine } from "./easings.js";
-import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
+import { drawTextRotate } from "./textRotate.js";
 
 export const makeLifeManager = (canvasManager) => {
   const CTX = canvasManager.getContext();
@@ -43,51 +42,17 @@ export const makeLifeManager = (canvasManager) => {
     CTX.beginPath();
     CTX.roundRect(-width / 2, 0, width, height, height);
     CTX.stroke();
+    CTX.translate(0, height / 2 + textVerticalOffset);
 
     if (previousLivesValue) {
-      const lifeAnimationProgress = clampedProgress(
-        0,
-        160,
-        Date.now() - lastSubtractStart
-      );
-      const travelDistance = 20;
-      const blurAmount = 8;
-
-      CTX.save();
-      CTX.translate(
-        0,
-        transition(0, -travelDistance, lifeAnimationProgress, easeInOutSine)
-      );
-      CTX.globalAlpha = transition(1, 0, lifeAnimationProgress, easeInOutSine);
-      CTX.filter = `blur(${transition(
-        0,
-        blurAmount,
-        lifeAnimationProgress,
-        easeInOutSine
-      )}px)`;
-      CTX.fillText(
+      drawTextRotate(
+        canvasManager,
+        lastSubtractStart,
         `♥ ${previousLivesValue}`,
-        0,
-        height / 2 + textVerticalOffset
+        `♥ ${lives}`
       );
-      CTX.restore();
-
-      CTX.save();
-      CTX.translate(
-        0,
-        transition(travelDistance, 0, lifeAnimationProgress, easeInOutSine)
-      );
-      CTX.globalAlpha = transition(0, 1, lifeAnimationProgress, easeInOutSine);
-      CTX.filter = `blur(${transition(
-        blurAmount,
-        0,
-        lifeAnimationProgress,
-        easeInOutSine
-      )}px)`;
-      CTX.fillText(`♥ ${lives}`, 0, height / 2 + textVerticalOffset);
-      CTX.restore();
     } else {
-      CTX.fillText(`♥ ${lives}`, 0, height / 2 + textVerticalOffset);
+      CTX.fillText(`♥ ${lives}`, 0, 0);
     }
 
     CTX.restore();

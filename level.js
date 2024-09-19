@@ -1,10 +1,13 @@
 import { yellow } from "./colors.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { levels as levelData } from "./levelData.js";
+import { drawTextRotate } from "./textRotate.js";
 
 export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   const CTX = canvasManager.getContext();
   let level;
+  let previousLevelValue;
+  let lastLevelChangeStart;
   let interstitialShowing;
   let interstitialStart;
   let firstMissLevel;
@@ -14,6 +17,7 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
 
   const reset = () => {
     level = false;
+    previousLevelValue = false;
     interstitialShowing = false;
     firstMissLevel = false;
     hasShownFirstMissMessage = false;
@@ -25,8 +29,14 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   const isLastLevel = () => level > levelData.length;
 
   const showLevelInterstitial = () => {
-    if (level) level++;
-    else level = 1;
+    if (level) {
+      previousLevelValue = level;
+      level++;
+      lastLevelChangeStart = Date.now();
+    } else {
+      previousLevelValue = false;
+      level = 1;
+    }
 
     interstitialShowing = true;
     interstitialStart = Date.now();
@@ -90,7 +100,18 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
     CTX.letterSpacing = "1px";
     CTX.textAlign = "center";
     CTX.translate(canvasManager.getWidth() / 2, 24);
-    CTX.fillText(isPreview ? "PREVIEW" : `LEVEL ${level}`, 0, 0);
+
+    if (!isPreview && previousLevelValue) {
+      drawTextRotate(
+        canvasManager,
+        lastLevelChangeStart,
+        `LEVEL ${previousLevelValue}`,
+        `LEVEL ${level}`
+      );
+    } else {
+      CTX.fillText(isPreview ? "PREVIEW" : `LEVEL ${level}`, 0, 0);
+    }
+
     CTX.restore();
   };
 
