@@ -81,25 +81,26 @@ function restartGame() {
 }
 restartGame();
 
-document.addEventListener(
-  "pointerdown",
-  ({ pointerId, clientX: x, clientY: y }) => {
-    if (levelManager.isGameOver() || levelManager.isLastLevel()) {
-      continueButtonManager.handleClick({ x, y }, restartGame);
-    } else if (levelManager.isInterstitialShowing()) {
-      continueButtonManager.handleClick(
-        { x, y },
-        levelManager.dismissInterstitialAndAdvanceLevel
-      );
-    } else {
-      currentPointerID = pointerId;
-      currentPointerPosition = { x, y };
-      pointerHoldStart = Date.now();
+document.addEventListener("pointerdown", (e) => {
+  const { pointerId, clientX: x, clientY: y } = e;
 
-      handleBallClick({ x, y });
-    }
+  if (levelManager.isGameOver() || levelManager.isLastLevel()) {
+    continueButtonManager.handleClick({ x, y }, restartGame);
+  } else if (levelManager.isInterstitialShowing()) {
+    continueButtonManager.handleClick(
+      { x, y },
+      levelManager.dismissInterstitialAndAdvanceLevel
+    );
+  } else {
+    currentPointerID = pointerId;
+    currentPointerPosition = { x, y };
+    pointerHoldStart = Date.now();
+
+    handleBallClick({ x, y });
   }
-);
+
+  e.preventDefault();
+});
 
 document.addEventListener(
   "pointerup",
