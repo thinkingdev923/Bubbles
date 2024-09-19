@@ -25,4 +25,9 @@ canvas {
   display: block;
   animation: introAnimation 400ms 150ms ease-in-out both;
   touch-action: none;
+  user-select: none;
+}
+
+div {
+  user-select: none;
 }
