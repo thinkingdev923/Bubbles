@@ -1,5 +1,6 @@
 import { yellow } from "./colors.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
+import { levels as levelData } from "./levelData.js";
 
 export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   const CTX = canvasManager.getContext();
@@ -21,8 +22,12 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
   };
   reset();
 
+  const isLastLevel = () => level > levelData.length;
+
   const showLevelInterstitial = () => {
-    level = level ? level + 1 : 1;
+    if (level) level++;
+    else level = 1;
+
     interstitialShowing = true;
     interstitialStart = Date.now();
   };
@@ -53,16 +58,19 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
 
   const drawInterstitialMessage = ({
     previewInitialMessage,
+    reachedEndOfGameMessage,
+    endGameMessage,
     initialMessage,
     firstMissMessage,
     defaultMessage,
-    endGameMessage,
   }) => {
     if (interstitialShowing) {
       const msElapsed = Date.now() - interstitialStart;
 
       if (isPreview && !hasShownPreviewInitialMessage) {
         previewInitialMessage(msElapsed);
+      } else if (isLastLevel()) {
+        reachedEndOfGameMessage(msElapsed);
       } else if (gameOver) {
         endGameMessage(msElapsed);
       } else if (level === 1 && !isPreview) {
@@ -95,6 +103,7 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
     showLevelInterstitial,
     dismissInterstitialAndAdvanceLevel,
     setFirstMiss,
+    isLastLevel,
     onGameOver,
     isGameOver: () => gameOver,
   };

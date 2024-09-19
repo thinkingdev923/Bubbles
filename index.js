@@ -72,7 +72,7 @@ function restartGame() {
 restartGame();
 
 document.addEventListener("pointerdown", ({ clientX: x, clientY: y }) => {
-  if (levelManager.isGameOver()) {
+  if (levelManager.isGameOver() || levelManager.isLastLevel()) {
     continueButtonManager.handleClick({ x, y }, restartGame);
   } else if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
@@ -162,7 +162,19 @@ animate((deltaTime) => {
         clicksTotal,
         ballsPoppedTotal,
         ballsMissedTotal,
-        msElapsed
+        msElapsed,
+        "Game over"
+      );
+      continueButtonManager.draw(msElapsed, 2000, "Try Again");
+    },
+    reachedEndOfGameMessage: (msElapsed) => {
+      drawScore(
+        canvasManager,
+        clicksTotal,
+        ballsPoppedTotal,
+        ballsMissedTotal,
+        msElapsed,
+        "You beat all levels!"
       );
       continueButtonManager.draw(msElapsed, 2000, "Play Again");
     },
