@@ -14,7 +14,8 @@ export const makeAudioManager = () => {
   let fireworks2Buffer;
   let missBuffer;
   let loseBuffer;
-  let levelBuffer;
+  let level1Buffer;
+  let level2Buffer;
   let silenceAudio;
 
   async function _loadFile(context, filePath) {
@@ -50,7 +51,8 @@ export const makeAudioManager = () => {
       fireworks2Buffer = _loadFile(audioCTX, "./sounds/fireworks2.mp3");
       missBuffer = _loadFile(audioCTX, "./sounds/miss.mp3");
       loseBuffer = _loadFile(audioCTX, "./sounds/lose.mp3");
-      levelBuffer = _loadFile(audioCTX, "./sounds/level.mp3");
+      level1Buffer = _loadFile(audioCTX, "./sounds/level1.mp3");
+      level2Buffer = _loadFile(audioCTX, "./sounds/level2.mp3");
     }
   };
 
@@ -104,8 +106,11 @@ export const makeAudioManager = () => {
     _playTrack(missBuffer, false);
   };
 
-  const playLevel = () => {
-    _playTrack(levelBuffer, false);
+  const playRandomLevel = () => {
+    _playTrack(
+      [level1Buffer, level2Buffer][Math.floor(Math.random() * 2)],
+      false
+    );
   };
 
   const playLose = () => {
@@ -117,7 +122,7 @@ export const makeAudioManager = () => {
     playRandomPluck,
     playRandomFireworks,
     playMiss,
-    playLevel,
+    playRandomLevel,
     playLose,
   };
 };

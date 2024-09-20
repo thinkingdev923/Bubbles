@@ -297,7 +297,7 @@ function onLevelAdvance() {
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
-  audioManager.playLevel();
+  audioManager.playRandomLevel();
 }
 
 function onPreviewAdvance() {
@@ -313,7 +313,7 @@ function onPreviewAdvance() {
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
-  audioManager.playLevel();
+  audioManager.playRandomLevel();
 }
 
 function getBallsRemaining() {
