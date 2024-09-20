@@ -33,7 +33,7 @@ export const drawHoldBlastPreview = (
 export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
   const CTX = canvasManager.getContext();
   const blastStart = Date.now();
-  const blastDuration = 1000;
+  const blastDuration = 400;
   const startSize = transition(
     0,
     140,
@@ -46,15 +46,16 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
     clampedProgress(0, blastDuration, Date.now() - blastStart);
 
   const getRadius = () =>
-    transition(startSize, startSize * 2.5, getBlastProgress(), easeOutCubic);
+    transition(startSize, startSize * 2, getBlastProgress(), easeOutCubic);
 
   const draw = () => {
     if (!gone) {
       if (Date.now() - blastStart > blastDuration) gone = true;
 
       CTX.save();
+
       CTX.strokeStyle = red;
-      CTX.lineWidth = transition(8, 0, getBlastProgress(), easeOutCubic);
+      CTX.lineWidth = transition(14, 2, getBlastProgress(), easeOutCubic);
       CTX.globalAlpha = transition(1, 0, getBlastProgress(), easeOutCubic);
       CTX.translate(x, y);
       CTX.beginPath();
