@@ -49,9 +49,7 @@ const levelManager = makeLevelManager(
 );
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
-let currentPointerID;
-let currentPointerPosition;
-let pointerHoldStart;
+let pointerData;
 let holdBlasts;
 let clicksTotal;
 let ballsPoppedTotal;
@@ -63,9 +61,7 @@ let balls;
 let ripples;
 
 function restartGame() {
-  currentPointerID = null;
-  currentPointerPosition = null;
-  pointerHoldStart = 0;
+  pointerData = [];
   holdBlasts = [];
   clicksTotal = 0;
   ballsPoppedTotal = 0;
@@ -92,9 +88,11 @@ document.addEventListener("pointerdown", (e) => {
       levelManager.dismissInterstitialAndAdvanceLevel
     );
   } else {
-    currentPointerID = pointerId;
-    currentPointerPosition = { x, y };
-    pointerHoldStart = Date.now();
+    pointerData.push({
+      id: pointerId,
+      position: { x, y },
+      holdStart: Date.now(),
+    });
 
     handleBallClick({ x, y });
   }
@@ -102,30 +100,34 @@ document.addEventListener("pointerdown", (e) => {
   e.preventDefault();
 });
 
-document.addEventListener(
-  "pointerup",
-  ({ pointerId, clientX: x, clientY: y }) => {
-    if (pointerId === currentPointerID) {
+document.addEventListener("pointerup", ({ pointerId }) => {
+  pointerData.forEach((pointer, pointerIndex) => {
+    if (pointerId === pointer.id) {
       if (
-        Date.now() - pointerHoldStart > BLAST_HOLD_THRESHOLD &&
+        Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD &&
         !levelManager.isInterstitialShowing()
       ) {
         holdBlasts.push(
-          makeHoldBlast(canvasManager, { x, y }, Date.now() - pointerHoldStart)
+          makeHoldBlast(
+            canvasManager,
+            pointer.position,
+            Date.now() - pointer.holdStart
+          )
         );
         audioManager.playRandomFireworks();
       }
 
-      currentPointerID = null;
-      pointerHoldStart = 0;
+      pointerData.splice(pointerIndex, 1);
     }
-  }
-);
+  });
+});
 
 document.addEventListener("pointermove", (e) => {
-  const { clientX: x, clientY: y } = e;
+  const { pointerId, clientX: x, clientY: y } = e;
 
-  currentPointerPosition = { x, y };
+  pointerData.forEach((pointer) => {
+    if (pointerId === pointer.id) pointer.position = { x, y };
+  });
 
   if (levelManager.isInterstitialShowing())
     continueButtonManager.handleHover({ x, y });
@@ -182,17 +184,12 @@ animate((deltaTime) => {
   holdBlasts.forEach((b) => b.draw());
   balls.forEach((b) => b.draw(deltaTime));
 
-  // Draw pointer hold circle
-  if (
-    currentPointerID &&
-    Date.now() - pointerHoldStart > BLAST_HOLD_THRESHOLD
-  ) {
-    drawHoldBlastPreview(
-      canvasManager,
-      currentPointerPosition,
-      pointerHoldStart
-    );
-  }
+  // Draw pointer hold circles
+  pointerData.forEach((pointer) => {
+    if (Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD) {
+      drawHoldBlastPreview(canvasManager, pointer.position, pointer.holdStart);
+    }
+  });
 
   levelManager.drawInterstitialMessage({
     previewInitialMessage: (msElapsed) => {
