@@ -123,7 +123,7 @@ document.addEventListener("pointerup", ({ pointerId }) => {
             Date.now() - pointer.holdStart
           )
         );
-        audioManager.playRandomFireworks();
+        audioManager.playImpact();
       }
 
       pointerData.splice(pointerIndex, 1);
@@ -258,7 +258,7 @@ function handleBallClick({ x, y }) {
     audioManager.playRandomPluck();
   } else {
     ripples.push(makeRipple(canvasManager, { x, y }));
-    audioManager.playRandomFireworks();
+    audioManager.playMiss();
   }
 }
 
@@ -276,7 +276,7 @@ function onMiss() {
     ballsMissedTotal++;
     ballsMissedRound++;
     lifeManager.subtract();
-    audioManager.playMiss();
+    audioManager.playRandomFireworks();
     levelManager.setFirstMiss();
 
     if (lifeManager.getLives() <= 0) {
