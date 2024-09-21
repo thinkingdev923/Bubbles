@@ -63,19 +63,28 @@ let ripples;
 function restartGame() {
   pointerData = [];
   holdBlasts = [];
+  balls = [];
+  ripples = [];
   clicksTotal = 0;
   ballsPoppedTotal = 0;
   ballsMissedTotal = 0;
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
-  balls = [];
-  ripples = [];
   lifeManager.reset();
   levelManager.reset();
   levelManager.showLevelInterstitial();
 }
 restartGame();
+
+function resetLevel() {
+  pointerData = [];
+  holdBlasts = [];
+  ripples = [];
+  clicksRound = 0;
+  ballsPoppedRound = 0;
+  ballsMissedRound = 0;
+}
 
 document.addEventListener("pointerdown", (e) => {
   const { pointerId, clientX: x, clientY: y } = e;
@@ -284,10 +293,7 @@ function onGameEnd() {
 }
 
 function onLevelAdvance() {
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
-  ripples = [];
+  resetLevel();
 
   const levelData = levels[levelManager.getLevel() - 1];
   // Allow popping animation to finish playing for previous level balls
@@ -301,10 +307,7 @@ function onLevelAdvance() {
 }
 
 function onPreviewAdvance() {
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
-  ripples = [];
+  resetLevel();
 
   // Allow popping animation to finish playing for previous level balls
   balls = balls
