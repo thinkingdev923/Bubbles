@@ -1,5 +1,5 @@
 import { makeCanvasManager } from "./canvas.js";
-import { animate, findBallAtPoint } from "./helpers.js";
+import { animate, findBallAtPoint, randomBetween } from "./helpers.js";
 import {
   checkBallCollision,
   adjustBallPositions,
@@ -157,6 +157,12 @@ document.addEventListener("keydown", ({ key }) => {
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
+  // Camera shake
+  if (holdBlasts.filter((b) => !b.isGone()).length) {
+    CTX.save();
+    CTX.translate(randomBetween(-3, 3), randomBetween(-3, 3));
+  }
+
   // Calculate new positions for all balls
   balls.forEach((b) => b.update(deltaTime));
 
@@ -246,6 +252,11 @@ animate((deltaTime) => {
       continueButtonManager.draw(msElapsed, 2000, "Play Again");
     },
   });
+
+  // Reset camera shake transforms
+  if (holdBlasts.filter((b) => !b.isGone()).length) {
+    CTX.restore();
+  }
 });
 
 function handleBallClick({ x, y }) {
