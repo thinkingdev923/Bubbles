@@ -1,5 +1,10 @@
 import { makeCanvasManager } from "./canvas.js";
-import { animate, findBallAtPoint, randomBetween } from "./helpers.js";
+import {
+  animate,
+  findBallAtPoint,
+  randomBetween,
+  transition,
+} from "./helpers.js";
 import {
   checkBallCollision,
   adjustBallPositions,
@@ -156,15 +161,33 @@ document.addEventListener("keydown", ({ key }) => {
 
 // Scale or translate the entire game
 const cameraWrapper = (drawFunc) => {
-  if (holdBlasts.filter((b) => !b.isGone()).length) {
-    CTX.save();
+  const activeHoldBlasts = holdBlasts.filter((b) => !b.isGone()).length;
+  const activeBubblePops = balls.filter((b) => b.isPopping()).length;
+
+  const cameraShake = (magnitudeProgress) => {
+    const rotationAmount = transition(0, Math.PI / 90, magnitudeProgress);
+    const shakeAmount = transition(0, 4, magnitudeProgress);
+
+    // Translate to center and rotate randomly
     CTX.translate(canvasManager.getWidth() / 2, canvasManager.getHeight() / 2);
-    CTX.rotate(randomBetween(-Math.PI / 80, Math.PI / 80));
+    CTX.rotate(randomBetween(-rotationAmount, rotationAmount));
+
+    // Translate back to top left to reset w/o calling restore()
     CTX.translate(
       -canvasManager.getWidth() / 2,
       -canvasManager.getHeight() / 2
     );
-    CTX.translate(randomBetween(-3, 3), randomBetween(-3, 3));
+
+    // Move canvas randomly
+    CTX.translate(
+      randomBetween(-shakeAmount, shakeAmount),
+      randomBetween(-shakeAmount, shakeAmount)
+    );
+  };
+
+  if (activeHoldBlasts) {
+    CTX.save();
+    cameraShake(0.5);
     drawFunc();
     CTX.restore();
   } else {
@@ -324,7 +347,7 @@ function onLevelAdvance() {
   const levelData = levels[levelManager.getLevel() - 1];
   // Allow popping animation to finish playing for previous level balls
   balls = balls
-    .filter((b) => b.isPopped() && b.shouldRender())
+    .filter((b) => b.isPopping())
     .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
 
   // Call on first interaction. Subsequent calls are ignored.
@@ -337,7 +360,7 @@ function onPreviewAdvance() {
 
   // Allow popping animation to finish playing for previous level balls
   balls = balls
-    .filter((b) => b.isPopped() && b.shouldRender())
+    .filter((b) => b.isPopping())
     .concat(makeLevelBalls(canvasManager, previewData, onPop, onMiss));
 
   // Call on first interaction. Subsequent calls are ignored.

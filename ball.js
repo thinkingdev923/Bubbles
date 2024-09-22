@@ -185,6 +185,7 @@ export const makeBall = (
     isPopped: () => popped,
     isRemaining: () => !popped && !gone,
     shouldRender,
+    isPopping: () => popped && !gone,
     getPopAnimationDuration: () => popAnimationDuration,
     getRadius: () => radius,
     setPosition: (passedPosition) => (position = passedPosition),
