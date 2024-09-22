@@ -154,109 +154,124 @@ document.addEventListener("keydown", ({ key }) => {
   }
 });
 
+// Scale or translate the entire game
+const cameraWrapper = (drawFunc) => {
+  if (holdBlasts.filter((b) => !b.isGone()).length) {
+    CTX.save();
+    CTX.translate(canvasManager.getWidth() / 2, canvasManager.getHeight() / 2);
+    CTX.rotate(randomBetween(-Math.PI / 80, Math.PI / 80));
+    CTX.translate(
+      -canvasManager.getWidth() / 2,
+      -canvasManager.getHeight() / 2
+    );
+    CTX.translate(randomBetween(-3, 3), randomBetween(-3, 3));
+    drawFunc();
+    CTX.restore();
+  } else {
+    drawFunc();
+  }
+};
+
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
-  // Camera shake
-  if (holdBlasts.filter((b) => !b.isGone()).length) {
-    CTX.save();
-    CTX.translate(randomBetween(-3, 3), randomBetween(-3, 3));
-  }
+  cameraWrapper(() => {
+    // Calculate new positions for all balls
+    balls.forEach((b) => b.update(deltaTime));
 
-  // Calculate new positions for all balls
-  balls.forEach((b) => b.update(deltaTime));
-
-  // Run collision detection on balls + holdBlasts
-  const ballsInPlay = balls.filter((b) => b.isRemaining() && b.shouldRender());
-  const currentBlasts = holdBlasts.filter((b) => !b.isGone());
-  ballsInPlay.forEach((ballA) => {
-    ballsInPlay.forEach((ballB) => {
-      if (ballA !== ballB) {
-        const collision = checkBallCollision(ballA, ballB);
-        if (collision[0]) {
-          adjustBallPositions(ballA, ballB, collision[1]);
-          resolveBallCollision(ballA, ballB);
+    // Run collision detection on balls + holdBlasts
+    const ballsInPlay = balls.filter(
+      (b) => b.isRemaining() && b.shouldRender()
+    );
+    const currentBlasts = holdBlasts.filter((b) => !b.isGone());
+    ballsInPlay.forEach((ballA) => {
+      ballsInPlay.forEach((ballB) => {
+        if (ballA !== ballB) {
+          const collision = checkBallCollision(ballA, ballB);
+          if (collision[0]) {
+            adjustBallPositions(ballA, ballB, collision[1]);
+            resolveBallCollision(ballA, ballB);
+          }
         }
+      });
+
+      currentBlasts.forEach((blast) => {
+        const collision = checkBallCollision(ballA, blast);
+        if (collision[0]) {
+          ballA.pop();
+          audioManager.playRandomPluck();
+        }
+      });
+    });
+
+    // Draw level + life text underneath balls
+    levelManager.drawLevelNumber();
+
+    if (!levelManager.isGameOver()) lifeManager.draw();
+
+    // Draw ripples, balls, and hold blasts
+    ripples.forEach((r) => r.draw());
+    holdBlasts.forEach((b) => b.draw());
+    balls.forEach((b) => b.draw(deltaTime));
+
+    // Draw pointer hold circles
+    pointerData.forEach((pointer) => {
+      if (Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD) {
+        drawHoldBlastPreview(
+          canvasManager,
+          pointer.position,
+          pointer.holdStart
+        );
       }
     });
 
-    currentBlasts.forEach((blast) => {
-      const collision = checkBallCollision(ballA, blast);
-      if (collision[0]) {
-        ballA.pop();
-        audioManager.playRandomPluck();
-      }
+    levelManager.drawInterstitialMessage({
+      previewInitialMessage: (msElapsed) => {
+        centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
+        continueButtonManager.draw(msElapsed, 0, "Play Preview");
+      },
+      initialMessage: (msElapsed) => {
+        centerTextBlock(canvasManager, [`Pop the bubble`]);
+        continueButtonManager.draw(msElapsed, 0, "Play");
+      },
+      firstMissMessage: (msElapsed) => {
+        centerTextBlock(canvasManager, [`Miss a bubble, lose a life`]);
+        continueButtonManager.draw(msElapsed, 1000);
+      },
+      defaultMessage: (msElapsed) => {
+        drawScore(
+          canvasManager,
+          clicksRound,
+          ballsPoppedRound,
+          ballsMissedRound,
+          msElapsed
+        );
+        continueButtonManager.draw(msElapsed, 2000);
+      },
+      endGameMessage: (msElapsed) => {
+        drawScore(
+          canvasManager,
+          clicksTotal,
+          ballsPoppedTotal,
+          ballsMissedTotal,
+          msElapsed,
+          "Game over"
+        );
+        continueButtonManager.draw(msElapsed, 2000, "Try Again");
+      },
+      reachedEndOfGameMessage: (msElapsed) => {
+        drawScore(
+          canvasManager,
+          clicksTotal,
+          ballsPoppedTotal,
+          ballsMissedTotal,
+          msElapsed,
+          "You beat all levels!"
+        );
+        continueButtonManager.draw(msElapsed, 2000, "Play Again");
+      },
     });
   });
-
-  // Draw level + life text underneath balls
-  levelManager.drawLevelNumber();
-
-  if (!levelManager.isGameOver()) lifeManager.draw();
-
-  // Draw ripples, balls, and hold blasts
-  ripples.forEach((r) => r.draw());
-  holdBlasts.forEach((b) => b.draw());
-  balls.forEach((b) => b.draw(deltaTime));
-
-  // Draw pointer hold circles
-  pointerData.forEach((pointer) => {
-    if (Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD) {
-      drawHoldBlastPreview(canvasManager, pointer.position, pointer.holdStart);
-    }
-  });
-
-  levelManager.drawInterstitialMessage({
-    previewInitialMessage: (msElapsed) => {
-      centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
-      continueButtonManager.draw(msElapsed, 0, "Play Preview");
-    },
-    initialMessage: (msElapsed) => {
-      centerTextBlock(canvasManager, [`Pop the bubble`]);
-      continueButtonManager.draw(msElapsed, 0, "Play");
-    },
-    firstMissMessage: (msElapsed) => {
-      centerTextBlock(canvasManager, [`Miss a bubble, lose a life`]);
-      continueButtonManager.draw(msElapsed, 1000);
-    },
-    defaultMessage: (msElapsed) => {
-      drawScore(
-        canvasManager,
-        clicksRound,
-        ballsPoppedRound,
-        ballsMissedRound,
-        msElapsed
-      );
-      continueButtonManager.draw(msElapsed, 2000);
-    },
-    endGameMessage: (msElapsed) => {
-      drawScore(
-        canvasManager,
-        clicksTotal,
-        ballsPoppedTotal,
-        ballsMissedTotal,
-        msElapsed,
-        "Game over"
-      );
-      continueButtonManager.draw(msElapsed, 2000, "Try Again");
-    },
-    reachedEndOfGameMessage: (msElapsed) => {
-      drawScore(
-        canvasManager,
-        clicksTotal,
-        ballsPoppedTotal,
-        ballsMissedTotal,
-        msElapsed,
-        "You beat all levels!"
-      );
-      continueButtonManager.draw(msElapsed, 2000, "Play Again");
-    },
-  });
-
-  // Reset camera shake transforms
-  if (holdBlasts.filter((b) => !b.isGone()).length) {
-    CTX.restore();
-  }
 });
 
 function handleBallClick({ x, y }) {
