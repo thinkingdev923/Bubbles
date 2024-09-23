@@ -96,7 +96,7 @@ function resetLevelData() {
 
 function resetOngoingVisuals() {
   pointerData = [];
-  holdBlasts = [];
+  holdBlasts = holdBlasts.filter((b) => !b.isGone());
   ripples = [];
 }
 
@@ -328,7 +328,7 @@ function onPop() {
   ballsPoppedTotal++;
   ballsPoppedRound++;
 
-  if (getBallsRemaining() <= 0) {
+  if (balls.filter((b) => b.isRemaining()) <= 0) {
     levelManager.showLevelInterstitial();
   }
 }
@@ -343,7 +343,7 @@ function onMiss() {
 
     if (lifeManager.getLives() <= 0) {
       onGameEnd();
-    } else if (getBallsRemaining() <= 0) {
+    } else if (balls.filter((b) => b.isRemaining()) <= 0) {
       levelManager.showLevelInterstitial();
     }
   }
@@ -383,8 +383,4 @@ function onPreviewAdvance() {
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
   audioManager.playRandomLevel();
-}
-
-function getBallsRemaining() {
-  return balls.filter((b) => b.isRemaining());
 }
