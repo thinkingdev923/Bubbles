@@ -1,5 +1,10 @@
 import { GRAVITY, INTERVAL } from "./constants.js";
-import { progress, transition, randomBetween } from "./helpers.js";
+import {
+  progress,
+  transition,
+  randomBetween,
+  clampedProgress,
+} from "./helpers.js";
 import { easeOutCubic } from "./easings.js";
 import { drawTrajectory } from "./trajectory.js";
 
@@ -19,11 +24,7 @@ export const makeBall = (
 ) => {
   const CTX = canvasManager.getContext();
   const popAnimationDurationMax = 2400;
-  const popAnimationDuration = randomBetween(
-    popAnimationDurationMax - 800,
-    popAnimationDurationMax
-  );
-  const numberOfPopPieces = 60;
+  const popAnimationDuration = randomBetween(1200, popAnimationDurationMax);
   const ballStart = Date.now();
   const terminalVelocity = 12;
 
@@ -62,6 +63,7 @@ export const makeBall = (
   };
 
   const pop = () => {
+    const numberOfPopPieces = Math.round(randomBetween(10, 80));
     popped = true;
     poppedTime = Date.now();
 
@@ -71,7 +73,6 @@ export const makeBall = (
     // This is accomplished by creating a ring of small to medium sized balls around
     // the outer edge, and also a cluster of larger balls in a smaller ring close to
     // the center of the popped ball. They all move outwards at different speeds.
-
     const outerPoppedPieces = new Array(numberOfPopPieces).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
       const minSize = 2;
@@ -79,7 +80,7 @@ export const makeBall = (
       const innerMargin = 12;
       const randomSize = randomBetween(minSize, maxSize);
       const randomSpeedMultiplier = transition(
-        7,
+        10,
         1.2,
         progress(1, maxSize, randomSize)
       );
@@ -95,8 +96,8 @@ export const makeBall = (
           // mostly go straight out from the center of the ball at the given
           // randomAngle
           startVelocity: {
-            x: velocity.x / 4 + Math.cos(randomAngle) * randomSpeedMultiplier,
-            y: velocity.y / 4 + Math.sin(randomAngle) * randomSpeedMultiplier,
+            x: velocity.x / 6 + Math.cos(randomAngle),
+            y: velocity.y / 6 + Math.sin(randomAngle) * randomSpeedMultiplier,
           },
           radius: randomSize,
           fill,
@@ -106,7 +107,8 @@ export const makeBall = (
         () => {}
       );
     });
-    const innerPoppedPieces = new Array(numberOfPopPieces / 2)
+
+    const innerPoppedPieces = new Array(Math.round(numberOfPopPieces / 2))
       .fill()
       .map(() => {
         const randomAngle = Math.random() * Math.PI * 2;
@@ -115,8 +117,8 @@ export const makeBall = (
         const innerMargin = 22;
         const randomSize = randomBetween(minSize, maxSize);
         const randomSpeedMultiplier = transition(
-          8,
-          2,
+          12,
+          3,
           progress(1, maxSize, randomSize)
         );
 
@@ -128,8 +130,8 @@ export const makeBall = (
               y: position.y + Math.sin(randomAngle) * (radius - innerMargin),
             },
             startVelocity: {
-              x: velocity.x / 2 + Math.cos(randomAngle) * randomSpeedMultiplier,
-              y: velocity.y / 2 + Math.sin(randomAngle) * randomSpeedMultiplier,
+              x: velocity.x / 3 + Math.cos(randomAngle) * randomSpeedMultiplier,
+              y: velocity.y / 3 + Math.sin(randomAngle) * randomSpeedMultiplier,
             },
             radius: randomSize,
             fill,
@@ -152,7 +154,7 @@ export const makeBall = (
         gone = true;
       } else {
         poppedPieces.forEach((p) => {
-          const scaleProgress = progress(
+          const scaleProgress = clampedProgress(
             0,
             p.getPopAnimationDuration(),
             timeSincePopped
