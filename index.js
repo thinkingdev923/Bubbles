@@ -49,11 +49,17 @@ const audioManager = makeAudioManager();
 const lifeManager = makeLifeManager(canvasManager);
 const levelManager = makeLevelManager(
   canvasManager,
+  onInterstitial,
   previewDataPresent ? onPreviewAdvance : onLevelAdvance,
   previewDataPresent
 );
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
+
+// This one intentionally not reset on game restart
+let usingTouch = null;
+
+// These are all reset on game restart
 let pointerData;
 let holdBlasts;
 let clicksTotal;
@@ -65,7 +71,7 @@ let ballsMissedRound;
 let balls;
 let ripples;
 
-function restartGame() {
+function resetGame() {
   pointerData = [];
   holdBlasts = [];
   balls = [];
@@ -80,22 +86,29 @@ function restartGame() {
   levelManager.reset();
   levelManager.showLevelInterstitial();
 }
-restartGame();
+resetGame();
 
-function resetLevel() {
-  pointerData = [];
-  holdBlasts = [];
-  ripples = [];
+function resetLevelData() {
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
 }
 
+function resetOngoingVisuals() {
+  pointerData = [];
+  holdBlasts = [];
+  ripples = [];
+}
+
 document.addEventListener("pointerdown", (e) => {
-  const { pointerId, clientX: x, clientY: y } = e;
+  const { pointerId, pointerType, clientX: x, clientY: y } = e;
+
+  if (usingTouch === null) {
+    usingTouch = pointerType === "touch";
+  }
 
   if (levelManager.isGameOver() || levelManager.isLastLevel()) {
-    continueButtonManager.handleClick({ x, y }, restartGame);
+    continueButtonManager.handleClick({ x, y }, resetGame);
   } else if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
       { x, y },
@@ -153,7 +166,7 @@ document.addEventListener("keydown", ({ key }) => {
   const validKey = key === " " || key === "Enter";
 
   if (validKey && levelManager.isGameOver()) {
-    restartGame();
+    resetGame();
   } else if (validKey && levelManager.isInterstitialShowing()) {
     levelManager.dismissInterstitialAndAdvanceLevel();
   }
@@ -341,8 +354,12 @@ function onGameEnd() {
   levelManager.onGameOver();
 }
 
+function onInterstitial() {
+  resetOngoingVisuals();
+}
+
 function onLevelAdvance() {
-  resetLevel();
+  resetLevelData();
 
   const levelData = levels[levelManager.getLevel() - 1];
   // Allow popping animation to finish playing for previous level balls
@@ -356,7 +373,7 @@ function onLevelAdvance() {
 }
 
 function onPreviewAdvance() {
-  resetLevel();
+  resetLevelData();
 
   // Allow popping animation to finish playing for previous level balls
   balls = balls

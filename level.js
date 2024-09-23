@@ -3,7 +3,12 @@ import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { levels as levelData } from "./levelData.js";
 import { drawTextRotate } from "./textRotate.js";
 
-export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
+export const makeLevelManager = (
+  canvasManager,
+  onInterstitial,
+  onAdvance,
+  isPreview
+) => {
   const CTX = canvasManager.getContext();
   let level;
   let previousLevelValue;
@@ -40,6 +45,7 @@ export const makeLevelManager = (canvasManager, onAdvance, isPreview) => {
 
     interstitialShowing = true;
     interstitialStart = Date.now();
+    onInterstitial(interstitialStart);
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {
