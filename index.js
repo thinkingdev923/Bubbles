@@ -127,9 +127,9 @@ document.addEventListener("pointerdown", (e) => {
   e.preventDefault();
 });
 
-document.addEventListener("pointerup", ({ pointerId }) => {
+document.addEventListener("pointerup", (e) => {
   pointerData.forEach((pointer, pointerIndex) => {
-    if (pointerId === pointer.id) {
+    if (e.pointerId === pointer.id) {
       if (
         Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD &&
         !levelManager.isInterstitialShowing()
@@ -147,6 +147,8 @@ document.addEventListener("pointerup", ({ pointerId }) => {
       pointerData.splice(pointerIndex, 1);
     }
   });
+
+  e.preventDefault();
 });
 
 document.addEventListener("pointermove", (e) => {
