@@ -105,19 +105,14 @@ function resetOngoingVisuals() {
 document.addEventListener("pointerdown", (e) => {
   const { pointerId, pointerType, clientX: x, clientY: y } = e;
 
-  if (usingTouch === null) {
-    usingTouch = pointerType === "touch";
-  }
+  if (usingTouch === null) usingTouch = pointerType === "touch";
 
-  if (
-    levelManager.isGameOver() ||
-    (levelManager.isInterstitialShowing() && levelManager.isLastLevel())
-  ) {
-    continueButtonManager.handleClick({ x, y }, resetGame);
-  } else if (levelManager.isInterstitialShowing()) {
+  if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
       { x, y },
-      levelManager.dismissInterstitialAndAdvanceLevel
+      levelManager.isGameOver() || levelManager.isLastLevel()
+        ? resetGame
+        : levelManager.dismissInterstitialAndAdvanceLevel
     );
   } else {
     pointerData.push({
