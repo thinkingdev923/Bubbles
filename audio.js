@@ -18,6 +18,8 @@ export const makeAudioManager = () => {
   let level2Buffer;
   let impactBuffer;
   let silenceAudio;
+  let lastPluckIndex;
+  let allPlucks;
 
   async function _loadFile(context, filePath) {
     const response = await fetch(filePath);
@@ -55,6 +57,19 @@ export const makeAudioManager = () => {
       level1Buffer = _loadFile(audioCTX, "./sounds/level1.mp3");
       level2Buffer = _loadFile(audioCTX, "./sounds/level2.mp3");
       impactBuffer = _loadFile(audioCTX, "./sounds/impact.mp3");
+
+      allPlucks = [
+        pluck1Buffer,
+        pluck2Buffer,
+        pluck3Buffer,
+        pluck4Buffer,
+        pluck5Buffer,
+        pluck6Buffer,
+        pluck7Buffer,
+        pluck8Buffer,
+        pluck9Buffer,
+      ];
+      lastPluckIndex = 0;
     }
   };
 
@@ -80,22 +95,17 @@ export const makeAudioManager = () => {
     }
   }
 
-  const playRandomPluck = () => {
-    _playTrack(
-      [
-        pluck1Buffer,
-        pluck2Buffer,
-        pluck3Buffer,
-        pluck4Buffer,
-        pluck5Buffer,
-        pluck6Buffer,
-        pluck7Buffer,
-        pluck8Buffer,
-        pluck9Buffer,
-      ][Math.floor(Math.random() * 9)],
-      false
-    );
+  const playSequentialPluck = () => {
+    const pluckToPlay =
+      lastPluckIndex > 0 && lastPluckIndex < allPlucks.length
+        ? allPlucks[lastPluckIndex + 1]
+        : allPlucks[0];
+
+    _playTrack(pluckToPlay, false);
+    lastPluckIndex = lastPluckIndex + 1;
   };
+
+  const resetPluckSequence = () => (lastPluckIndex = 0);
 
   const playRandomFireworks = () => {
     _playTrack(
@@ -125,7 +135,8 @@ export const makeAudioManager = () => {
 
   return {
     initialize,
-    playRandomPluck,
+    playSequentialPluck,
+    resetPluckSequence,
     playRandomFireworks,
     playMiss,
     playRandomLevel,

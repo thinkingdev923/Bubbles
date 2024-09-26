@@ -85,6 +85,7 @@ function resetGame() {
   lifeManager.reset();
   levelManager.reset();
   levelManager.showLevelInterstitial();
+  audioManager.resetPluckSequence();
 }
 resetGame();
 
@@ -92,6 +93,7 @@ function resetLevelData() {
   clicksRound = 0;
   ballsPoppedRound = 0;
   ballsMissedRound = 0;
+  audioManager.resetPluckSequence();
 }
 
 function resetOngoingVisuals() {
@@ -239,7 +241,7 @@ animate((deltaTime) => {
         const collision = checkBallCollision(ballA, blast);
         if (collision[0]) {
           ballA.pop();
-          audioManager.playRandomPluck();
+          audioManager.playSequentialPluck();
         }
       });
     });
@@ -321,7 +323,7 @@ function handleBallClick({ x, y }) {
 
   if (collidingBall) {
     collidingBall.pop();
-    audioManager.playRandomPluck();
+    audioManager.playSequentialPluck();
   } else {
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playMiss();
