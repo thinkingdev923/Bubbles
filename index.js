@@ -126,7 +126,7 @@ document.addEventListener("pointerdown", (e) => {
       holdStart: Date.now(),
     });
 
-    handleBallClick({ x, y });
+    handleGameClick({ x, y });
   }
 
   e.preventDefault();
@@ -316,7 +316,7 @@ animate((deltaTime) => {
   });
 });
 
-function handleBallClick({ x, y }) {
+function handleGameClick({ x, y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
   clicksTotal++;
   clicksRound++;
