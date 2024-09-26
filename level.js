@@ -12,7 +12,8 @@ export const makeLevelManager = (
   const CTX = canvasManager.getContext();
   let level;
   let previousLevelValue;
-  let lastLevelChangeStart;
+  let levelChangeStart;
+  let hasCompletedInitialAdvance;
   let interstitialShowing;
   let interstitialStart;
   let firstMissLevel;
@@ -21,8 +22,9 @@ export const makeLevelManager = (
   let hasShownPreviewInitialMessage;
 
   const reset = () => {
-    level = false;
+    level = 1;
     previousLevelValue = false;
+    hasCompletedInitialAdvance = false;
     interstitialShowing = false;
     firstMissLevel = false;
     hasShownFirstMissMessage = false;
@@ -31,24 +33,27 @@ export const makeLevelManager = (
   };
   reset();
 
-  const isLastLevel = () => level > levelData.length;
+  const isLastLevel = () => level >= levelData.length;
 
   const showLevelInterstitial = () => {
-    if (level) {
-      previousLevelValue = level;
-      level++;
-      lastLevelChangeStart = Date.now();
-    } else {
-      previousLevelValue = false;
-      level = 1;
-    }
-
     interstitialShowing = true;
     interstitialStart = Date.now();
     onInterstitial(interstitialStart);
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {
+    // On the initial interstitial we want to show the "next" level, aka
+    // "Level 1". However on subsequent  interstitials we want to show the
+    // completed level aka the previous level, and only transition the level
+    // indicator once the player has advanced by hitting "continue"
+    if (hasCompletedInitialAdvance) {
+      previousLevelValue = level;
+      level++;
+      levelChangeStart = Date.now();
+    } else {
+      hasCompletedInitialAdvance = true;
+    }
+
     if (isPreview) {
       hasShownPreviewInitialMessage = true;
     }
@@ -89,7 +94,7 @@ export const makeLevelManager = (
         reachedEndOfGameMessage(msElapsed);
       } else if (gameOver) {
         endGameMessage(msElapsed);
-      } else if (level === 1 && !isPreview) {
+      } else if (level === 1 && !hasCompletedInitialAdvance && !isPreview) {
         initialMessage(msElapsed);
       } else if (firstMissLevel && !hasShownFirstMissMessage && !isPreview) {
         firstMissMessage(msElapsed);
@@ -110,7 +115,7 @@ export const makeLevelManager = (
     if (!isPreview && previousLevelValue) {
       drawTextRotate(
         canvasManager,
-        lastLevelChangeStart,
+        levelChangeStart,
         `LEVEL ${previousLevelValue}`,
         `LEVEL ${level}`
       );

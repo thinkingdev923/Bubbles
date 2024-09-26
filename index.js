@@ -107,7 +107,10 @@ document.addEventListener("pointerdown", (e) => {
     usingTouch = pointerType === "touch";
   }
 
-  if (levelManager.isGameOver() || levelManager.isLastLevel()) {
+  if (
+    levelManager.isGameOver() ||
+    (levelManager.isInterstitialShowing() && levelManager.isLastLevel())
+  ) {
     continueButtonManager.handleClick({ x, y }, resetGame);
   } else if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
