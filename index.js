@@ -19,7 +19,7 @@ import { centerTextBlock } from "./centerTextBlock.js";
 import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 import { drawHoldBlastPreview, makeHoldBlast } from "./holdBlast.js";
-import { BLAST_HOLD_THRESHOLD } from "./constants.js";
+import { BLAST_HOLD_THRESHOLD, SLINGSHOT_MOVE_THRESHOLD } from "./constants.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -246,6 +246,7 @@ animate((deltaTime) => {
     balls.forEach((b) => b.draw(deltaTime));
 
     // Draw pointer hold circles
+    // TODO Need to handle gesture previews better so we can show blasts vs slingshots
     pointerData.forEach((pointer) => {
       if (Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD) {
         drawHoldBlastPreview(
@@ -324,10 +325,18 @@ function handleCompletePointerObject({
   currentPosition,
   holdStart,
 }) {
-  if (Date.now() - holdStart > BLAST_HOLD_THRESHOLD) {
-    holdBlasts.push(
-      makeHoldBlast(canvasManager, startPosition, Date.now() - holdStart)
-    );
+  const distance = Math.hypot(
+    startPosition.x - currentPosition.x,
+    startPosition.y - currentPosition.y
+  );
+  const duration = Date.now() - holdStart;
+  const isSlingshot = distance > SLINGSHOT_MOVE_THRESHOLD;
+  const isHoldBlast = !isSlingshot && duration > BLAST_HOLD_THRESHOLD;
+
+  if (isSlingshot) {
+    console.log("slingshot");
+  } else if (isHoldBlast) {
+    holdBlasts.push(makeHoldBlast(canvasManager, startPosition, duration));
     audioManager.playImpact();
   }
 }
