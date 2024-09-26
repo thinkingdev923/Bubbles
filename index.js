@@ -177,7 +177,6 @@ document.addEventListener("keydown", ({ key }) => {
 // Scale or translate the entire game
 const cameraWrapper = (drawFunc) => {
   const activeHoldBlasts = holdBlasts.filter((b) => !b.isGone()).length;
-  const activeBubblePops = balls.filter((b) => b.isPopping()).length;
 
   const cameraShake = (magnitudeProgress) => {
     const rotationAmount = transition(0, Math.PI / 90, magnitudeProgress);
