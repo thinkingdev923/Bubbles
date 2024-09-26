@@ -117,7 +117,9 @@ document.addEventListener("pointerdown", (e) => {
   } else {
     pointerData.push({
       id: pointerId,
-      position: { x, y },
+      startPosition: { x, y },
+      currentPosition: { x, y },
+      endPosition: null,
       holdStart: Date.now(),
     });
 
@@ -128,23 +130,15 @@ document.addEventListener("pointerdown", (e) => {
 });
 
 document.addEventListener("pointerup", (e) => {
-  pointerData.forEach((pointer, pointerIndex) => {
-    if (e.pointerId === pointer.id) {
-      if (
-        Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD &&
-        !levelManager.isInterstitialShowing()
-      ) {
-        holdBlasts.push(
-          makeHoldBlast(
-            canvasManager,
-            pointer.position,
-            Date.now() - pointer.holdStart
-          )
-        );
-        audioManager.playImpact();
-      }
+  const { pointerId, clientX: x, clientY: y } = e;
 
+  pointerData.forEach((pointer, pointerIndex) => {
+    if (pointerId === pointer.id) {
+      pointer.currentPosition = { x, y };
       pointerData.splice(pointerIndex, 1);
+
+      if (!levelManager.isInterstitialShowing())
+        handleCompletePointerObject(pointer);
     }
   });
 
@@ -155,7 +149,7 @@ document.addEventListener("pointermove", (e) => {
   const { pointerId, clientX: x, clientY: y } = e;
 
   pointerData.forEach((pointer) => {
-    if (pointerId === pointer.id) pointer.position = { x, y };
+    if (pointerId === pointer.id) pointer.currentPosition = { x, y };
   });
 
   if (levelManager.isInterstitialShowing())
@@ -256,7 +250,7 @@ animate((deltaTime) => {
       if (Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD) {
         drawHoldBlastPreview(
           canvasManager,
-          pointer.position,
+          pointer.startPosition,
           pointer.holdStart
         );
       }
@@ -322,6 +316,19 @@ function handleGameClick({ x, y }) {
   } else {
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playMiss();
+  }
+}
+
+function handleCompletePointerObject({
+  startPosition,
+  currentPosition,
+  holdStart,
+}) {
+  if (Date.now() - holdStart > BLAST_HOLD_THRESHOLD) {
+    holdBlasts.push(
+      makeHoldBlast(canvasManager, startPosition, Date.now() - holdStart)
+    );
+    audioManager.playImpact();
   }
 }
 
