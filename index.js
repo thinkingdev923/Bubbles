@@ -15,11 +15,10 @@ import { makeAudioManager } from "./audio.js";
 import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
 import { makeContinueButtonManager } from "./continueButton.js";
+import { makeActivePointer } from "./activePointer.js";
 import { centerTextBlock } from "./centerTextBlock.js";
 import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
-import { drawHoldBlastPreview, makeHoldBlast } from "./holdBlast.js";
-import { BLAST_HOLD_THRESHOLD, SLINGSHOT_MOVE_THRESHOLD } from "./constants.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -60,8 +59,8 @@ const CTX = canvasManager.getContext();
 let usingTouch = null;
 
 // These are all reset on game restart
-let pointerData;
-let holdBlasts;
+let activePointers;
+let pointerTriggerOutput;
 let clicksTotal;
 let ballsPoppedTotal;
 let ballsMissedTotal;
@@ -72,8 +71,8 @@ let balls;
 let ripples;
 
 function resetGame() {
-  pointerData = [];
-  holdBlasts = [];
+  activePointers = [];
+  pointerTriggerOutput = [];
   balls = [];
   ripples = [];
   clicksTotal = 0;
@@ -97,8 +96,8 @@ function resetLevelData() {
 }
 
 function resetOngoingVisuals() {
-  pointerData = [];
-  holdBlasts = holdBlasts.filter((b) => !b.isGone());
+  activePointers = [];
+  pointerTriggerOutput = pointerTriggerOutput.filter((b) => !b.isGone());
   ripples = [];
 }
 
@@ -115,14 +114,9 @@ document.addEventListener("pointerdown", (e) => {
         : levelManager.dismissInterstitialAndAdvanceLevel
     );
   } else {
-    pointerData.push({
-      id: pointerId,
-      startPosition: { x, y },
-      currentPosition: { x, y },
-      endPosition: null,
-      holdStart: Date.now(),
-    });
-
+    activePointers.push(
+      makeActivePointer(canvasManager, pointerId, { x, y }, onPointerTrigger)
+    );
     handleGameClick({ x, y });
   }
 
@@ -132,13 +126,12 @@ document.addEventListener("pointerdown", (e) => {
 document.addEventListener("pointerup", (e) => {
   const { pointerId, clientX: x, clientY: y } = e;
 
-  pointerData.forEach((pointer, pointerIndex) => {
-    if (pointerId === pointer.id) {
-      pointer.currentPosition = { x, y };
-      pointerData.splice(pointerIndex, 1);
+  activePointers.forEach((pointer, pointerIndex) => {
+    if (pointerId === pointer.getId()) {
+      pointer.setPosition({ x, y });
+      activePointers.splice(pointerIndex, 1);
 
-      if (!levelManager.isInterstitialShowing())
-        handleCompletePointerObject(pointer);
+      if (!levelManager.isInterstitialShowing()) pointer.trigger();
     }
   });
 
@@ -148,8 +141,8 @@ document.addEventListener("pointerup", (e) => {
 document.addEventListener("pointermove", (e) => {
   const { pointerId, clientX: x, clientY: y } = e;
 
-  pointerData.forEach((pointer) => {
-    if (pointerId === pointer.id) pointer.currentPosition = { x, y };
+  activePointers.forEach((pointer) => {
+    if (pointerId === pointer.getId()) pointer.setPosition({ x, y });
   });
 
   if (levelManager.isInterstitialShowing())
@@ -170,8 +163,6 @@ document.addEventListener("keydown", ({ key }) => {
 
 // Scale or translate the entire game
 const cameraWrapper = (drawFunc) => {
-  const activeHoldBlasts = holdBlasts.filter((b) => !b.isGone()).length;
-
   const cameraShake = (magnitudeProgress) => {
     const rotationAmount = transition(0, Math.PI / 90, magnitudeProgress);
     const shakeAmount = transition(0, 4, magnitudeProgress);
@@ -193,7 +184,7 @@ const cameraWrapper = (drawFunc) => {
     );
   };
 
-  if (activeHoldBlasts) {
+  if (pointerTriggerOutput.filter((b) => !b.isGone()).length) {
     CTX.save();
     cameraShake(0.5);
     drawFunc();
@@ -210,11 +201,13 @@ animate((deltaTime) => {
     // Calculate new positions for all balls
     balls.forEach((b) => b.update(deltaTime));
 
-    // Run collision detection on balls + holdBlasts
+    // Run collision detection on balls + holdBlasts + slingshots
     const ballsInPlay = balls.filter(
       (b) => b.isRemaining() && b.shouldRender()
     );
-    const currentBlasts = holdBlasts.filter((b) => !b.isGone());
+    const pointerTriggerOutputInPlay = pointerTriggerOutput.filter(
+      (b) => !b.isGone()
+    );
     ballsInPlay.forEach((ballA) => {
       ballsInPlay.forEach((ballB) => {
         if (ballA !== ballB) {
@@ -226,7 +219,7 @@ animate((deltaTime) => {
         }
       });
 
-      currentBlasts.forEach((blast) => {
+      pointerTriggerOutputInPlay.forEach((blast) => {
         const collision = checkBallCollision(ballA, blast);
         if (collision[0]) {
           ballA.pop();
@@ -242,20 +235,9 @@ animate((deltaTime) => {
 
     // Draw ripples, balls, and hold blasts
     ripples.forEach((r) => r.draw());
-    holdBlasts.forEach((b) => b.draw());
+    pointerTriggerOutput.forEach((b) => b.draw());
     balls.forEach((b) => b.draw(deltaTime));
-
-    // Draw pointer hold circles
-    // TODO Need to handle gesture previews better so we can show blasts vs slingshots
-    pointerData.forEach((pointer) => {
-      if (Date.now() - pointer.holdStart > BLAST_HOLD_THRESHOLD) {
-        drawHoldBlastPreview(
-          canvasManager,
-          pointer.startPosition,
-          pointer.holdStart
-        );
-      }
-    });
+    activePointers.forEach((p) => p.draw());
 
     levelManager.drawInterstitialMessage({
       previewInitialMessage: (msElapsed) => {
@@ -320,25 +302,9 @@ function handleGameClick({ x, y }) {
   }
 }
 
-function handleCompletePointerObject({
-  startPosition,
-  currentPosition,
-  holdStart,
-}) {
-  const distance = Math.hypot(
-    startPosition.x - currentPosition.x,
-    startPosition.y - currentPosition.y
-  );
-  const duration = Date.now() - holdStart;
-  const isSlingshot = distance > SLINGSHOT_MOVE_THRESHOLD;
-  const isHoldBlast = !isSlingshot && duration > BLAST_HOLD_THRESHOLD;
-
-  if (isSlingshot) {
-    console.log("slingshot");
-  } else if (isHoldBlast) {
-    holdBlasts.push(makeHoldBlast(canvasManager, startPosition, duration));
-    audioManager.playImpact();
-  }
+function onPointerTrigger(output) {
+  pointerTriggerOutput.push(output);
+  audioManager.playImpact();
 }
 
 function onPop() {
