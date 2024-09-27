@@ -1,6 +1,6 @@
 import { INTERVAL, GRAVITY } from "./constants.js";
 import { red } from "./colors.js";
-import { progress, transition } from "./helpers.js";
+import { clampedProgress, transition } from "./helpers.js";
 
 const getHeadingInRads = (a, b) => Math.atan2(a.y - b.y, a.x - b.x);
 
@@ -10,7 +10,7 @@ const getVelocity = (speed, headingInRads) => ({
 });
 
 const slingshotRadius = (distance) =>
-  transition(60, 10, progress(0, 600, distance));
+  transition(60, 10, clampedProgress(0, 600, distance));
 
 export const drawSlingshotPreview = (
   canvasManager,
