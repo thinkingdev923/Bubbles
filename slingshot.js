@@ -41,7 +41,7 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     getHeadingInRads(startPosition, endPosition)
   );
 
-  let position = { ...startPosition };
+  let position = { ...endPosition };
   let gone = false;
 
   const update = (deltaTime) => {
