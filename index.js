@@ -115,7 +115,13 @@ document.addEventListener("pointerdown", (e) => {
     );
   } else {
     activePointers.push(
-      makeActivePointer(canvasManager, pointerId, { x, y }, onPointerTrigger)
+      makeActivePointer(
+        canvasManager,
+        audioManager,
+        pointerId,
+        { x, y },
+        onPointerTrigger
+      )
     );
     handleGameClick({ x, y });
   }
@@ -306,7 +312,6 @@ function handleGameClick({ x, y }) {
 
 function onPointerTrigger(output) {
   pointerTriggerOutput.push(output);
-  audioManager.playImpact();
 }
 
 function onPop() {

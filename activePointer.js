@@ -4,6 +4,7 @@ import { drawSlingshotPreview, makeSlingshot } from "./slingshot.js";
 
 export const makeActivePointer = (
   canvasManager,
+  audioManager,
   pointerId,
   startPosition,
   onTrigger
@@ -38,10 +39,12 @@ export const makeActivePointer = (
   const trigger = () => {
     if (isSlingshot()) {
       onTrigger(makeSlingshot(canvasManager, startPosition, currentPosition));
+      audioManager.playMiss();
     } else if (isHoldBlast()) {
       onTrigger(
         makeHoldBlast(canvasManager, startPosition, Date.now() - pointerStart)
       );
+      audioManager.playImpact();
     }
   };
 
