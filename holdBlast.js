@@ -53,7 +53,8 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
       if (Date.now() - blastStart > blastDuration) gone = true;
 
       CTX.save();
-
+      CTX.shadowColor = red;
+      CTX.shadowBlur = 15;
       CTX.strokeStyle = red;
       CTX.lineWidth = transition(14, 2, getBlastProgress(), easeOutCubic);
       CTX.globalAlpha = transition(1, 0, getBlastProgress(), easeOutCubic);

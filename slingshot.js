@@ -89,6 +89,8 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
       update(deltaTime);
 
       CTX.save();
+      CTX.shadowColor = red;
+      CTX.shadowBlur = 15;
       CTX.fillStyle = red;
       CTX.translate(position.x, position.y);
       CTX.beginPath();
