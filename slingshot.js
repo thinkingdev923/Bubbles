@@ -9,12 +9,20 @@ const getVelocity = (speed, headingInRads) => ({
   y: speed * Math.sin(headingInRads),
 });
 
+const slingshotRadius = (distance) =>
+  transition(60, 10, progress(0, 600, distance));
+
 export const drawSlingshotPreview = (
   canvasManager,
   startPosition,
   currentPosition
 ) => {
   const CTX = canvasManager.getContext();
+  const distance = Math.hypot(
+    startPosition.x - currentPosition.x,
+    startPosition.y - currentPosition.y
+  );
+  const radius = slingshotRadius(distance);
   CTX.save();
   CTX.fillStyle = red;
   CTX.strokeStyle = red;
@@ -24,9 +32,17 @@ export const drawSlingshotPreview = (
   CTX.lineTo(currentPosition.x, currentPosition.y);
   CTX.closePath();
   CTX.stroke();
-  CTX.fillRect(startPosition.x - 10, startPosition.y - 10, 20, 20);
-  CTX.fillRect(startPosition.x - 10, startPosition.y - 10, 20, 20);
-  CTX.fillRect(currentPosition.x - 10, currentPosition.y - 10, 20, 20);
+
+  CTX.beginPath();
+  CTX.arc(startPosition.x, startPosition.y, 10, 0, 2 * Math.PI);
+  CTX.closePath();
+  CTX.fill();
+
+  CTX.beginPath();
+  CTX.arc(currentPosition.x, currentPosition.y, radius, 0, 2 * Math.PI);
+  CTX.closePath();
+  CTX.fill();
+
   CTX.restore();
 };
 
@@ -36,7 +52,7 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     startPosition.x - endPosition.x,
     startPosition.y - endPosition.y
   );
-  const radius = transition(60, 10, progress(0, 600, distance));
+  const radius = slingshotRadius(distance);
   const velocity = getVelocity(
     distance / 10,
     getHeadingInRads(startPosition, endPosition)
