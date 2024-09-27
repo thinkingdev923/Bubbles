@@ -1,5 +1,6 @@
-import { progress, transition } from "./helpers.js";
 import { INTERVAL, GRAVITY } from "./constants.js";
+import { red } from "./colors.js";
+import { progress, transition } from "./helpers.js";
 
 const getHeadingInRads = (a, b) => Math.atan2(a.y - b.y, a.x - b.x);
 
@@ -15,8 +16,8 @@ export const drawSlingshotPreview = (
 ) => {
   const CTX = canvasManager.getContext();
   CTX.save();
-  CTX.fillStyle = "red";
-  CTX.strokeStyle = "red";
+  CTX.fillStyle = red;
+  CTX.strokeStyle = red;
   CTX.lineWidth = 4;
   CTX.beginPath();
   CTX.moveTo(startPosition.x, startPosition.y);
@@ -65,7 +66,7 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
       update(deltaTime);
 
       CTX.save();
-      CTX.fillStyle = "green";
+      CTX.fillStyle = red;
       CTX.translate(position.x, position.y);
       CTX.beginPath();
       CTX.arc(0, 0, radius, 0, 2 * Math.PI);
