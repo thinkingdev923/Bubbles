@@ -8,6 +8,27 @@ const getVelocity = (speed, headingInRads) => ({
   y: speed * Math.sin(headingInRads),
 });
 
+export const drawSlingshotPreview = (
+  canvasManager,
+  startPosition,
+  currentPosition
+) => {
+  const CTX = canvasManager.getContext();
+  CTX.save();
+  CTX.fillStyle = "red";
+  CTX.strokeStyle = "red";
+  CTX.lineWidth = 4;
+  CTX.beginPath();
+  CTX.moveTo(startPosition.x, startPosition.y);
+  CTX.lineTo(currentPosition.x, currentPosition.y);
+  CTX.closePath();
+  CTX.stroke();
+  CTX.fillRect(startPosition.x - 10, startPosition.y - 10, 20, 20);
+  CTX.fillRect(startPosition.x - 10, startPosition.y - 10, 20, 20);
+  CTX.fillRect(currentPosition.x - 10, currentPosition.y - 10, 20, 20);
+  CTX.restore();
+};
+
 export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
   const CTX = canvasManager.getContext();
   const distance = Math.hypot(

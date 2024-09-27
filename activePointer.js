@@ -1,6 +1,6 @@
-import { drawHoldBlastPreview, makeHoldBlast } from "./holdBlast.js";
 import { BLAST_HOLD_THRESHOLD, SLINGSHOT_MOVE_THRESHOLD } from "./constants.js";
-import { makeSlingshot } from "./slingshot.js";
+import { drawHoldBlastPreview, makeHoldBlast } from "./holdBlast.js";
+import { drawSlingshotPreview, makeSlingshot } from "./slingshot.js";
 
 export const makeActivePointer = (
   canvasManager,
@@ -8,7 +8,6 @@ export const makeActivePointer = (
   startPosition,
   onTrigger
 ) => {
-  const CTX = canvasManager.getContext();
   const pointerStart = Date.now();
   let currentPosition = { ...startPosition };
   let hitSlingshotDistanceThresholdInTime = false;
@@ -48,23 +47,8 @@ export const makeActivePointer = (
 
   const draw = () => {
     if (isSlingshot()) {
-      CTX.save();
-      CTX.fillStyle = "red";
-      CTX.strokeStyle = "red";
-      CTX.lineWidth = 4;
-      CTX.beginPath();
-      CTX.moveTo(startPosition.x, startPosition.y);
-      CTX.lineTo(currentPosition.x, currentPosition.y);
-      CTX.closePath();
-      CTX.stroke();
-      CTX.fillRect(startPosition.x - 10, startPosition.y - 10, 20, 20);
-      CTX.fillRect(startPosition.x - 10, startPosition.y - 10, 20, 20);
-      CTX.fillRect(currentPosition.x - 10, currentPosition.y - 10, 20, 20);
-      CTX.restore();
+      drawSlingshotPreview(canvasManager, startPosition, currentPosition);
     } else if (isHoldBlast()) {
-      // TODO: Move this preview into this closure. But how to ensure the
-      //       preview size matches the triggered blast size? Is it actually
-      //       best to keep these things together?
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);
     }
   };
