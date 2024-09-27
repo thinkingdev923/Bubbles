@@ -69,7 +69,7 @@ export const makeAudioManager = () => {
         pluck8Buffer,
         pluck9Buffer,
       ];
-      lastPluckIndex = 0;
+      lastPluckIndex = null;
     }
   };
 
@@ -96,16 +96,18 @@ export const makeAudioManager = () => {
   }
 
   const playSequentialPluck = () => {
-    const pluckToPlay =
-      lastPluckIndex > 0 && lastPluckIndex < allPlucks.length
-        ? allPlucks[lastPluckIndex + 1]
-        : allPlucks[0];
-
-    _playTrack(pluckToPlay, false);
-    lastPluckIndex = lastPluckIndex + 1;
+    if (lastPluckIndex === null) {
+      _playTrack(allPlucks[0], false);
+      lastPluckIndex = 0;
+    } else {
+      const nextIndex =
+        lastPluckIndex + 1 < allPlucks.length ? lastPluckIndex + 1 : 0;
+      _playTrack(allPlucks[nextIndex], false);
+      lastPluckIndex = nextIndex;
+    }
   };
 
-  const resetPluckSequence = () => (lastPluckIndex = 0);
+  const resetPluckSequence = () => (lastPluckIndex = null);
 
   const playRandomFireworks = () => {
     _playTrack(
