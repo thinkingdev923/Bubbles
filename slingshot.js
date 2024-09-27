@@ -10,7 +10,7 @@ const getVelocity = (speed, headingInRads) => ({
 });
 
 const slingshotRadius = (distance) =>
-  transition(60, 10, clampedProgress(0, 600, distance));
+  transition(32, 12, clampedProgress(0, 600, distance));
 
 export const drawSlingshotPreview = (
   canvasManager,
