@@ -23,6 +23,7 @@ export const drawSlingshotPreview = (
     startPosition.y - currentPosition.y
   );
   const radius = slingshotRadius(distance);
+
   CTX.save();
   CTX.fillStyle = red;
   CTX.strokeStyle = red;
@@ -33,10 +34,16 @@ export const drawSlingshotPreview = (
   CTX.closePath();
   CTX.stroke();
 
+  CTX.save();
+  CTX.translate(startPosition.x, startPosition.y);
+  CTX.rotate(getHeadingInRads(startPosition, currentPosition) - Math.PI / 2);
   CTX.beginPath();
-  CTX.arc(startPosition.x, startPosition.y, 10, 0, 2 * Math.PI);
+  CTX.moveTo(-10, -10);
+  CTX.lineTo(0, 10);
+  CTX.lineTo(10, -10);
   CTX.closePath();
   CTX.fill();
+  CTX.restore();
 
   CTX.beginPath();
   CTX.arc(currentPosition.x, currentPosition.y, radius, 0, 2 * Math.PI);
