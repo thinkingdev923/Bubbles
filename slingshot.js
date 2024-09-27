@@ -51,10 +51,10 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     velocity.y += deltaTimeMultiplier * GRAVITY;
 
     if (
-      position.x > canvasManager.getWidth() - radius ||
+      position.x > canvasManager.getWidth() + radius ||
       position.y > canvasManager.getHeight() + radius ||
-      position.x < radius ||
-      position.y < radius
+      position.x < -radius ||
+      position.y < -radius
     ) {
       gone = true;
     }
