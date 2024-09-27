@@ -184,7 +184,9 @@ const cameraWrapper = (drawFunc) => {
     );
   };
 
-  if (pointerTriggerOutput.filter((b) => !b.isGone()).length) {
+  if (
+    pointerTriggerOutput.filter((o) => !o.isGone() && o.causesShake()).length
+  ) {
     CTX.save();
     cameraShake(0.5);
     drawFunc();

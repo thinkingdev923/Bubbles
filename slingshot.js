@@ -61,5 +61,6 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     getRadius: () => radius,
     getPosition: () => position,
     isGone: () => gone,
+    causesShake: () => false,
   };
 };
