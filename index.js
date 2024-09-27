@@ -235,7 +235,7 @@ animate((deltaTime) => {
 
     // Draw ripples, balls, and hold blasts
     ripples.forEach((r) => r.draw());
-    pointerTriggerOutput.forEach((b) => b.draw());
+    pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
     balls.forEach((b) => b.draw(deltaTime));
     activePointers.forEach((p) => p.draw());
 
