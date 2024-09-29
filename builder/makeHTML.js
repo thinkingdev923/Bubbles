@@ -79,7 +79,7 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
   if (cellData) {
     const ball = document.createElement("div");
     ball.classList.add("preview-cell-ball");
-    ball.setAttribute("style", `background-color: ${cellData.color}`);
+    ball.setAttribute("style", `background-color: ${cellData.c}`);
     ball.setAttribute("data-row-index", rowIndex);
     ball.setAttribute("data-cell-index", cellIndex);
 
@@ -88,23 +88,23 @@ export const makeCellHTML = (cellData, rowIndex, cellIndex) => {
 
     const vX = document.createElement("div");
     vX.classList.add("preview-cell-velocity-x");
-    if (!!cellData.velocity.x)
+    if (!!cellData.v.x)
       vX.classList.add(
-        cellData.velocity.x < 0
+        cellData.v.x < 0
           ? "preview-cell-velocity-x--left"
           : "preview-cell-velocity-x--right"
       );
-    vX.innerText = cellData.velocity.x;
+    vX.innerText = cellData.v.x;
 
     const vY = document.createElement("div");
     vY.classList.add("preview-cell-velocity-y");
-    if (!!cellData.velocity.y)
+    if (!!cellData.v.y)
       vY.classList.add(
-        cellData.velocity.y < 0
+        cellData.v.y < 0
           ? "preview-cell-velocity-y--up"
           : "preview-cell-velocity-y--down"
       );
-    vY.innerText = cellData.velocity.y;
+    vY.innerText = cellData.v.y;
 
     velocity.appendChild(vX);
     velocity.appendChild(vY);
