@@ -90,10 +90,10 @@ export const makeLevelManager = (
 
       if (isPreview && !hasShownPreviewInitialMessage) {
         previewInitialMessage(msElapsed);
-      } else if (isLastLevel()) {
-        reachedEndOfGameMessage(msElapsed);
       } else if (gameOver) {
         endGameMessage(msElapsed);
+      } else if (isLastLevel()) {
+        reachedEndOfGameMessage(msElapsed);
       } else if (level === 1 && !hasCompletedInitialAdvance && !isPreview) {
         initialMessage(msElapsed);
       } else if (firstMissLevel && !hasShownFirstMissMessage && !isPreview) {
