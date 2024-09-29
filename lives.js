@@ -1,5 +1,5 @@
 import { red } from "./colors.js";
-import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
+import { FONT, FONT_WEIGHT_NORMAL, LIVES } from "./constants.js";
 import { drawTextRotate } from "./textRotate.js";
 
 export const makeLifeManager = (canvasManager) => {
@@ -9,7 +9,7 @@ export const makeLifeManager = (canvasManager) => {
   let lastSubtractStart;
 
   const reset = () => {
-    lives = 5;
+    lives = LIVES;
     previousLivesValue = false;
     lastSubtractStart = false;
   };

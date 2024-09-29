@@ -5,3 +5,4 @@ export const FONT_WEIGHT_NORMAL = "500";
 export const FONT_WEIGHT_BOLD = "600";
 export const BLAST_HOLD_THRESHOLD = 200;
 export const SLINGSHOT_MOVE_THRESHOLD = 30;
+export const LIVES = 1;
