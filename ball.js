@@ -62,7 +62,8 @@ export const makeBall = (
     }
   };
 
-  const pop = () => {
+  const pop = (popperVelocity = false) => {
+    const transferringVelocity = popperVelocity ? popperVelocity : velocity;
     const numberOfPopPieces = Math.round(randomBetween(10, 80));
     popped = true;
     poppedTime = Date.now();
@@ -96,8 +97,10 @@ export const makeBall = (
           // mostly go straight out from the center of the ball at the given
           // randomAngle
           startVelocity: {
-            x: velocity.x / 6 + Math.cos(randomAngle),
-            y: velocity.y / 6 + Math.sin(randomAngle) * randomSpeedMultiplier,
+            x: transferringVelocity.x / 6 + Math.cos(randomAngle),
+            y:
+              transferringVelocity.y / 6 +
+              Math.sin(randomAngle) * randomSpeedMultiplier,
           },
           radius: randomSize,
           fill,
@@ -130,8 +133,12 @@ export const makeBall = (
               y: position.y + Math.sin(randomAngle) * (radius - innerMargin),
             },
             startVelocity: {
-              x: velocity.x / 3 + Math.cos(randomAngle) * randomSpeedMultiplier,
-              y: velocity.y / 3 + Math.sin(randomAngle) * randomSpeedMultiplier,
+              x:
+                transferringVelocity.x / 3 +
+                Math.cos(randomAngle) * randomSpeedMultiplier,
+              y:
+                transferringVelocity.y / 3 +
+                Math.sin(randomAngle) * randomSpeedMultiplier,
             },
             radius: randomSize,
             fill,

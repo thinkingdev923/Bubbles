@@ -227,10 +227,10 @@ animate((deltaTime) => {
         }
       });
 
-      pointerTriggerOutputInPlay.forEach((blast) => {
-        const collision = checkBallCollision(ballA, blast);
+      pointerTriggerOutputInPlay.forEach((output) => {
+        const collision = checkBallCollision(ballA, output);
         if (collision[0]) {
-          ballA.pop();
+          ballA.pop(output.getVelocity());
           audioManager.playSequentialPluck();
         }
       });

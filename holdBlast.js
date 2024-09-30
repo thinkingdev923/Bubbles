@@ -73,6 +73,7 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
     draw,
     getRadius,
     getPosition: () => ({ x, y }),
+    getVelocity: () => ({ x: 0, y: 0 }),
     isGone: () => gone,
     causesShake: () => true,
   };
