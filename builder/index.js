@@ -40,6 +40,16 @@ const updateName = (newName) => (currentlyDisplayedData.name = newName);
 
 const updateGravity = (newGrav) => (currentlyDisplayedData.gravity = newGrav);
 
+const updateLevelHref = () => {
+  openPreviewEl.setAttribute(
+    "href",
+    window.location.href.replace(
+      "/builder/",
+      `/?level=${encodeURIComponent(JSON.stringify(currentlyDisplayedData))}`
+    )
+  );
+};
+
 const drawLevel = () => {
   layoutNameEl.value = currentlyDisplayedData.name;
   layoutGravityEl.value = currentlyDisplayedData.gravity;
@@ -49,6 +59,7 @@ const drawLevel = () => {
     newNodes.appendChild(makeRowHTML(row, rowIndex))
   );
   layoutPreviewEl.replaceChildren(newNodes);
+  updateLevelHref();
 };
 
 const fillCell = (rowIndex, cellIndex, content) => {
@@ -98,18 +109,9 @@ layoutGravityEl.addEventListener("change", (e) => {
   e.preventDefault();
 });
 
-addRowEl.addEventListener("click", addRow);
+addRowEl.addEventListener("pointerdown", addRow);
 
-copyToClipboardEl.addEventListener("click", copyJSON);
-
-openPreviewEl.addEventListener("click", () => {
-  const newHref = window.location.href.replace("/builder/", "");
-  window.open(
-    `${newHref}?level=${encodeURIComponent(
-      JSON.stringify(currentlyDisplayedData)
-    )}`
-  );
-});
+copyToClipboardEl.addEventListener("pointerdown", copyJSON);
 
 document.addEventListener("keydown", (e) => {
   const { shiftKey, ctrlKey, key, repeat } = e;
@@ -190,7 +192,7 @@ document.addEventListener("keyup", ({ key }) => {
     copyToClipboardEl.classList.remove("actionsBottom-button--active");
 });
 
-document.addEventListener("click", ({ target }) => {
+document.addEventListener("pointerdown", ({ target }) => {
   const clickedEl = target.closest("div");
   const elIsEmptyCell = clickedEl.classList.contains("preview-cell--empty");
   const elIsBall = clickedEl.classList.contains("preview-cell-ball");
