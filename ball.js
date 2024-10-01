@@ -18,6 +18,7 @@ export const makeBall = (
     gravity = GRAVITY,
     delay = 0,
     shouldDrawTrajectory = false,
+    terminalVelocity = 12,
   },
   onPop,
   onMiss
@@ -26,7 +27,6 @@ export const makeBall = (
   const popAnimationDurationMax = 2400;
   const popAnimationDuration = randomBetween(1200, popAnimationDurationMax);
   const ballStart = Date.now();
-  const terminalVelocity = 12;
 
   let position = { ...startPosition };
   let velocity = { ...startVelocity };
@@ -103,6 +103,7 @@ export const makeBall = (
               Math.sin(randomAngle) * randomSpeedMultiplier,
           },
           radius: randomSize,
+          terminalVelocity: 90,
           fill,
           gravity,
         },
@@ -141,6 +142,7 @@ export const makeBall = (
                 Math.sin(randomAngle) * randomSpeedMultiplier,
             },
             radius: randomSize,
+            terminalVelocity: 90,
             fill,
             gravity,
           },
