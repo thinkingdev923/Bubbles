@@ -7,6 +7,7 @@ import {
 } from "./helpers.js";
 import { easeOutCubic } from "./easings.js";
 import { drawTrajectory } from "./trajectory.js";
+import { getGradient } from "./colors.js";
 
 export const makeBall = (
   canvasManager,
@@ -176,7 +177,7 @@ export const makeBall = (
       if (shouldDrawTrajectory)
         drawTrajectory(canvasManager, position, velocity, gravity);
       CTX.save();
-      CTX.fillStyle = fill;
+      CTX.fillStyle = getGradient(canvasManager, fill, radius);
       CTX.translate(position.x, position.y);
       CTX.scale(scale, scale);
       CTX.beginPath();
