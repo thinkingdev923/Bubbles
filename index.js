@@ -19,6 +19,7 @@ import { makeActivePointer } from "./activePointer.js";
 import { centerTextBlock } from "./centerTextBlock.js";
 import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
+import { red } from "./colors.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -56,11 +57,12 @@ const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
 
 // This one intentionally not reset on game restart
-let usingTouch = null;
+let usingMouse = null;
 
 // These are all reset on game restart
 let activePointers;
 let pointerTriggerOutput;
+let pointerPosition;
 let clicksTotal;
 let ballsPoppedTotal;
 let ballsMissedTotal;
@@ -73,6 +75,7 @@ let ripples;
 function resetGame() {
   activePointers = [];
   pointerTriggerOutput = [];
+  pointerPosition = null;
   balls = [];
   ripples = [];
   clicksTotal = 0;
@@ -104,7 +107,7 @@ function resetOngoingVisuals() {
 document.addEventListener("pointerdown", (e) => {
   const { pointerId, pointerType, clientX: x, clientY: y } = e;
 
-  if (usingTouch === null) usingTouch = pointerType === "touch";
+  if (usingMouse === null) usingMouse = pointerType === "mouse";
 
   if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
@@ -146,6 +149,8 @@ document.addEventListener("pointerup", (e) => {
 
 document.addEventListener("pointermove", (e) => {
   const { pointerId, clientX: x, clientY: y } = e;
+
+  pointerPosition = { x, y };
 
   activePointers.forEach((pointer) => {
     if (pointerId === pointer.getId()) pointer.setPosition({ x, y });
@@ -206,6 +211,17 @@ animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
   cameraWrapper(() => {
+    // On mouse-based clients show a crosshair
+    if (usingMouse && !levelManager.isInterstitialShowing()) {
+      CTX.save();
+      CTX.fillStyle = red;
+      CTX.strokeStyle = red;
+      CTX.fillRect(0, pointerPosition.y, canvasManager.getWidth(), 1);
+      CTX.fillRect(pointerPosition.x, 0, 1, canvasManager.getHeight());
+      CTX.strokeRect(pointerPosition.x - 30, pointerPosition.y - 30, 60, 60);
+      CTX.restore();
+    }
+
     // Calculate new positions for all balls
     balls.forEach((b) => b.update(deltaTime));
 
