@@ -1,6 +1,7 @@
 import { BLAST_HOLD_THRESHOLD, SLINGSHOT_MOVE_THRESHOLD } from "./constants.js";
 import { drawHoldBlastPreview, makeHoldBlast } from "./holdBlast.js";
 import { drawSlingshotPreview, makeSlingshot } from "./slingshot.js";
+import { smoothPosition } from "./helpers.js";
 
 export const makeActivePointer = (
   canvasManager,
@@ -11,9 +12,11 @@ export const makeActivePointer = (
 ) => {
   const pointerStart = Date.now();
   let currentPosition = { ...startPosition };
+  let smoothedPosition = { ...startPosition };
   let hitSlingshotDistanceThresholdInTime = false;
 
   const setPosition = ({ x, y }) => {
+    smoothedPosition = smoothPosition(smoothedPosition, { x, y });
     currentPosition = { x, y };
 
     if (
@@ -50,7 +53,7 @@ export const makeActivePointer = (
 
   const draw = () => {
     if (isSlingshot()) {
-      drawSlingshotPreview(canvasManager, startPosition, currentPosition);
+      drawSlingshotPreview(canvasManager, startPosition, smoothedPosition);
     } else if (isHoldBlast()) {
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);
     }
