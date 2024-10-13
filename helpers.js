@@ -40,13 +40,3 @@ export const findBallAtPoint = (balls, { x, y }) => {
     }
   });
 };
-
-export const smoothValue = (previousValue, newValue, hysterisis = 0.9) =>
-  previousValue * hysterisis + newValue * (1 - hysterisis);
-
-export const smoothPosition = (previousPos, newPos, hysterisis = 0.9) => {
-  return {
-    x: smoothValue(previousPos.x, newPos.x, hysterisis),
-    y: smoothValue(previousPos.y, newPos.y, hysterisis),
-  };
-};
