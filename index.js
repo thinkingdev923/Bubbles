@@ -212,7 +212,11 @@ animate((deltaTime) => {
 
   cameraWrapper(() => {
     // On mouse-based clients show a crosshair
-    if (usingMouse && !levelManager.isInterstitialShowing()) {
+    if (
+      usingMouse &&
+      pointerPosition &&
+      !levelManager.isInterstitialShowing()
+    ) {
       CTX.save();
       CTX.fillStyle = red;
       CTX.strokeStyle = red;
