@@ -17,21 +17,29 @@ export const makeParticle = (
   const particleStart = Date.now();
   let position = { ...startPosition };
   let velocity = { ...startVelocity };
+  let gone = false;
+
+  const kill = () => (gone = true);
 
   const update = (deltaTime) => {
-    const deltaTimeMultiplier = deltaTime / INTERVAL;
-    position.x += deltaTimeMultiplier * velocity.x;
-    position.y += Math.min(deltaTimeMultiplier * velocity.y, terminalVelocity);
-    velocity.y += deltaTimeMultiplier * gravity;
+    if (!gone) {
+      const deltaTimeMultiplier = deltaTime / INTERVAL;
+      position.x += deltaTimeMultiplier * velocity.x;
+      position.y += Math.min(
+        deltaTimeMultiplier * velocity.y,
+        terminalVelocity
+      );
+      velocity.y += deltaTimeMultiplier * gravity;
 
-    if (position.x > canvasManager.getWidth() - radius) {
-      onRightCollision(position, velocity);
-    } else if (position.y > canvasManager.getHeight() + radius) {
-      onBottomCollision(position, velocity);
-    } else if (position.x < radius) {
-      onLeftCollision(position, velocity);
-    } else if (position.y < radius) {
-      onTopCollision(position, velocity);
+      if (position.x > canvasManager.getWidth() - radius) {
+        onRightCollision(position, velocity);
+      } else if (position.y > canvasManager.getHeight() + radius) {
+        onBottomCollision(position, velocity);
+      } else if (position.x < radius) {
+        onLeftCollision(position, velocity);
+      } else if (position.y < radius) {
+        onTopCollision(position, velocity);
+      }
     }
   };
 
@@ -44,5 +52,7 @@ export const makeParticle = (
     getVelocity: () => velocity,
     setPosition: (p) => (position = p),
     setVelocity: (c) => (velocity = c),
+    kill,
+    isGone: () => gone,
   };
 };
