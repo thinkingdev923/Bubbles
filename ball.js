@@ -30,7 +30,6 @@ export const makeBall = (
   let popped = false;
   let poppedTime = false;
   let poppedParticles = [];
-  let gone = false;
 
   const baseParticle = makeParticle(canvasManager, {
     radius,
@@ -58,7 +57,8 @@ export const makeBall = (
     return preRenderCanvas.getBitmap();
   })();
 
-  const shouldRender = () => !gone && baseParticle.getDuration() > delay;
+  const shouldRender = () =>
+    !baseParticle.isGone() && baseParticle.getDuration() > delay;
 
   function onRightCollision(position, velocity) {
     position.x = canvasManager.getWidth() - radius;
@@ -66,7 +66,7 @@ export const makeBall = (
   }
 
   function onBottomCollision() {
-    gone = true;
+    baseParticle.kill();
     if (!popped) onMiss();
   }
 
@@ -82,6 +82,7 @@ export const makeBall = (
     const numberOfPopPieces = Math.round(randomBetween(10, 80));
     popped = true;
     poppedTime = Date.now();
+    baseParticle.kill();
 
     // A popped ball is composed of many tiny ball objects. The first frame after
     // the pop, we want them to cluster together to form a shape that still looks
@@ -172,7 +173,6 @@ export const makeBall = (
       const timeSincePopped = Date.now() - poppedTime;
       if (timeSincePopped > popAnimationDurationMax) {
         poppedParticles = [];
-        gone = true;
       } else {
         poppedParticles.forEach((p) => {
           p.update(deltaTime);
@@ -214,9 +214,9 @@ export const makeBall = (
     draw,
     pop,
     isPopped: () => popped,
-    isRemaining: () => !popped && !gone,
+    isRemaining: () => !popped && !baseParticle.isGone(),
     shouldRender,
-    isPopping: () => popped && !gone,
+    isPopping: () => popped && !baseParticle.isGone(),
   };
 };
 
