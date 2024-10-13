@@ -49,9 +49,10 @@ export const makeBall = (
       height: radius * 2,
     });
     const preRenderContext = preRenderCanvas.getContext();
-    preRenderContext.fillStyle = getGradient(canvasManager, fill, radius);
+    preRenderContext.fillStyle = getGradient(preRenderCanvas, fill, radius);
     preRenderContext.beginPath();
-    preRenderContext.arc(radius, radius, radius, 0, 2 * Math.PI);
+    preRenderContext.translate(radius, radius);
+    preRenderContext.arc(0, 0, radius, 0, 2 * Math.PI);
     preRenderContext.closePath();
     preRenderContext.fill();
     return preRenderCanvas.getBitmap();
