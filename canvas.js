@@ -34,3 +34,17 @@ export const makeCanvasManager = ({
     getScaleFactor: () => scale,
   };
 };
+
+export const makeOffscreenCanvas = ({ width, height }) => {
+  const offscreenElement = new OffscreenCanvas(width, height);
+  const context = offscreenElement.getContext("2d");
+  const scale = window.devicePixelRatio;
+
+  offscreenElement.width = Math.floor(width * scale);
+  offscreenElement.height = Math.floor(height * scale);
+
+  return {
+    getContext: () => context,
+    getBitmap: () => offscreenElement.transferToImageBitmap(),
+  };
+};
