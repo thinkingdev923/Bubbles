@@ -14,4 +14,3 @@
 
 - Refactors
   - Apply particle to slingshots and blasts
-  - Pre-render balls of each color on load and store in colors.js

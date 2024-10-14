@@ -1,3 +1,24 @@
+// Colors
+
+import { BUBBLE_RADIUS } from "./constants.js";
+import { makeOffscreenCanvas } from "./canvas.js";
+
+export const pink = "#EA98AA";
+export const red = "#DF432A";
+export const yellow = "#F4BF2A";
+export const turquoise = "#79CAEC";
+export const white = "#FCF6E8";
+
+export const medblue = "#4555A5";
+export const green = "#92C262";
+export const purple = "#B565A9";
+export const orange = "#F38121";
+export const teal = "#51BFA4";
+
+export const background = "#2D2D74";
+
+// Gradients
+
 const makeGradient = (
   canvasManager,
   radius,
@@ -21,12 +42,6 @@ const makeGradient = (
   return gradient;
 };
 
-export const pink = "#EA98AA";
-export const red = "#DF432A";
-export const yellow = "#F4BF2A";
-export const turquoise = "#79CAEC";
-export const white = "#FCF6E8";
-
 const pinkGradient = (canvasManager, radius) =>
   makeGradient(canvasManager, radius, "#FFB7C7", pink, "#E2627E");
 const redGradient = (canvasManager, radius) =>
@@ -38,31 +53,43 @@ const turquoiseGradient = (canvasManager, radius) =>
 const whiteGradient = (canvasManager, radius) =>
   makeGradient(canvasManager, radius, "#FFFFFF", white, "#E4D9C1");
 
-export const medblue = "#4555A5";
-export const green = "#92C262";
-export const purple = "#B565A9";
-export const orange = "#F38121";
-export const teal = "#51BFA4";
+// Rendered Bitmaps
 
-export const background = "#2D2D74";
+const makeBitmap = (gradientFunc) => {
+  const preRenderCanvas = makeOffscreenCanvas({
+    width: BUBBLE_RADIUS * 2,
+    height: BUBBLE_RADIUS * 2,
+  });
+  const preRenderContext = preRenderCanvas.getContext();
+  preRenderContext.fillStyle = gradientFunc(preRenderCanvas, BUBBLE_RADIUS);
+  preRenderContext.beginPath();
+  preRenderContext.translate(BUBBLE_RADIUS, BUBBLE_RADIUS);
+  preRenderContext.arc(0, 0, BUBBLE_RADIUS, 0, 2 * Math.PI);
+  preRenderContext.closePath();
+  preRenderContext.fill();
+  return preRenderCanvas.getBitmap();
+};
 
-const colors = [pink, red, yellow, turquoise, white];
-const gradients = [
-  { sourceColor: pink, gradientFunc: pinkGradient },
-  { sourceColor: red, gradientFunc: redGradient },
-  { sourceColor: yellow, gradientFunc: yellowGradient },
-  { sourceColor: turquoise, gradientFunc: turquoiseGradient },
-  { sourceColor: white, gradientFunc: whiteGradient },
+const pinkGradientBitmap = makeBitmap(pinkGradient);
+const redGradientBitmap = makeBitmap(redGradient);
+const yellowGradientBitmap = makeBitmap(yellowGradient);
+const turquoiseGradientBitmap = makeBitmap(turquoiseGradient);
+const whiteGradientBitmap = makeBitmap(whiteGradient);
+
+const gradientBitmaps = [
+  { sourceColor: pink, bitmap: pinkGradientBitmap },
+  { sourceColor: red, bitmap: redGradientBitmap },
+  { sourceColor: yellow, bitmap: yellowGradientBitmap },
+  { sourceColor: turquoise, bitmap: turquoiseGradientBitmap },
+  { sourceColor: white, bitmap: whiteGradientBitmap },
 ];
-const colorNames = ["pink", "red", "yellow", "turquoise", "white"];
 
-export const randomColor = () =>
-  colors[Math.floor(Math.random() * colors.length)];
+// Functions
 
-export const getGradient = (canvasManager, sourceColor, radius) =>
-  gradients
-    .find((g) => g.sourceColor === sourceColor)
-    .gradientFunc(canvasManager, radius);
+export const randomColor = () => {
+  const colors = [pink, red, yellow, turquoise, white];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
 
-export const randomColorName = () =>
-  colorNames[Math.floor(Math.random() * colorNames.length)];
+export const getGradientBitmap = (sourceColor) =>
+  gradientBitmaps.find((g) => g.sourceColor === sourceColor).bitmap;

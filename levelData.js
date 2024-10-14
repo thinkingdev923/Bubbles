@@ -1,4 +1,5 @@
 import { makeBall } from "./ball.js";
+import { BUBBLE_RADIUS } from "./constants.js";
 
 export const levels = [
   {
@@ -521,7 +522,7 @@ export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
     // 1       2         -margin-ballheight*2-spacing*2   -16-88-88   = -192
     // 2       1         -margin-ballheight*1-spacing*1   -16-44-44   = -104
     const spaceBetweenRows = 120;
-    const ballSize = 44;
+    const ballSize = BUBBLE_RADIUS;
     const verticalOffset = 16;
     const inverseIndex = level.balls.length - rowIndex;
     const yPos =

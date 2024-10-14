@@ -7,8 +7,7 @@ import {
   clampedProgress,
 } from "./helpers.js";
 import { easeOutCubic } from "./easings.js";
-import { getGradient } from "./colors.js";
-import { makeOffscreenCanvas } from "./canvas.js";
+import { getGradientBitmap } from "./colors.js";
 
 export const makeBall = (
   canvasManager,
@@ -27,6 +26,7 @@ export const makeBall = (
   const CTX = canvasManager.getContext();
   const popAnimationDurationMax = 2400;
   const popAnimationDuration = randomBetween(1200, popAnimationDurationMax);
+  const preRenderImage = getGradientBitmap(fill);
   let popped = false;
   let poppedTime = false;
   let poppedParticles = [];
@@ -42,21 +42,6 @@ export const makeBall = (
     onBottomCollision,
     onLeftCollision,
   });
-
-  const preRenderImage = (() => {
-    const preRenderCanvas = makeOffscreenCanvas({
-      width: radius * 2,
-      height: radius * 2,
-    });
-    const preRenderContext = preRenderCanvas.getContext();
-    preRenderContext.fillStyle = getGradient(preRenderCanvas, fill, radius);
-    preRenderContext.beginPath();
-    preRenderContext.translate(radius, radius);
-    preRenderContext.arc(0, 0, radius, 0, 2 * Math.PI);
-    preRenderContext.closePath();
-    preRenderContext.fill();
-    return preRenderCanvas.getBitmap();
-  })();
 
   const shouldRender = () => !missed && baseParticle.getDuration() > delay;
 
