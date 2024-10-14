@@ -226,9 +226,6 @@ animate((deltaTime) => {
       CTX.restore();
     }
 
-    // Calculate new positions for all balls
-    balls.forEach((b) => b.update(deltaTime));
-
     // Run collision detection on balls + holdBlasts + slingshots
     const ballsInPlay = balls.filter(
       (b) => b.isRemaining() && b.shouldRender()

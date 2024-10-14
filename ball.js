@@ -30,6 +30,7 @@ export const makeBall = (
   let popped = false;
   let poppedTime = false;
   let poppedParticles = [];
+  let missed = false;
 
   const baseParticle = makeParticle(canvasManager, {
     radius,
@@ -57,8 +58,7 @@ export const makeBall = (
     return preRenderCanvas.getBitmap();
   })();
 
-  const shouldRender = () =>
-    !baseParticle.isGone() && baseParticle.getDuration() > delay;
+  const shouldRender = () => !missed && baseParticle.getDuration() > delay;
 
   function onRightCollision(position, velocity) {
     position.x = canvasManager.getWidth() - radius;
@@ -66,8 +66,8 @@ export const makeBall = (
   }
 
   function onBottomCollision() {
-    baseParticle.kill();
-    if (!popped) onMiss();
+    missed = true;
+    onMiss();
   }
 
   function onLeftCollision(position, velocity) {
@@ -82,7 +82,6 @@ export const makeBall = (
     const numberOfPopPieces = Math.round(randomBetween(10, 80));
     popped = true;
     poppedTime = Date.now();
-    baseParticle.kill();
 
     // A popped ball is composed of many tiny ball objects. The first frame after
     // the pop, we want them to cluster together to form a shape that still looks
@@ -197,6 +196,7 @@ export const makeBall = (
         });
       }
     } else if (shouldRender()) {
+      baseParticle.update(deltaTime);
       CTX.save();
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
       CTX.drawImage(preRenderImage, -radius, -radius);
@@ -205,7 +205,6 @@ export const makeBall = (
   };
 
   return {
-    update: baseParticle.update,
     getPosition: baseParticle.getPosition,
     getVelocity: baseParticle.getVelocity,
     getRadius: baseParticle.getRadius,
@@ -214,9 +213,10 @@ export const makeBall = (
     draw,
     pop,
     isPopped: () => popped,
-    isRemaining: () => !popped && !baseParticle.isGone(),
+    isRemaining: () => !popped && !missed,
     shouldRender,
-    isPopping: () => popped && !baseParticle.isGone(),
+    isPopping: () =>
+      popped && Date.now() - poppedTime <= popAnimationDurationMax,
   };
 };
 
