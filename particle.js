@@ -47,22 +47,22 @@ export const makeParticle = (
   };
 };
 
-export const checkParticleCollision = (ballA, ballB) => {
-  const rSum = ballA.getRadius() + ballB.getRadius();
-  const dx = ballB.getPosition().x - ballA.getPosition().x;
-  const dy = ballB.getPosition().y - ballA.getPosition().y;
+export const checkParticleCollision = (A, B) => {
+  const rSum = A.getRadius() + B.getRadius();
+  const dx = B.getPosition().x - A.getPosition().x;
+  const dy = B.getPosition().y - A.getPosition().y;
   return [rSum * rSum > dx * dx + dy * dy, rSum - Math.sqrt(dx * dx + dy * dy)];
 };
 
-export const resolveParticleCollision = (ballA, ballB) => {
+export const resolveParticleCollision = (A, B) => {
   const relativeVelocity = {
-    x: ballB.getVelocity().x - ballA.getVelocity().x,
-    y: ballB.getVelocity().y - ballA.getVelocity().y,
+    x: B.getVelocity().x - A.getVelocity().x,
+    y: B.getVelocity().y - A.getVelocity().y,
   };
 
   const norm = {
-    x: ballB.getPosition().x - ballA.getPosition().x,
-    y: ballB.getPosition().y - ballA.getPosition().y,
+    x: B.getPosition().x - A.getPosition().x,
+    y: B.getPosition().y - A.getPosition().y,
   };
   const mag = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
   norm.x /= mag;
@@ -75,31 +75,30 @@ export const resolveParticleCollision = (ballA, ballB) => {
 
   const bounce = 0.7;
   let j = -(1 + bounce) * velocityAlongNorm;
-  j /= 1 / ballA.getRadius() + 1 / ballB.getRadius();
+  j /= 1 / A.getRadius() + 1 / B.getRadius();
   const impulse = { x: j * norm.x, y: j * norm.y };
 
-  ballA.setVelocity({
-    x: ballA.getVelocity().x - (1 / ballA.getRadius()) * impulse.x,
-    y: ballA.getVelocity().y - (1 / ballA.getRadius()) * impulse.y,
+  A.setVelocity({
+    x: A.getVelocity().x - (1 / A.getRadius()) * impulse.x,
+    y: A.getVelocity().y - (1 / A.getRadius()) * impulse.y,
   });
 
-  ballB.setVelocity({
-    x: ballB.getVelocity().x + (1 / ballB.getRadius()) * impulse.x,
-    y: ballB.getVelocity().y + (1 / ballB.getRadius()) * impulse.y,
+  B.setVelocity({
+    x: B.getVelocity().x + (1 / B.getRadius()) * impulse.x,
+    y: B.getVelocity().y + (1 / B.getRadius()) * impulse.y,
   });
 };
 
-export const adjustParticlePositions = (ballA, ballB, depth) => {
+export const adjustParticlePositions = (A, B, depth) => {
   const percent = 0.2;
   const slop = 0.01;
   let correctionNum =
-    (Math.max(depth - slop, 0) /
-      (1 / ballA.getRadius() + 1 / ballB.getRadius())) *
+    (Math.max(depth - slop, 0) / (1 / A.getRadius() + 1 / B.getRadius())) *
     percent;
 
   const norm = {
-    x: ballB.getPosition().x - ballA.getPosition().x,
-    y: ballB.getPosition().y - ballA.getPosition().y,
+    x: B.getPosition().x - A.getPosition().x,
+    y: B.getPosition().y - A.getPosition().y,
   };
   const mag = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
   norm.x /= mag;
@@ -107,12 +106,13 @@ export const adjustParticlePositions = (ballA, ballB, depth) => {
 
   const correction = { x: correctionNum * norm.x, y: correctionNum * norm.y };
 
-  ballA.setPosition({
-    x: ballA.getPosition().x - (1 / ballA.getRadius()) * correction.x,
-    y: ballA.getPosition().y - (1 / ballA.getRadius()) * correction.y,
+  A.setPosition({
+    x: A.getPosition().x - (1 / A.getRadius()) * correction.x,
+    y: A.getPosition().y - (1 / A.getRadius()) * correction.y,
   });
-  ballB.setPosition({
-    x: ballB.getPosition().x + (1 / ballB.getRadius()) * correction.x,
-    y: ballB.getPosition().y + (1 / ballB.getRadius()) * correction.y,
+
+  B.setPosition({
+    x: B.getPosition().x + (1 / B.getRadius()) * correction.x,
+    y: B.getPosition().y + (1 / B.getRadius()) * correction.y,
   });
 };
