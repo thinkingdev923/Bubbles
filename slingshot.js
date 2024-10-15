@@ -102,7 +102,7 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
   };
 
   // getRadius and getPosition have to match the methods on ball.js so we can
-  // run checkBallCollision() on slingshots
+  // run checkParticleCollision() on slingshots
   return {
     draw,
     getRadius: () => radius,

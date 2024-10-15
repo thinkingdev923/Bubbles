@@ -68,7 +68,7 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
   };
 
   // getRadius and getPosition have to match the methods on ball.js so we can
-  // run checkBallCollision() on blasts
+  // run checkParticleCollision() on blasts
   return {
     draw,
     getRadius,

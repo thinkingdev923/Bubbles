@@ -6,10 +6,10 @@ import {
   transition,
 } from "./helpers.js";
 import {
-  checkBallCollision,
-  adjustBallPositions,
-  resolveBallCollision,
-} from "./ball.js";
+  checkParticleCollision,
+  adjustParticlePositions,
+  resolveParticleCollision,
+} from "./particle.js";
 import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
 import { makeLifeManager } from "./lives.js";
@@ -236,16 +236,16 @@ animate((deltaTime) => {
     ballsInPlay.forEach((ballA) => {
       ballsInPlay.forEach((ballB) => {
         if (ballA !== ballB) {
-          const collision = checkBallCollision(ballA, ballB);
+          const collision = checkParticleCollision(ballA, ballB);
           if (collision[0]) {
-            adjustBallPositions(ballA, ballB, collision[1]);
-            resolveBallCollision(ballA, ballB);
+            adjustParticlePositions(ballA, ballB, collision[1]);
+            resolveParticleCollision(ballA, ballB);
           }
         }
       });
 
       pointerTriggerOutputInPlay.forEach((output) => {
-        const collision = checkBallCollision(ballA, output);
+        const collision = checkParticleCollision(ballA, output);
         if (collision[0]) {
           ballA.pop(output.getVelocity());
           audioManager.playSequentialPluck();
