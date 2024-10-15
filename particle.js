@@ -8,10 +8,14 @@ export const makeParticle = (
     startVelocity,
     gravity = GRAVITY,
     terminalVelocity = 12,
-    onRightCollision = () => {},
-    onBottomCollision = () => {},
-    onLeftCollision = () => {},
-    onTopCollision = () => {},
+    onRightTouch = () => {},
+    onBottomTouch = () => {},
+    onLeftTouch = () => {},
+    onTopTouch = () => {},
+    onRightPassed = () => {},
+    onBottomPassed = () => {},
+    onLeftPassed = () => {},
+    onTopPassed = () => {},
   }
 ) => {
   const particleStart = Date.now();
@@ -24,14 +28,22 @@ export const makeParticle = (
     position.y += Math.min(deltaTimeMultiplier * velocity.y, terminalVelocity);
     velocity.y += deltaTimeMultiplier * gravity;
 
-    if (position.x > canvasManager.getWidth() - radius) {
-      onRightCollision(position, velocity);
+    if (position.x > canvasManager.getWidth() + radius) {
+      onRightPassed(position, velocity);
+    } else if (position.x > canvasManager.getWidth() - radius) {
+      onRightTouch(position, velocity);
     } else if (position.y > canvasManager.getHeight() + radius) {
-      onBottomCollision(position, velocity);
+      onBottomPassed(position, velocity);
+    } else if (position.y > canvasManager.getHeight() - radius) {
+      onBottomTouch(position, velocity);
+    } else if (position.x < -radius) {
+      onLeftPassed(position, velocity);
     } else if (position.x < radius) {
-      onLeftCollision(position, velocity);
+      onLeftTouch(position, velocity);
+    } else if (position.y < -radius) {
+      onTopPassed(position, velocity);
     } else if (position.y < radius) {
-      onTopCollision(position, velocity);
+      onTopTouch(position, velocity);
     }
   };
 

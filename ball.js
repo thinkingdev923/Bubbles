@@ -38,24 +38,24 @@ export const makeBall = (
     startVelocity,
     gravity,
     terminalVelocity,
-    onRightCollision,
-    onBottomCollision,
-    onLeftCollision,
+    onRightTouch,
+    onBottomPassed,
+    onLeftTouch,
   });
 
   const shouldRender = () => !missed && baseParticle.getDuration() > delay;
 
-  function onRightCollision(position, velocity) {
+  function onRightTouch(position, velocity) {
     position.x = canvasManager.getWidth() - radius;
     velocity.x *= -0.7;
   }
 
-  function onBottomCollision() {
+  function onBottomPassed() {
     missed = true;
     onMiss();
   }
 
-  function onLeftCollision(position, velocity) {
+  function onLeftTouch(position, velocity) {
     position.x = radius;
     velocity.x *= -0.7;
   }

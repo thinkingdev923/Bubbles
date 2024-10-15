@@ -1,6 +1,7 @@
-import { INTERVAL, GRAVITY } from "./constants.js";
+import { GRAVITY } from "./constants.js";
 import { red } from "./colors.js";
 import { clampedProgress, transition } from "./helpers.js";
+import { makeParticle } from "./particle.js";
 
 const getHeadingInRads = (a, b) => Math.atan2(a.y - b.y, a.x - b.x);
 
@@ -59,55 +60,50 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     startPosition.x - endPosition.x,
     startPosition.y - endPosition.y
   );
-  const radius = slingshotRadius(distance);
-  const velocity = getVelocity(
-    distance / 10,
-    getHeadingInRads(startPosition, endPosition)
-  );
-
-  let position = { ...endPosition };
   let gone = false;
 
-  const update = (deltaTime) => {
-    const deltaTimeMultiplier = deltaTime / INTERVAL;
-    position.x += deltaTimeMultiplier * velocity.x;
-    position.y += deltaTimeMultiplier * velocity.y;
-    velocity.y += deltaTimeMultiplier * GRAVITY;
+  const baseParticle = makeParticle(canvasManager, {
+    radius: slingshotRadius(distance),
+    startPosition: { ...endPosition },
+    startVelocity: getVelocity(
+      distance / 10,
+      getHeadingInRads(startPosition, endPosition)
+    ),
+    gravity: GRAVITY,
+    onRightPassed: onLeaveScreen,
+    onBottomPassed: onLeaveScreen,
+    onLeftPassed: onLeaveScreen,
+    onTopPassed: onLeaveScreen,
+  });
 
-    if (
-      position.x > canvasManager.getWidth() + radius ||
-      position.y > canvasManager.getHeight() + radius ||
-      position.x < -radius ||
-      position.y < -radius
-    ) {
-      gone = true;
-    }
-  };
+  function onLeaveScreen() {
+    gone = true;
+    console.log("leave");
+  }
 
   const draw = (deltaTime) => {
     if (!gone) {
-      update(deltaTime);
-
+      baseParticle.update(deltaTime);
       CTX.save();
       CTX.shadowColor = red;
       CTX.shadowBlur = 15;
       CTX.fillStyle = red;
-      CTX.translate(position.x, position.y);
+      CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
       CTX.beginPath();
-      CTX.arc(0, 0, radius, 0, 2 * Math.PI);
+      CTX.arc(0, 0, baseParticle.getRadius(), 0, 2 * Math.PI);
       CTX.closePath();
       CTX.fill();
       CTX.restore();
     }
   };
 
-  // getRadius and getPosition have to match the methods on ball.js so we can
-  // run checkParticleCollision() on slingshots
   return {
+    getPosition: baseParticle.getPosition,
+    getVelocity: baseParticle.getVelocity,
+    getRadius: baseParticle.getRadius,
+    setPosition: baseParticle.setPosition,
+    setVelocity: baseParticle.setVelocity,
     draw,
-    getRadius: () => radius,
-    getPosition: () => position,
-    getVelocity: () => velocity,
     isGone: () => gone,
     causesShake: () => false,
   };
