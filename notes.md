@@ -11,6 +11,3 @@
 
 - Better blast effects
   - Blasts apply a velocity to blasted balls. Direction of velocity is determined by angle from center of blast to center of popped ball.
-
-- Refactors
-  - Apply particle to slingshots and blasts
