@@ -1,4 +1,5 @@
 import { makeCanvasManager } from "./canvas.js";
+import { BLAST_MAX_DURATION } from "./constants.js";
 import {
   animate,
   findBallAtPoint,
@@ -139,7 +140,6 @@ document.addEventListener("pointerup", (e) => {
     if (pointerId === pointer.getId()) {
       pointer.setPosition({ x, y });
       activePointers.splice(pointerIndex, 1);
-
       if (!levelManager.isInterstitialShowing()) pointer.trigger();
     }
   });
@@ -226,12 +226,20 @@ animate((deltaTime) => {
       CTX.restore();
     }
 
-    // Run collision detection on balls + holdBlasts + slingshots
+    // Trigger holdBlasts that have been held down past the max time
+    if (!levelManager.isInterstitialShowing()) {
+      activePointers.forEach((p, pointerIndex) => {
+        if (p.isHoldBlast() && p.getDuration() >= BLAST_MAX_DURATION) {
+          activePointers.splice(pointerIndex, 1);
+          p.trigger();
+        }
+      });
+    }
+
+    // Run collision detection on bubbles and bounce bubbles off eachother
+    // Run collision detection on blasts + slingshots and pop colliding bubbles
     const ballsInPlay = balls.filter(
       (b) => b.isRemaining() && b.shouldRender()
-    );
-    const pointerTriggerOutputInPlay = pointerTriggerOutput.filter(
-      (b) => !b.isGone()
     );
     ballsInPlay.forEach((ballA) => {
       ballsInPlay.forEach((ballB) => {
@@ -243,18 +251,18 @@ animate((deltaTime) => {
           }
         }
       });
+      pointerTriggerOutput
+        .filter((p) => !p.isGone())
+        .forEach((output) => {
+          const collision = checkParticleCollision(ballA, output);
+          if (collision[0]) {
+            output.isHoldBlast()
+              ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
+              : ballA.pop(output.getVelocity());
 
-      pointerTriggerOutputInPlay.forEach((output) => {
-        const collision = checkParticleCollision(ballA, output);
-        if (collision[0]) {
-          if (output.isHoldBlast()) {
-            ballA.pop(output.getRelativeVelocity(ballA.getPosition()));
-          } else {
-            ballA.pop(output.getVelocity());
+            audioManager.playSequentialPluck();
           }
-          audioManager.playSequentialPluck();
-        }
-      });
+        });
     });
 
     // Draw level + life text underneath balls
@@ -262,7 +270,7 @@ animate((deltaTime) => {
 
     if (!levelManager.isGameOver()) lifeManager.draw();
 
-    // Draw ripples, balls, and hold blasts
+    // Draw main game elements
     ripples.forEach((r) => r.draw());
     pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
     balls.forEach((b) => b.draw(deltaTime));

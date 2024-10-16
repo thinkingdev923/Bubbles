@@ -61,5 +61,8 @@ export const makeActivePointer = (
     setPosition,
     trigger,
     draw,
+    getDuration: () => Date.now() - pointerStart,
+    isSlingshot,
+    isHoldBlast,
   };
 };
