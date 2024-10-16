@@ -8,6 +8,3 @@
 
 - De-OP blasts
   - Blasts trigger automatically when they reach max size, like a grenade
-
-- Better blast effects
-  - Blasts apply a velocity to blasted balls. Direction of velocity is determined by angle from center of blast to center of popped ball.

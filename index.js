@@ -247,7 +247,11 @@ animate((deltaTime) => {
       pointerTriggerOutputInPlay.forEach((output) => {
         const collision = checkParticleCollision(ballA, output);
         if (collision[0]) {
-          ballA.pop(output.getVelocity());
+          if (output.isHoldBlast()) {
+            ballA.pop(output.getRelativeVelocity(ballA.getPosition()));
+          } else {
+            ballA.pop(output.getVelocity());
+          }
           audioManager.playSequentialPluck();
         }
       });

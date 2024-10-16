@@ -24,11 +24,19 @@ export const transition = (start, end, progress, easingFunc) => {
   return start + Math.sign(end - start) * Math.abs(end - start) * easedProgress;
 };
 
-export const degToRag = (degree) => (degree * Math.PI) / 180;
-
 export const randomBool = (probability = 0.5) => Math.random() >= probability;
 
 export const randomBetween = (min, max) => Math.random() * (max - min) + min;
+
+export const degToRag = (degree) => (degree * Math.PI) / 180;
+
+export const getHeadingInRadsFromTwoPoints = (a, b) =>
+  Math.atan2(a.y - b.y, a.x - b.x);
+
+export const getVelocityFromSpeedAndHeading = (speed, headingInRads) => ({
+  x: speed * Math.cos(headingInRads),
+  y: speed * Math.sin(headingInRads),
+});
 
 export const findBallAtPoint = (balls, { x, y }) => {
   return balls.find((ball) => {

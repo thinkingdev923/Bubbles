@@ -1,4 +1,9 @@
-import { clampedProgress, transition } from "./helpers.js";
+import {
+  clampedProgress,
+  transition,
+  getHeadingInRadsFromTwoPoints,
+  getVelocityFromSpeedAndHeading,
+} from "./helpers.js";
 import { easeOutCubic, easeOutSine } from "./easings.js";
 import { red } from "./colors.js";
 import { BLAST_HOLD_THRESHOLD } from "./constants.js";
@@ -48,6 +53,19 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
   const getRadius = () =>
     transition(startSize, startSize * 2, getBlastProgress(), easeOutCubic);
 
+  // A blast has no velocity since it's motionless in space, but we still want
+  // to impart a direction to bubbles that a blast pops, and we want this to
+  // be proportional to its power. This generates a vector from the center of
+  // the blast to the given bubble's center. We pass this vector into the
+  // bubble's pop() func to give its pop a direction
+  const getRelativeVelocity = (targetPosition) => {
+    const blastPower = startSize / 4;
+    const headingToTarget =
+      getHeadingInRadsFromTwoPoints({ x, y }, targetPosition) - Math.PI;
+
+    return getVelocityFromSpeedAndHeading(blastPower, headingToTarget);
+  };
+
   const draw = () => {
     if (!gone) {
       if (Date.now() - blastStart > blastDuration) gone = true;
@@ -67,14 +85,16 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
     }
   };
 
-  // getRadius and getPosition have to match the methods on ball.js so we can
-  // run checkParticleCollision() on blasts
+  // getRadius and getPosition have to match the methods on particle.js so we
+  // can run checkParticleCollision() on blasts
   return {
-    draw,
-    getRadius,
     getPosition: () => ({ x, y }),
-    getVelocity: () => ({ x: 0, y: 0 }),
+    getRelativeVelocity,
+    getRadius,
+    draw,
     isGone: () => gone,
     causesShake: () => true,
+    isSlingshot: () => false,
+    isHoldBlast: () => true,
   };
 };

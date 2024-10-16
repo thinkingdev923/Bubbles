@@ -1,14 +1,12 @@
 import { GRAVITY } from "./constants.js";
 import { red } from "./colors.js";
-import { clampedProgress, transition } from "./helpers.js";
+import {
+  getHeadingInRadsFromTwoPoints,
+  getVelocityFromSpeedAndHeading,
+  clampedProgress,
+  transition,
+} from "./helpers.js";
 import { makeParticle } from "./particle.js";
-
-const getHeadingInRads = (a, b) => Math.atan2(a.y - b.y, a.x - b.x);
-
-const getVelocity = (speed, headingInRads) => ({
-  x: speed * Math.cos(headingInRads),
-  y: speed * Math.sin(headingInRads),
-});
 
 const slingshotRadius = (distance) =>
   transition(32, 12, clampedProgress(0, 600, distance));
@@ -37,7 +35,9 @@ export const drawSlingshotPreview = (
 
   CTX.save();
   CTX.translate(startPosition.x, startPosition.y);
-  CTX.rotate(getHeadingInRads(startPosition, currentPosition) - Math.PI / 2);
+  CTX.rotate(
+    getHeadingInRadsFromTwoPoints(startPosition, currentPosition) - Math.PI / 2
+  );
   CTX.beginPath();
   CTX.moveTo(-10, -10);
   CTX.lineTo(0, 10);
@@ -65,9 +65,9 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
   const baseParticle = makeParticle(canvasManager, {
     radius: slingshotRadius(distance),
     startPosition: { ...endPosition },
-    startVelocity: getVelocity(
+    startVelocity: getVelocityFromSpeedAndHeading(
       distance / 10,
-      getHeadingInRads(startPosition, endPosition)
+      getHeadingInRadsFromTwoPoints(startPosition, endPosition)
     ),
     gravity: GRAVITY,
     onRightPassed: onLeaveScreen,
@@ -78,7 +78,6 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
 
   function onLeaveScreen() {
     gone = true;
-    console.log("leave");
   }
 
   const draw = (deltaTime) => {
@@ -106,5 +105,7 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     draw,
     isGone: () => gone,
     causesShake: () => false,
+    isSlingshot: () => true,
+    isHoldBlast: () => false,
   };
 };
