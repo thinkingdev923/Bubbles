@@ -4,9 +4,14 @@ import {
   getHeadingInRadsFromTwoPoints,
   getVelocityFromSpeedAndHeading,
 } from "./helpers.js";
-import { easeOutCubic, easeOutSine } from "./easings.js";
+import { easeOutCubic, easeOutSine, easeInCubic } from "./easings.js";
 import { red } from "./colors.js";
-import { BLAST_HOLD_THRESHOLD, BLAST_MAX_DURATION } from "./constants.js";
+import {
+  BLAST_HOLD_THRESHOLD,
+  BLAST_MAX_DURATION,
+  FONT_WEIGHT_NORMAL,
+  FONT,
+} from "./constants.js";
 
 export const drawHoldBlastPreview = (
   canvasManager,
@@ -21,6 +26,7 @@ export const drawHoldBlastPreview = (
     Date.now() - blastHoldStart
   );
   const previewSize = transition(0, 140, scaleProgress, easeOutSine);
+  const blastCountdown = transition(5, 0, scaleProgress, easeInCubic);
 
   CTX.save();
   CTX.fillStyle = red;
@@ -31,6 +37,17 @@ export const drawHoldBlastPreview = (
   CTX.closePath();
   CTX.fill();
   CTX.restore();
+
+  if (blastCountdown < 4) {
+    CTX.save();
+    CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
+    CTX.fillStyle = red;
+    CTX.textAlign = "right";
+    CTX.textBaseline = "middle";
+    CTX.translate(x + previewSize * 0.55, y - previewSize * 0.55);
+    CTX.fillText(Math.round(blastCountdown), 8, 0);
+    CTX.restore();
+  }
 };
 
 export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
