@@ -3,15 +3,11 @@ import {
   transition,
   getHeadingInRadsFromTwoPoints,
   getVelocityFromSpeedAndHeading,
+  randomBetween,
 } from "./helpers.js";
-import { easeOutCubic, easeOutSine, easeInCubic } from "./easings.js";
+import { easeOutCubic, easeOutSine } from "./easings.js";
 import { red } from "./colors.js";
-import {
-  BLAST_HOLD_THRESHOLD,
-  BLAST_MAX_DURATION,
-  FONT_WEIGHT_NORMAL,
-  FONT,
-} from "./constants.js";
+import { BLAST_HOLD_THRESHOLD, BLAST_MAX_DURATION } from "./constants.js";
 
 export const drawHoldBlastPreview = (
   canvasManager,
@@ -19,35 +15,39 @@ export const drawHoldBlastPreview = (
   blastHoldStart
 ) => {
   const CTX = canvasManager.getContext();
-
   const scaleProgress = clampedProgress(
     BLAST_HOLD_THRESHOLD,
     BLAST_MAX_DURATION,
     Date.now() - blastHoldStart
   );
   const previewSize = transition(0, 140, scaleProgress, easeOutSine);
-  const blastCountdown = transition(5, 0, scaleProgress, easeInCubic);
+  const numVertices = 60;
+  const previewVertices = new Array(numVertices).fill().map((_, index) => {
+    const angle = (index / numVertices) * Math.PI * 2;
+    const distanceJitter = transition(0, 10, scaleProgress);
+    const distance = randomBetween(
+      previewSize - distanceJitter,
+      previewSize + distanceJitter
+    );
+    return {
+      x: x + Math.cos(angle) * distance,
+      y: y + Math.sin(angle) * distance,
+    };
+  });
 
   CTX.save();
   CTX.fillStyle = red;
+  CTX.strokeStyle = red;
   CTX.globalAlpha = 0.2;
-  CTX.translate(x, y);
   CTX.beginPath();
-  CTX.arc(0, 0, previewSize, 0, 2 * Math.PI);
+  previewVertices.forEach(({ x, y }, index) => {
+    index === 0 ? CTX.moveTo(x, y) : CTX.lineTo(x, y);
+  });
   CTX.closePath();
   CTX.fill();
+  CTX.globalAlpha = 1;
+  CTX.stroke();
   CTX.restore();
-
-  if (blastCountdown < 4) {
-    CTX.save();
-    CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
-    CTX.fillStyle = red;
-    CTX.textAlign = "right";
-    CTX.textBaseline = "middle";
-    CTX.translate(x + previewSize * 0.55, y - previewSize * 0.55);
-    CTX.fillText(Math.round(blastCountdown), 8, 0);
-    CTX.restore();
-  }
 };
 
 export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
