@@ -21,6 +21,7 @@ import { centerTextBlock } from "./centerTextBlock.js";
 import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 import { red } from "./colors.js";
+import { makeScoreStore } from "./scoreStore.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -54,6 +55,7 @@ const levelManager = makeLevelManager(
   previewDataPresent ? onPreviewAdvance : onLevelAdvance,
   previewDataPresent
 );
+const scoreStore = makeScoreStore(levelManager);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
 
@@ -64,12 +66,6 @@ let usingMouse = null;
 let activePointers;
 let pointerTriggerOutput;
 let pointerPosition;
-let clicksTotal;
-let ballsPoppedTotal;
-let ballsMissedTotal;
-let clicksRound;
-let ballsPoppedRound;
-let ballsMissedRound;
 let balls;
 let ripples;
 
@@ -79,23 +75,15 @@ function resetGame() {
   pointerPosition = null;
   balls = [];
   ripples = [];
-  clicksTotal = 0;
-  ballsPoppedTotal = 0;
-  ballsMissedTotal = 0;
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
   lifeManager.reset();
   levelManager.reset();
   levelManager.showLevelInterstitial();
   audioManager.resetPluckSequence();
+  scoreStore.reset();
 }
 resetGame();
 
 function resetLevelData() {
-  clicksRound = 0;
-  ballsPoppedRound = 0;
-  ballsMissedRound = 0;
   audioManager.resetPluckSequence();
 }
 
@@ -292,9 +280,9 @@ animate((deltaTime) => {
       defaultMessage: (msElapsed) => {
         drawScore(
           canvasManager,
-          clicksRound,
-          ballsPoppedRound,
-          ballsMissedRound,
+          scoreStore.sumCurrentLevel("taps").num,
+          scoreStore.sumCurrentLevel("taps").numPopped,
+          scoreStore.sumCurrentLevel("missedBubbles").num,
           msElapsed
         );
         continueButtonManager.draw(msElapsed, 2000);
@@ -302,9 +290,9 @@ animate((deltaTime) => {
       endGameMessage: (msElapsed) => {
         drawScore(
           canvasManager,
-          clicksTotal,
-          ballsPoppedTotal,
-          ballsMissedTotal,
+          scoreStore.sumAll("taps").num,
+          scoreStore.sumAll("taps").numPopped,
+          scoreStore.sumAll("missedBubbles").num,
           msElapsed,
           "Game over"
         );
@@ -313,9 +301,9 @@ animate((deltaTime) => {
       reachedEndOfGameMessage: (msElapsed) => {
         drawScore(
           canvasManager,
-          clicksTotal,
-          ballsPoppedTotal,
-          ballsMissedTotal,
+          scoreStore.sumAll("taps").num,
+          scoreStore.sumAll("taps").numPopped,
+          scoreStore.sumAll("missedBubbles").num,
           msElapsed,
           "You beat all levels!"
         );
@@ -327,13 +315,13 @@ animate((deltaTime) => {
 
 function handleGameClick({ x, y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
-  clicksTotal++;
-  clicksRound++;
 
   if (collidingBall) {
+    scoreStore.recordTap({ x, y }, 1);
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {
+    scoreStore.recordTap({ x, y }, 0);
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playMiss();
   }
@@ -344,9 +332,6 @@ function onPointerTrigger(output) {
 }
 
 function onPop() {
-  ballsPoppedTotal++;
-  ballsPoppedRound++;
-
   if (balls.filter((b) => b.isRemaining()) <= 0) {
     levelManager.showLevelInterstitial();
   }
@@ -354,8 +339,7 @@ function onPop() {
 
 function onMiss() {
   if (!levelManager.isGameOver()) {
-    ballsMissedTotal++;
-    ballsMissedRound++;
+    scoreStore.recordMiss();
     lifeManager.subtract();
     audioManager.playRandomFireworks();
     levelManager.setFirstMiss();
