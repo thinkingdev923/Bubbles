@@ -110,6 +110,7 @@ document.addEventListener("pointerdown", (e) => {
       makeActivePointer(
         canvasManager,
         audioManager,
+        scoreStore,
         pointerId,
         { x, y },
         onPointerTrigger
@@ -248,6 +249,8 @@ animate((deltaTime) => {
               ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
               : ballA.pop(output.getVelocity());
 
+            output.logCollision();
+
             audioManager.playSequentialPluck();
           }
         });
@@ -359,6 +362,7 @@ function onGameEnd() {
 
 function onInterstitial() {
   resetOngoingVisuals();
+  scoreStore.logStore();
 }
 
 function onLevelAdvance() {

@@ -48,9 +48,9 @@ export const makeScoreStore = (levelManager) => {
   //   [
   //     "missedBubbles",
   //     [
-  //       { level: 1, popped: 0 },
-  //       { level: 2, popped: 0 },
-  //       { level: 2, popped: 0 },
+  //       { level: 1 },
+  //       { level: 2 },
+  //       { level: 2 },
   //     ],
   //   ],
   // ]);
@@ -102,19 +102,20 @@ export const makeScoreStore = (levelManager) => {
   const recordMiss = () =>
     store.set("missedBubbles", [
       ...store.get("missedBubbles"),
-      {
-        level: levelManager.getLevel(),
-        popped: 0,
-      },
+      { level: levelManager.getLevel() },
     ]);
+
+  const hasPoppedKey = (name) => store.get(name).some((o) => "popped" in o);
 
   const sumAll = (name) => {
     const keyData = store.get(name);
 
-    return {
-      num: keyData.length,
-      numPopped: keyData.reduce((acc, { popped }) => acc + popped, 0),
-    };
+    return hasPoppedKey(name)
+      ? {
+          num: keyData.length,
+          numPopped: keyData.reduce((acc, { popped }) => acc + popped, 0),
+        }
+      : { num: keyData.length };
   };
 
   const sumCurrentLevel = (name) => {
@@ -122,10 +123,12 @@ export const makeScoreStore = (levelManager) => {
       .get(name)
       .filter(({ level }) => level === levelManager.getLevel());
 
-    return {
-      num: keyData.length,
-      numPopped: keyData.reduce((acc, { popped }) => acc + popped, 0),
-    };
+    return hasPoppedKey(name)
+      ? {
+          num: keyData.length,
+          numPopped: keyData.reduce((acc, { popped }) => acc + popped, 0),
+        }
+      : { num: keyData.length };
   };
 
   return {
@@ -136,6 +139,7 @@ export const makeScoreStore = (levelManager) => {
     sumAll,
     sumCurrentLevel,
     get: store.get,
+    logStore: () => console.log(store),
     reset,
   };
 };
