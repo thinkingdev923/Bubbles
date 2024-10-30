@@ -6,51 +6,31 @@ export const makeScoreStore = (levelManager) => {
   //   [
   //     "taps",
   //     [
-  //       { level: 1, position: { x: 42, y: 56 }, popped: 0 },
-  //       { level: 1, position: { x: 40, y: 52 }, popped: 1 },
-  //       { level: 2, position: { x: 120, y: 500 }, popped: 0 },
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, popped: 0 },
+  //       { timestamp: 1234, level: 1, position: { x: 40, y: 52 }, popped: 1 },
+  //       { timestamp: 1234, level: 2, position: { x: 42, y: 60 }, popped: 0 }
   //     ],
   //   ],
   //   [
   //     "slingshots",
   //     [
-  //       {
-  //         level: 1,
-  //         position: { x: 42, y: 56 },
-  //         velocity: { x: 0, y: 0 },
-  //         popped: 3,
-  //       },
-  //       {
-  //         level: 1,
-  //         position: { x: 42, y: 56 },
-  //         velocity: { x: 0, y: 0 },
-  //         popped: 3,
-  //       },
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, velocity: { x: 0, y: 0 }, popped: 3 },
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, velocity: { x: 0, y: 0 }, popped: 2 }
   //     ],
   //   ],
   //   [
   //     "blasts",
   //     [
-  //       {
-  //         level: 1,
-  //         position: { x: 42, y: 56 },
-  //         power: 123,
-  //         popped: 3,
-  //       },
-  //       {
-  //         level: 1,
-  //         position: { x: 42, y: 56 },
-  //         power: 123,
-  //         popped: 3,
-  //       },
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, power: 123, popped: 2 },
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, power: 123, popped: 3 }
   //     ],
   //   ],
   //   [
   //     "missedBubbles",
   //     [
-  //       { level: 1 },
-  //       { level: 2 },
-  //       { level: 2 },
+  //       { timestamp: 1234, level: 1 },
+  //       { timestamp: 1234, level: 2 },
+  //       { timestamp: 1234, level: 2 },
   //     ],
   //   ],
   // ]);
@@ -70,6 +50,7 @@ export const makeScoreStore = (levelManager) => {
     store.set("taps", [
       ...store.get("taps"),
       {
+        timestamp: Date.now(),
         level: levelManager.getLevel(),
         position,
         popped,
@@ -81,6 +62,7 @@ export const makeScoreStore = (levelManager) => {
     store.set("slingshots", [
       ...store.get("slingshots"),
       {
+        timestamp: Date.now(),
         level: levelManager.getLevel(),
         position,
         velocity,
@@ -92,6 +74,7 @@ export const makeScoreStore = (levelManager) => {
     store.set("blasts", [
       ...store.get("blasts"),
       {
+        timestamp: Date.now(),
         level: levelManager.getLevel(),
         position,
         power,
@@ -102,7 +85,7 @@ export const makeScoreStore = (levelManager) => {
   const recordMiss = () =>
     store.set("missedBubbles", [
       ...store.get("missedBubbles"),
-      { level: levelManager.getLevel() },
+      { timestamp: Date.now(), level: levelManager.getLevel() },
     ]);
 
   const hasPoppedKey = (name) => store.get(name).some((o) => "popped" in o);
@@ -131,6 +114,23 @@ export const makeScoreStore = (levelManager) => {
       : { num: keyData.length };
   };
 
+  const recentCombos = () => {
+    const recentTimeframeInMS = 5000;
+
+    return [
+      ...store
+        .get("slingshots")
+        .filter(
+          (s) => s.popped > 1 && Date.now() - s.timestamp < recentTimeframeInMS
+        ),
+      ...store
+        .get("blasts")
+        .filter(
+          (s) => s.popped > 1 && Date.now() - s.timestamp < recentTimeframeInMS
+        ),
+    ];
+  };
+
   return {
     recordTap,
     recordSlingshot,
@@ -138,7 +138,7 @@ export const makeScoreStore = (levelManager) => {
     recordMiss,
     sumAll,
     sumCurrentLevel,
-    get: store.get,
+    recentCombos,
     logStore: () => console.log(store),
     reset,
   };

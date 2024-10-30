@@ -1,7 +1,8 @@
 import { makeCanvasManager } from "./canvas.js";
-import { BLAST_MAX_DURATION } from "./constants.js";
+import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
 import {
   animate,
+  clampedProgress,
   findBallAtPoint,
   randomBetween,
   transition,
@@ -22,6 +23,12 @@ import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 import { red } from "./colors.js";
 import { makeScoreStore } from "./scoreStore.js";
+import {
+  easeInOutSine,
+  easeOutBack,
+  easeOutCubic,
+  easeOutQuart,
+} from "./easings.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -260,6 +267,32 @@ animate((deltaTime) => {
     levelManager.drawLevelNumber();
 
     if (!levelManager.isGameOver()) lifeManager.draw();
+
+    // Draw combo messages
+    const combos = scoreStore.recentCombos();
+    if (combos.length) {
+      combos.forEach((c) => {
+        const timeElapsed = Date.now() - c.timestamp;
+        const animateInProgress = clampedProgress(0, 800, timeElapsed);
+        const rotateIn = transition(
+          Math.PI / 24,
+          0,
+          animateInProgress,
+          easeOutBack
+        );
+        const fadeIn = transition(0, 1, animateInProgress, easeOutBack);
+
+        CTX.save();
+        CTX.globalAlpha = fadeIn;
+        CTX.translate(c.position.x, c.position.y);
+        CTX.rotate(rotateIn);
+        CTX.font = `${FONT_WEIGHT_NORMAL} 32px ${FONT}`;
+        CTX.fillStyle = "#fff";
+        CTX.textAlign = "center";
+        CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+        CTX.restore();
+      });
+    }
 
     // Draw main game elements
     ripples.forEach((r) => r.draw());
