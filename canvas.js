@@ -37,7 +37,9 @@ export const makeCanvasManager = ({
 
 export const makeOffscreenCanvas = ({ width, height }) => {
   const offscreenElement = new OffscreenCanvas(width, height);
-  const context = offscreenElement.getContext("2d");
+  const context = offscreenElement.getContext("2d", {
+    colorSpace: "display-p3",
+  });
   const scale = window.devicePixelRatio;
 
   offscreenElement.width = Math.floor(width * scale);
