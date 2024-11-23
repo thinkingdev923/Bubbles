@@ -6,6 +6,7 @@ import {
   findBallAtPoint,
   randomBetween,
   transition,
+  getBoundedPosition,
 } from "./helpers.js";
 import {
   checkParticleCollision,
@@ -23,12 +24,7 @@ import { drawScore } from "./score.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 import { red } from "./colors.js";
 import { makeScoreStore } from "./scoreStore.js";
-import {
-  easeInOutSine,
-  easeOutBack,
-  easeOutCubic,
-  easeOutQuart,
-} from "./easings.js";
+import { easeOutBack } from "./easings.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -272,6 +268,11 @@ animate((deltaTime) => {
     const combos = scoreStore.recentCombos();
     if (combos.length) {
       combos.forEach((c) => {
+        const boundedPosition = getBoundedPosition(
+          canvasManager,
+          c.position,
+          32
+        );
         const timeElapsed = Date.now() - c.timestamp;
         const animateInProgress = clampedProgress(0, 800, timeElapsed);
         const rotateIn = transition(
@@ -284,7 +285,7 @@ animate((deltaTime) => {
 
         CTX.save();
         CTX.globalAlpha = fadeIn;
-        CTX.translate(c.position.x, c.position.y);
+        CTX.translate(boundedPosition.x, boundedPosition.y);
         CTX.rotate(rotateIn);
         CTX.font = `${FONT_WEIGHT_NORMAL} 32px ${FONT}`;
         CTX.fillStyle = "#fff";
