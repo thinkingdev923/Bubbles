@@ -153,10 +153,11 @@ export const makeBall = (
 
     sparks = new Array(16).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
+      const randomLength = randomBetween(20, 50);
       const randomSpeedMultiplier = randomBetween(8, 16);
 
       return makeParticle(canvasManager, {
-        radius: 1,
+        radius: randomLength,
         startPosition: {
           x: baseParticle.getPosition().x + Math.cos(randomAngle) * radius,
           y: baseParticle.getPosition().y + Math.sin(randomAngle) * radius,
@@ -169,7 +170,7 @@ export const makeBall = (
             transferringVelocity.y / 3 +
             Math.sin(randomAngle) * randomSpeedMultiplier,
         },
-        gravity,
+        gravity: 0.02,
         terminalVelocity: 110,
       });
     });
@@ -219,8 +220,9 @@ export const makeBall = (
         sparks.forEach((s) => {
           s.update(deltaTime);
 
+          // Using radius to define the spark length instead
           const length = transition(
-            50,
+            s.getRadius(),
             0,
             clampedProgress(0, popAnimationDuration, timeSincePopped),
             easeOutCubic
