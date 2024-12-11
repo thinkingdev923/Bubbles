@@ -264,42 +264,53 @@ animate((deltaTime) => {
 
     if (!levelManager.isGameOver()) lifeManager.draw();
 
-    // Draw combo messages
-    const combos = scoreStore.recentCombos();
-    if (combos.length) {
-      combos.forEach((c) => {
-        const boundedPosition = getBoundedPosition(
-          canvasManager,
-          c.position,
-          32
-        );
-        const timeElapsed = Date.now() - c.timestamp;
-        const animateInProgress = clampedProgress(0, 800, timeElapsed);
-        const rotateIn = transition(
-          Math.PI / 24,
-          0,
-          animateInProgress,
-          easeOutBack
-        );
-        const fadeIn = transition(0, 1, animateInProgress, easeOutBack);
-
-        CTX.save();
-        CTX.globalAlpha = fadeIn;
-        CTX.translate(boundedPosition.x, boundedPosition.y);
-        CTX.rotate(rotateIn);
-        CTX.font = `${FONT_WEIGHT_NORMAL} 32px ${FONT}`;
-        CTX.fillStyle = "#fff";
-        CTX.textAlign = "center";
-        CTX.fillText(`Popped ${c.popped}!`, 0, 0);
-        CTX.restore();
-      });
-    }
-
     // Draw main game elements
     ripples.forEach((r) => r.draw());
     pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
     balls.forEach((b) => b.draw(deltaTime));
     activePointers.forEach((p) => p.draw());
+
+    // Draw combo messages
+    if (!levelManager.isInterstitialShowing()) {
+      scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
+        const boundedPosition = getBoundedPosition(
+          canvasManager,
+          c.position,
+          100
+        );
+        const timeElapsed = Date.now() - c.timestamp;
+        const fadeInProgress = clampedProgress(0, 400, timeElapsed);
+        const scaleInProgress = clampedProgress(0, 800, timeElapsed);
+        const rotateProgress = clampedProgress(0, 1600, timeElapsed);
+        const rotateIn = transition(
+          -Math.PI / 24,
+          Math.PI / 80,
+          rotateProgress,
+          easeOutBack
+        );
+        const scaleIn = transition(0, 1, scaleInProgress, easeOutBack);
+        const fadeIn = transition(0, 1, fadeInProgress, easeOutBack);
+
+        CTX.save();
+        CTX.globalAlpha = fadeIn;
+        CTX.translate(boundedPosition.x, boundedPosition.y);
+        CTX.rotate(rotateIn);
+        CTX.scale(scaleIn, scaleIn);
+        CTX.font = `${FONT_WEIGHT_NORMAL} 40px ${FONT}`;
+
+        // Shadow
+        CTX.fillStyle = "#000";
+        CTX.textAlign = "center";
+        CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+
+        // Text
+        CTX.translate(-2, -3);
+        CTX.fillStyle = "#fff";
+        CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+
+        CTX.restore();
+      });
+    }
 
     levelManager.drawInterstitialMessage({
       previewInitialMessage: (msElapsed) => {

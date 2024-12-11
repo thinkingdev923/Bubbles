@@ -85,7 +85,11 @@ export const makeSlingshot = (
 
   function onLeaveScreen() {
     gone = true;
-    scoreStore.recordSlingshot(endPosition, startVelocity, numCollisions);
+    scoreStore.recordSlingshot(
+      baseParticle.getPosition(),
+      startVelocity,
+      numCollisions
+    );
   }
 
   const logCollision = () => numCollisions++;

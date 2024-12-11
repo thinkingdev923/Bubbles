@@ -114,19 +114,25 @@ export const makeScoreStore = (levelManager) => {
       : { num: keyData.length };
   };
 
-  const recentCombos = () => {
+  const recentCombos = (level) => {
     const recentTimeframeInMS = 5000;
 
     return [
       ...store
         .get("slingshots")
         .filter(
-          (s) => s.popped > 1 && Date.now() - s.timestamp < recentTimeframeInMS
+          (s) =>
+            s.level === level &&
+            s.popped > 1 &&
+            Date.now() - s.timestamp < recentTimeframeInMS
         ),
       ...store
         .get("blasts")
         .filter(
-          (s) => s.popped > 1 && Date.now() - s.timestamp < recentTimeframeInMS
+          (s) =>
+            s.level === level &&
+            s.popped > 1 &&
+            Date.now() - s.timestamp < recentTimeframeInMS
         ),
     ];
   };
