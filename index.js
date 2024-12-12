@@ -46,7 +46,7 @@ if (previewDataPresent) {
 }
 
 const canvasManager = makeCanvasManager({
-  initialWidth: window.innerWidth,
+  initialWidth: Math.min(window.innerWidth, 800),
   initialHeight: window.innerHeight,
   attachNode: "#canvas",
 });
@@ -96,8 +96,8 @@ function resetOngoingVisuals() {
   ripples = [];
 }
 
-document.addEventListener("pointerdown", (e) => {
-  const { pointerId, pointerType, clientX: x, clientY: y } = e;
+canvasManager.getElement().addEventListener("pointerdown", (e) => {
+  const { pointerId, pointerType, offsetX: x, offsetY: y } = e;
 
   if (usingMouse === null) usingMouse = pointerType === "mouse";
 
@@ -125,8 +125,8 @@ document.addEventListener("pointerdown", (e) => {
   e.preventDefault();
 });
 
-document.addEventListener("pointerup", (e) => {
-  const { pointerId, clientX: x, clientY: y } = e;
+canvasManager.getElement().addEventListener("pointerup", (e) => {
+  const { pointerId, offsetX: x, offsetY: y } = e;
 
   activePointers.forEach((pointer, pointerIndex) => {
     if (pointerId === pointer.getId()) {
@@ -139,8 +139,8 @@ document.addEventListener("pointerup", (e) => {
   e.preventDefault();
 });
 
-document.addEventListener("pointermove", (e) => {
-  const { pointerId, clientX: x, clientY: y } = e;
+canvasManager.getElement().addEventListener("pointermove", (e) => {
+  const { pointerId, offsetX: x, offsetY: y } = e;
 
   pointerPosition = { x, y };
 

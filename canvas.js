@@ -28,6 +28,7 @@ export const makeCanvasManager = ({
   });
 
   return {
+    getElement: () => element,
     getContext: () => context,
     getWidth: () => width,
     getHeight: () => height,
