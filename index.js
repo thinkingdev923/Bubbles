@@ -46,8 +46,9 @@ if (previewDataPresent) {
 }
 
 const canvasManager = makeCanvasManager({
-  initialWidth: Math.min(window.innerWidth, 800),
+  initialWidth: window.innerWidth,
   initialHeight: window.innerHeight,
+  maxWidth: 800,
   attachNode: "#canvas",
 });
 const audioManager = makeAudioManager();

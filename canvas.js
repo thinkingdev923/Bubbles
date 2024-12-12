@@ -1,9 +1,10 @@
 export const makeCanvasManager = ({
   initialWidth,
   initialHeight,
+  maxWidth,
   attachNode,
 }) => {
-  let width = initialWidth;
+  let width = Math.min(initialWidth, maxWidth);
   let height = initialHeight;
   const element = document.createElement("canvas");
   const context = element.getContext("2d");
@@ -22,7 +23,7 @@ export const makeCanvasManager = ({
   document.querySelector(attachNode).appendChild(element);
 
   window.addEventListener("resize", () => {
-    width = window.innerWidth;
+    width = Math.min(window.innerWidth, maxWidth);
     height = window.innerHeight;
     setCanvasSize();
   });
