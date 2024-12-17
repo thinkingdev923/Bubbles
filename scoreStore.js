@@ -58,17 +58,34 @@ export const makeScoreStore = (levelManager) => {
     ]);
   };
 
-  const recordSlingshot = (position, velocity, popped) =>
+  const recordSlingshot = (position, velocity, popped) => {
+    const timestamp = Date.now();
+
     store.set("slingshots", [
       ...store.get("slingshots"),
       {
-        timestamp: Date.now(),
+        timestamp,
         level: levelManager.getLevel(),
-        position,
-        velocity,
+        position: { ...position },
+        velocity: { ...velocity },
         popped,
       },
     ]);
+
+    return timestamp;
+  };
+
+  const updateSlingshot = (timestamp, popped) => {
+    const slingshotIndex = store
+      .get("slingshots")
+      .findIndex((i) => i.timestamp === timestamp);
+
+    const slingshotsCopy = [...store.get("slingshots")];
+
+    slingshotsCopy[slingshotIndex].popped = popped;
+
+    store.set("slingshots", slingshotsCopy);
+  };
 
   const recordBlast = (position, power, popped) =>
     store.set("blasts", [
@@ -140,6 +157,7 @@ export const makeScoreStore = (levelManager) => {
   return {
     recordTap,
     recordSlingshot,
+    updateSlingshot,
     recordBlast,
     recordMiss,
     sumAll,
