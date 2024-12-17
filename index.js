@@ -408,7 +408,6 @@ function onGameEnd() {
 
 function onInterstitial() {
   resetOngoingVisuals();
-  scoreStore.logStore();
 }
 
 function onLevelAdvance() {

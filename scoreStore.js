@@ -163,7 +163,6 @@ export const makeScoreStore = (levelManager) => {
     sumAll,
     sumCurrentLevel,
     recentCombos,
-    logStore: () => console.log(store),
     reset,
   };
 };
