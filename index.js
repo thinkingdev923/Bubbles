@@ -63,9 +63,6 @@ const scoreStore = makeScoreStore(levelManager);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
 
-// This one intentionally not reset on game restart
-let usingMouse = null;
-
 // These are all reset on game restart
 let activePointers;
 let pointerTriggerOutput;
@@ -98,9 +95,7 @@ function resetOngoingVisuals() {
 }
 
 canvasManager.getElement().addEventListener("pointerdown", (e) => {
-  const { pointerId, pointerType, offsetX: x, offsetY: y } = e;
-
-  if (usingMouse === null) usingMouse = pointerType === "mouse";
+  const { pointerId, offsetX: x, offsetY: y } = e;
 
   if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
@@ -204,21 +199,6 @@ animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
   cameraWrapper(() => {
-    // On mouse-based clients show a crosshair
-    if (
-      usingMouse &&
-      pointerPosition &&
-      !levelManager.isInterstitialShowing()
-    ) {
-      CTX.save();
-      CTX.fillStyle = red;
-      CTX.strokeStyle = red;
-      CTX.fillRect(0, pointerPosition.y, canvasManager.getWidth(), 1);
-      CTX.fillRect(pointerPosition.x, 0, 1, canvasManager.getHeight());
-      CTX.strokeRect(pointerPosition.x - 30, pointerPosition.y - 30, 60, 60);
-      CTX.restore();
-    }
-
     // Trigger holdBlasts that have been held down past the max time
     if (!levelManager.isInterstitialShowing()) {
       activePointers.forEach((p, pointerIndex) => {
