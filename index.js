@@ -240,59 +240,7 @@ animate((deltaTime) => {
         });
     });
 
-    // Draw level + life text underneath balls
-    levelManager.drawLevelNumber();
-
-    if (!levelManager.isGameOver()) lifeManager.draw();
-
-    // Draw main game elements
-    ripples.forEach((r) => r.draw());
-    pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
-    balls.forEach((b) => b.draw(deltaTime));
-    activePointers.forEach((p) => p.draw());
-
-    // Draw combo messages
-    if (!levelManager.isInterstitialShowing()) {
-      scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
-        const boundedPosition = getBoundedPosition(
-          canvasManager,
-          c.position,
-          100
-        );
-        const timeElapsed = Date.now() - c.timestamp;
-        const fadeInProgress = clampedProgress(0, 400, timeElapsed);
-        const scaleInProgress = clampedProgress(0, 800, timeElapsed);
-        const rotateProgress = clampedProgress(0, 1600, timeElapsed);
-        const rotateIn = transition(
-          -Math.PI / 24,
-          Math.PI / 80,
-          rotateProgress,
-          easeOutBack
-        );
-        const scaleIn = transition(0, 1, scaleInProgress, easeOutBack);
-        const fadeIn = transition(0, 1, fadeInProgress, easeOutBack);
-
-        CTX.save();
-        CTX.globalAlpha = fadeIn;
-        CTX.translate(boundedPosition.x, boundedPosition.y);
-        CTX.rotate(rotateIn);
-        CTX.scale(scaleIn, scaleIn);
-        CTX.font = `${FONT_WEIGHT_NORMAL} 40px ${FONT}`;
-
-        // Shadow
-        CTX.fillStyle = "#000";
-        CTX.textAlign = "center";
-        CTX.fillText(`Popped ${c.popped}!`, 0, 0);
-
-        // Text
-        CTX.translate(-2, -3);
-        CTX.fillStyle = "#fff";
-        CTX.fillText(`Popped ${c.popped}!`, 0, 0);
-
-        CTX.restore();
-      });
-    }
-
+    // Draw text elements (level, life, interstitial) underneath bubbles
     levelManager.drawInterstitialMessage({
       previewInitialMessage: (msElapsed) => {
         centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
@@ -307,37 +255,78 @@ animate((deltaTime) => {
         continueButtonManager.draw(msElapsed, 1000);
       },
       defaultMessage: (msElapsed) => {
-        drawScore(
-          canvasManager,
-          scoreStore.sumCurrentLevel("taps").num,
-          scoreStore.sumCurrentLevel("taps").numPopped,
-          scoreStore.sumCurrentLevel("missedBubbles").num,
-          msElapsed
-        );
+        drawScore(canvasManager, scoreStore, levelManager, msElapsed);
         continueButtonManager.draw(msElapsed, 2000);
       },
       endGameMessage: (msElapsed) => {
         drawScore(
           canvasManager,
-          scoreStore.sumAll("taps").num,
-          scoreStore.sumAll("taps").numPopped,
-          scoreStore.sumAll("missedBubbles").num,
+          scoreStore,
+          levelManager,
           msElapsed,
-          "Game over"
+          "gameLost"
         );
         continueButtonManager.draw(msElapsed, 2000, "Try Again");
       },
       reachedEndOfGameMessage: (msElapsed) => {
         drawScore(
           canvasManager,
-          scoreStore.sumAll("taps").num,
-          scoreStore.sumAll("taps").numPopped,
-          scoreStore.sumAll("missedBubbles").num,
+          scoreStore,
+          levelManager,
           msElapsed,
-          "You beat all levels!"
+          "gameWon"
         );
         continueButtonManager.draw(msElapsed, 2000, "Play Again");
       },
+    });
+    levelManager.drawLevelNumber();
+    if (!levelManager.isGameOver()) lifeManager.draw();
+
+    // Draw main game elements
+    ripples.forEach((r) => r.draw());
+    pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
+    balls.forEach((b) => b.draw(deltaTime));
+    activePointers.forEach((p) => p.draw());
+
+    // Draw combo messages over everything
+
+    scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
+      const boundedPosition = getBoundedPosition(
+        canvasManager,
+        c.position,
+        100
+      );
+      const timeElapsed = Date.now() - c.timestamp;
+      const fadeInProgress = clampedProgress(0, 400, timeElapsed);
+      const scaleInProgress = clampedProgress(0, 800, timeElapsed);
+      const rotateProgress = clampedProgress(0, 1600, timeElapsed);
+      const rotateIn = transition(
+        -Math.PI / 24,
+        Math.PI / 80,
+        rotateProgress,
+        easeOutBack
+      );
+      const scaleIn = transition(0, 1, scaleInProgress, easeOutBack);
+      const fadeIn = transition(0, 1, fadeInProgress, easeOutBack);
+
+      CTX.save();
+      CTX.globalAlpha = fadeIn;
+      CTX.translate(boundedPosition.x, boundedPosition.y);
+      CTX.rotate(rotateIn);
+      CTX.scale(scaleIn, scaleIn);
+      CTX.font = `${FONT_WEIGHT_NORMAL} 40px ${FONT}`;
+
+      // Shadow
+      CTX.fillStyle = "#000";
+      CTX.textAlign = "center";
+      CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+
+      // Text
+      CTX.translate(-2, -3);
+      CTX.fillStyle = "#fff";
+      CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+
+      CTX.restore();
     });
   });
 });
@@ -362,7 +351,8 @@ function onPointerTrigger(output) {
 
 function onPop() {
   if (balls.filter((b) => b.isRemaining()) <= 0) {
-    levelManager.showLevelInterstitial();
+    // Pause before showing interstitial so user can see the final bubble pop
+    setTimeout(levelManager.showLevelInterstitial, 600);
   }
 }
 
@@ -394,7 +384,7 @@ function onLevelAdvance() {
   resetLevelData();
 
   const levelData = levels[levelManager.getLevel() - 1];
-  // Allow popping animation to finish playing for previous level balls
+  // Allow popping animation to finish playing for previous level bubbles
   balls = balls
     .filter((b) => b.isPopping())
     .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
@@ -407,7 +397,7 @@ function onLevelAdvance() {
 function onPreviewAdvance() {
   resetLevelData();
 
-  // Allow popping animation to finish playing for previous level balls
+  // Allow popping animation to finish playing for previous level bubbles
   balls = balls
     .filter((b) => b.isPopping())
     .concat(makeLevelBalls(canvasManager, previewData, onPop, onMiss));

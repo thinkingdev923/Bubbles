@@ -28,9 +28,9 @@ export const makeScoreStore = (levelManager) => {
   //   [
   //     "missedBubbles",
   //     [
-  //       { timestamp: 1234, level: 1 },
-  //       { timestamp: 1234, level: 2 },
-  //       { timestamp: 1234, level: 2 },
+  //       { timestamp: 1234, level: 1, popped: 0 },
+  //       { timestamp: 1234, level: 2, popped: 0 },
+  //       { timestamp: 1234, level: 2, popped: 0 },
   //     ],
   //   ],
   // ]);
@@ -102,37 +102,69 @@ export const makeScoreStore = (levelManager) => {
   const recordMiss = () =>
     store.set("missedBubbles", [
       ...store.get("missedBubbles"),
-      { timestamp: Date.now(), level: levelManager.getLevel() },
+      { timestamp: Date.now(), level: levelManager.getLevel(), popped: 0 },
     ]);
 
   const hasPoppedKey = (name) => store.get(name).some((o) => "popped" in o);
 
-  const sumAll = (name) => {
-    const keyData = store.get(name);
+  const sumCategoryLevelEvents = (category, passedLevel = null) => {
+    let filteredEvents;
 
-    return hasPoppedKey(name)
+    if (passedLevel === null) {
+      filteredEvents = store.get(category);
+    } else if (passedLevel === "currentLevel") {
+      filteredEvents = store
+        .get(category)
+        .filter(({ level }) => level === levelManager.getLevel());
+    } else {
+      filteredEvents = store
+        .get(category)
+        .filter(({ level }) => level === passedLevel);
+    }
+
+    return hasPoppedKey(category)
       ? {
-          num: keyData.length,
-          numPopped: keyData.reduce((acc, { popped }) => acc + popped, 0),
+          num: filteredEvents.length,
+          numPopped: filteredEvents.reduce(
+            (acc, { popped }) => acc + popped,
+            0
+          ),
         }
-      : { num: keyData.length };
+      : { num: filteredEvents.length };
   };
 
-  const sumCurrentLevel = (name) => {
-    const keyData = store
-      .get(name)
-      .filter(({ level }) => level === levelManager.getLevel());
+  const sumPopped = (passedLevel = null) => {
+    let totalPopped = 0;
 
-    return hasPoppedKey(name)
-      ? {
-          num: keyData.length,
-          numPopped: keyData.reduce((acc, { popped }) => acc + popped, 0),
-        }
-      : { num: keyData.length };
+    store.forEach((category) => {
+      if (passedLevel === null) {
+        category.forEach(({ popped }) => (totalPopped += popped));
+      } else if (passedLevel === "currentLevel") {
+        category
+          .filter(({ level }) => level === levelManager.getLevel())
+          .forEach(({ popped }) => (totalPopped += popped));
+      } else {
+        category
+          .filter(({ level }) => level === passedLevel)
+          .forEach(({ popped }) => (totalPopped += popped));
+      }
+    });
+
+    return totalPopped;
   };
+
+  const slingshotsCurrentLevel = () => [
+    ...store
+      .get("slingshots")
+      .filter((s) => s.level === levelManager.getLevel()),
+  ];
+
+  const blastsCurrentLevel = () => [
+    ...store.get("blasts").filter((b) => b.level === levelManager.getLevel()),
+  ];
 
   const recentCombos = (level) => {
-    const recentTimeframeInMS = 5000;
+    const recentTimeframeInMS = 2400;
 
     return [
       ...store
@@ -146,10 +178,10 @@ export const makeScoreStore = (levelManager) => {
       ...store
         .get("blasts")
         .filter(
-          (s) =>
-            s.level === level &&
-            s.popped > 1 &&
-            Date.now() - s.timestamp < recentTimeframeInMS
+          (b) =>
+            b.level === level &&
+            b.popped > 1 &&
+            Date.now() - b.timestamp < recentTimeframeInMS
         ),
     ];
   };
@@ -160,8 +192,10 @@ export const makeScoreStore = (levelManager) => {
     updateSlingshot,
     recordBlast,
     recordMiss,
-    sumAll,
-    sumCurrentLevel,
+    sumCategoryLevelEvents,
+    sumPopped,
+    slingshotsCurrentLevel,
+    blastsCurrentLevel,
     recentCombos,
     reset,
   };

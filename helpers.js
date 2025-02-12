@@ -38,6 +38,8 @@ export const getVelocityFromSpeedAndHeading = (speed, headingInRads) => ({
   y: speed * Math.sin(headingInRads),
 });
 
+export const getSpeedFromVelocity = ({ x, y }) => Math.sqrt(x * x + y * y);
+
 export const findBallAtPoint = (balls, { x, y }) => {
   return balls.find((ball) => {
     if (ball.isRemaining() && ball.shouldRender()) {
