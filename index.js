@@ -20,9 +20,8 @@ import { makeLevelManager } from "./level.js";
 import { makeContinueButtonManager } from "./continueButton.js";
 import { makeActivePointer } from "./activePointer.js";
 import { centerTextBlock } from "./centerTextBlock.js";
-import { drawScore } from "./score.js";
+import { makeScoreDisplay } from "./scoreDisplay.js";
 import { levels, makeLevelBalls } from "./levelData.js";
-import { red } from "./colors.js";
 import { makeScoreStore } from "./scoreStore.js";
 import { easeOutBack } from "./easings.js";
 
@@ -60,6 +59,7 @@ const levelManager = makeLevelManager(
   previewDataPresent
 );
 const scoreStore = makeScoreStore(levelManager);
+const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const CTX = canvasManager.getContext();
 
@@ -255,27 +255,15 @@ animate((deltaTime) => {
         continueButtonManager.draw(msElapsed, 1000);
       },
       defaultMessage: (msElapsed) => {
-        drawScore(canvasManager, scoreStore, levelManager, msElapsed);
+        scoreDisplay.draw();
         continueButtonManager.draw(msElapsed, 2000);
       },
       endGameMessage: (msElapsed) => {
-        drawScore(
-          canvasManager,
-          scoreStore,
-          levelManager,
-          msElapsed,
-          "gameLost"
-        );
+        scoreDisplay.draw("gameLost");
         continueButtonManager.draw(msElapsed, 2000, "Try Again");
       },
       reachedEndOfGameMessage: (msElapsed) => {
-        drawScore(
-          canvasManager,
-          scoreStore,
-          levelManager,
-          msElapsed,
-          "gameWon"
-        );
+        scoreDisplay.draw("gameWon");
         continueButtonManager.draw(msElapsed, 2000, "Play Again");
       },
     });
@@ -308,6 +296,7 @@ animate((deltaTime) => {
       );
       const scaleIn = transition(0, 1, scaleInProgress, easeOutBack);
       const fadeIn = transition(0, 1, fadeInProgress, easeOutBack);
+      const text = `${c.popped}x!`;
 
       CTX.save();
       CTX.globalAlpha = fadeIn;
@@ -319,12 +308,12 @@ animate((deltaTime) => {
       // Shadow
       CTX.fillStyle = "#000";
       CTX.textAlign = "center";
-      CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+      CTX.fillText(text, 0, 0);
 
       // Text
       CTX.translate(-2, -3);
       CTX.fillStyle = "#fff";
-      CTX.fillText(`Popped ${c.popped}!`, 0, 0);
+      CTX.fillText(text, 0, 0);
 
       CTX.restore();
     });

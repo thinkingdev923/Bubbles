@@ -110,16 +110,12 @@ export const makeScoreStore = (levelManager) => {
   const sumCategoryLevelEvents = (category, passedLevel = null) => {
     let filteredEvents;
 
-    if (passedLevel === null) {
-      filteredEvents = store.get(category);
-    } else if (passedLevel === "currentLevel") {
-      filteredEvents = store
-        .get(category)
-        .filter(({ level }) => level === levelManager.getLevel());
-    } else {
+    if (passedLevel) {
       filteredEvents = store
         .get(category)
         .filter(({ level }) => level === passedLevel);
+    } else {
+      filteredEvents = store.get(category);
     }
 
     return hasPoppedKey(category)
@@ -137,30 +133,28 @@ export const makeScoreStore = (levelManager) => {
     let totalPopped = 0;
 
     store.forEach((category) => {
-      if (passedLevel === null) {
-        category.forEach(({ popped }) => (totalPopped += popped));
-      } else if (passedLevel === "currentLevel") {
-        category
-          .filter(({ level }) => level === levelManager.getLevel())
-          .forEach(({ popped }) => (totalPopped += popped));
-      } else {
+      if (passedLevel) {
         category
           .filter(({ level }) => level === passedLevel)
           .forEach(({ popped }) => (totalPopped += popped));
+      } else {
+        category.forEach(({ popped }) => (totalPopped += popped));
       }
     });
 
     return totalPopped;
   };
 
-  const slingshotsCurrentLevel = () => [
+  const getSlingshots = (passedLevel = null) => [
     ...store
       .get("slingshots")
-      .filter((s) => s.level === levelManager.getLevel()),
+      .filter((s) => (passedLevel ? s.level === passedLevel : true)),
   ];
 
-  const blastsCurrentLevel = () => [
-    ...store.get("blasts").filter((b) => b.level === levelManager.getLevel()),
+  const getBlasts = (passedLevel = null) => [
+    ...store
+      .get("blasts")
+      .filter((b) => (passedLevel ? b.level === passedLevel : true)),
   ];
 
   const recentCombos = (level) => {
@@ -194,8 +188,8 @@ export const makeScoreStore = (levelManager) => {
     recordMiss,
     sumCategoryLevelEvents,
     sumPopped,
-    slingshotsCurrentLevel,
-    blastsCurrentLevel,
+    getSlingshots,
+    getBlasts,
     recentCombos,
     reset,
   };
