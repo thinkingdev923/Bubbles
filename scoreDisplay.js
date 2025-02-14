@@ -1,4 +1,5 @@
 import { FONT, FONT_WEIGHT_NORMAL, FONT_WEIGHT_BOLD } from "./constants.js";
+import { getGradientBitmap } from "./colors.js";
 
 const edgeMargin = 32;
 const iconSize = 24;
@@ -119,17 +120,28 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       );
       CTX.translate(0, edgeMargin);
       stats.tapsData.forEach(({ popped }, index) => {
-        CTX.fillStyle = popped ? "white" : "rgba(255, 255, 255, .2)";
-        CTX.beginPath();
-        CTX.arc(
-          (iconSize + 8) * index + edgeMargin + iconsRadius,
-          iconsRadius,
-          iconsRadius,
-          0,
-          2 * Math.PI
-        );
-        CTX.closePath();
-        CTX.fill();
+        if (popped) {
+          const preRenderImage = getGradientBitmap("#EA98AA");
+          CTX.drawImage(
+            preRenderImage,
+            (iconSize + 8) * index + edgeMargin,
+            0,
+            iconSize * 2,
+            iconSize * 2
+          );
+        } else {
+          CTX.fillStyle = "rgba(255, 255, 255, .2)";
+          CTX.beginPath();
+          CTX.arc(
+            (iconSize + 8) * index + edgeMargin + iconsRadius,
+            iconsRadius,
+            iconsRadius,
+            0,
+            2 * Math.PI
+          );
+          CTX.closePath();
+          CTX.fill();
+        }
       });
       CTX.translate(0, 80);
     }
