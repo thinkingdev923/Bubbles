@@ -120,6 +120,7 @@ export const makeScoreStore = (levelManager) => {
 
     return hasPoppedKey(category)
       ? {
+          data: filteredEvents,
           num: filteredEvents.length,
           numPopped: filteredEvents.reduce(
             (acc, { popped }) => acc + popped,
