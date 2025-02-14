@@ -8,7 +8,8 @@ export const makeActivePointer = (
   scoreStore,
   pointerId,
   startPosition,
-  onTrigger
+  onTrigger,
+  defaultPointerAction
 ) => {
   const pointerStart = Date.now();
   let currentPosition = { ...startPosition };
@@ -53,6 +54,8 @@ export const makeActivePointer = (
         )
       );
       audioManager.playImpact();
+    } else {
+      defaultPointerAction(currentPosition);
     }
   };
 

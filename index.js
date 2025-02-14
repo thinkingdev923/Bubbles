@@ -112,10 +112,10 @@ canvasManager.getElement().addEventListener("pointerdown", (e) => {
         scoreStore,
         pointerId,
         { x, y },
-        onPointerTrigger
+        onPointerTrigger,
+        handleGameClick
       )
     );
-    handleGameClick({ x, y });
   }
 
   e.preventDefault();
