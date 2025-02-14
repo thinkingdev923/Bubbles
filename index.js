@@ -324,7 +324,7 @@ function handleGameClick({ x, y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
 
   if (collidingBall) {
-    scoreStore.recordTap({ x, y }, 1);
+    scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {

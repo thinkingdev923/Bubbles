@@ -6,9 +6,9 @@ export const makeScoreStore = (levelManager) => {
   //   [
   //     "taps",
   //     [
-  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, popped: 0 },
-  //       { timestamp: 1234, level: 1, position: { x: 40, y: 52 }, popped: 1 },
-  //       { timestamp: 1234, level: 2, position: { x: 42, y: 60 }, popped: 0 }
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, popped: 0, fill: false },
+  //       { timestamp: 1234, level: 1, position: { x: 40, y: 52 }, popped: 1, fill: '#000000' },
+  //       { timestamp: 1234, level: 2, position: { x: 42, y: 60 }, popped: 0, fill: false}
   //     ],
   //   ],
   //   [
@@ -46,7 +46,7 @@ export const makeScoreStore = (levelManager) => {
     ]));
   reset();
 
-  const recordTap = (position, popped) => {
+  const recordTap = (position, popped, fill = false) => {
     store.set("taps", [
       ...store.get("taps"),
       {
@@ -54,6 +54,7 @@ export const makeScoreStore = (levelManager) => {
         level: levelManager.getLevel(),
         position,
         popped,
+        fill,
       },
     ]);
   };

@@ -256,6 +256,7 @@ export const makeBall = (
     getRadius: baseParticle.getRadius,
     setPosition: baseParticle.setPosition,
     setVelocity: baseParticle.setVelocity,
+    getFill: () => fill,
     draw,
     pop,
     isPopped: () => popped,

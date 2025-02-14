@@ -98,9 +98,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
       // Display special message
-      CTX.translate(canvasManager.getWidth() / 2, 48);
+      CTX.translate(canvasManager.getWidth() / 2, 52);
       CTX.fillStyle = `rgba(255, 255, 255, 1)`;
-      CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
+      CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
       CTX.textAlign = "center";
       if (specialState === "gameWon") CTX.fillText("You won!", 0, 0);
       if (specialState === "gameLost") CTX.fillText("You lost!", 0, 0);
@@ -119,9 +119,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         } ${stats.taps - stats.tapsPopped === 1 ? "Miss" : "Misses"}`
       );
       CTX.translate(0, edgeMargin);
-      stats.tapsData.forEach(({ popped }, index) => {
+      stats.tapsData.forEach(({ popped, fill }, index) => {
         if (popped) {
-          const preRenderImage = getGradientBitmap("#EA98AA");
+          const preRenderImage = getGradientBitmap(fill);
           CTX.drawImage(
             preRenderImage,
             (iconSize + 8) * index + edgeMargin,
