@@ -36,7 +36,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
       // Display special message
-      CTX.translate(canvasManager.getWidth() / 2, 44);
+      CTX.translate(canvasManager.getWidth() / 2, 48);
       CTX.fillStyle = `rgba(255, 255, 255, 1)`;
       CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
       CTX.textAlign = "center";
@@ -62,7 +62,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.letterSpacing = "0px";
       CTX.translate(canvasManager.getWidth() - 64, 0);
       CTX.fillText(
-        `${stats.tapsPopped} Hits, ${stats.taps - stats.tapsPopped} Misses`,
+        `${stats.tapsPopped} ${stats.tapsPopped === 1 ? "Hit" : "Hits"}, ${
+          stats.taps - stats.tapsPopped
+        } ${stats.taps - stats.tapsPopped === 1 ? "Miss" : "Misses"}`,
         0,
         0
       );
@@ -97,7 +99,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         CTX.textAlign = "left";
         CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
         CTX.fillStyle = "white";
-        CTX.fillText(`${popped}x`, 72 * index + 30, 1);
+        CTX.fillText(`x${popped}`, 72 * index + 30, 1);
         CTX.closePath();
         CTX.fill();
       });
@@ -124,7 +126,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         CTX.textAlign = "left";
         CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
         CTX.fillStyle = "white";
-        CTX.fillText(`${popped}x`, 72 * index + 30, 1);
+        CTX.fillText(`x${popped}`, 72 * index + 30, 1);
         CTX.closePath();
         CTX.fill();
       });

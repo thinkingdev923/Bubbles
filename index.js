@@ -296,7 +296,7 @@ animate((deltaTime) => {
       );
       const scaleIn = transition(0, 1, scaleInProgress, easeOutBack);
       const fadeIn = transition(0, 1, fadeInProgress, easeOutBack);
-      const text = `${c.popped}x!`;
+      const text = `x${c.popped}!`;
 
       CTX.save();
       CTX.globalAlpha = fadeIn;
