@@ -126,8 +126,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
             preRenderImage,
             (iconSize + 8) * index + edgeMargin,
             0,
-            iconSize * 2,
-            iconSize * 2
+            iconSize * canvasManager.getScaleFactor(),
+            iconSize * canvasManager.getScaleFactor()
           );
         } else {
           CTX.fillStyle = "rgba(255, 255, 255, .2)";
