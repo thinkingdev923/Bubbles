@@ -82,6 +82,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     // Draw SLINGSHOTS data section
     if (stats.slingshots.length) {
       CTX.fillStyle = "white";
+      CTX.textBaseline = "top";
       CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
       CTX.textAlign = "left";
       CTX.letterSpacing = "1px";
@@ -109,6 +110,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     // Draw BLASTS data section
     if (stats.blasts.length) {
       CTX.fillStyle = "white";
+      CTX.textBaseline = "top";
       CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
       CTX.textAlign = "left";
       CTX.letterSpacing = "1px";
