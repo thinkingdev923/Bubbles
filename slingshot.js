@@ -72,6 +72,7 @@ export const makeSlingshot = (
   let gone = false;
   let numCollisions = 0;
   let comboTrackerTimestamp = null;
+  let positionHistory = [startPosition];
 
   const baseParticle = makeParticle(canvasManager, {
     radius: slingshotRadius(distance),
@@ -105,9 +106,25 @@ export const makeSlingshot = (
   const draw = (deltaTime) => {
     if (!gone) {
       baseParticle.update(deltaTime);
+
+      positionHistory.unshift({ ...baseParticle.getPosition() });
+      if (positionHistory.length > 20) {
+        positionHistory.pop();
+      }
+
+      positionHistory.forEach(({ x, y }, index) => {
+        CTX.save();
+        CTX.fillStyle = red;
+        CTX.globalAlpha = 1 / index + 1 / positionHistory.length;
+        CTX.translate(x, y);
+        CTX.beginPath();
+        CTX.arc(0, 0, baseParticle.getRadius(), 0, 2 * Math.PI);
+        CTX.closePath();
+        CTX.fill();
+        CTX.restore();
+      });
+
       CTX.save();
-      CTX.shadowColor = red;
-      CTX.shadowBlur = 15;
       CTX.fillStyle = red;
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
       CTX.beginPath();
