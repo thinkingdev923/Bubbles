@@ -1,5 +1,66 @@
 import { FONT, FONT_WEIGHT_NORMAL, FONT_WEIGHT_BOLD } from "./constants.js";
 
+const edgeMargin = 32;
+const iconSize = 24;
+const iconsRadius = iconSize / 2;
+const numPoppedTextWidth = 40;
+
+const applyTextStyle1 = (CTX) => {
+  CTX.fillStyle = "white";
+  CTX.textBaseline = "top";
+  CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
+  CTX.textAlign = "left";
+  CTX.letterSpacing = "1px";
+};
+
+const applyTextStyle2 = (CTX) => {
+  CTX.fillStyle = "white";
+  CTX.textBaseline = "top";
+  CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
+  CTX.textAlign = "right";
+  CTX.letterSpacing = "0px";
+};
+
+const applyTextStyle3 = (CTX) => {
+  CTX.fillStyle = "white";
+  CTX.textBaseline = "top";
+  CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
+  CTX.textAlign = "left";
+  CTX.letterSpacing = "0px";
+};
+
+const drawTitleLine = (canvasManager, leftText, rightText) => {
+  const CTX = canvasManager.getContext();
+
+  CTX.save();
+  applyTextStyle1(CTX);
+  CTX.fillText(leftText, edgeMargin, 0);
+  const leftTextWidth = CTX.measureText(leftText).width;
+  const textHeight =
+    CTX.measureText(leftText).actualBoundingBoxAscent +
+    CTX.measureText(leftText).actualBoundingBoxDescent;
+  CTX.restore();
+
+  CTX.save();
+  applyTextStyle2(CTX);
+  CTX.fillText(rightText, canvasManager.getWidth() - edgeMargin, 0);
+  const rightTextWidth = CTX.measureText(rightText).width;
+  CTX.restore();
+
+  const lineMargin = 8;
+  CTX.fillStyle = "rgba(255, 255, 255, .2)";
+  CTX.fillRect(
+    leftTextWidth + edgeMargin + lineMargin,
+    textHeight / 2,
+    canvasManager.getWidth() -
+      leftTextWidth -
+      rightTextWidth -
+      edgeMargin * 2 -
+      lineMargin * 2,
+    1
+  );
+};
+
 export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   const scoreDisplayStart = Date.now();
   const CTX = canvasManager.getContext();
@@ -47,88 +108,81 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
 
     CTX.save();
-    CTX.translate(32, 168);
+    CTX.translate(0, 168);
 
-    // Draw TAPS data section
     if (stats.taps) {
-      CTX.fillStyle = "white";
-      CTX.textBaseline = "top";
-      CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
-      CTX.textAlign = "left";
-      CTX.letterSpacing = "1px";
-      CTX.fillText(`TAPS`, 0, 0);
-      CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
-      CTX.textAlign = "right";
-      CTX.letterSpacing = "0px";
-      CTX.translate(canvasManager.getWidth() - 64, 0);
-      CTX.fillText(
+      drawTitleLine(
+        canvasManager,
+        "TAPS",
         `${stats.tapsPopped} ${stats.tapsPopped === 1 ? "Hit" : "Hits"}, ${
           stats.taps - stats.tapsPopped
-        } ${stats.taps - stats.tapsPopped === 1 ? "Miss" : "Misses"}`,
-        0,
-        0
+        } ${stats.taps - stats.tapsPopped === 1 ? "Miss" : "Misses"}`
       );
-      CTX.translate(-canvasManager.getWidth() + 64, 32);
+      CTX.translate(0, edgeMargin);
       stats.tapsData.forEach(({ popped }, index) => {
         CTX.fillStyle = popped ? "white" : "rgba(255, 255, 255, .2)";
         CTX.beginPath();
-        CTX.arc(32 * index + 12, 12, 12, 0, 2 * Math.PI);
+        CTX.arc(
+          (iconSize + 8) * index + edgeMargin + iconsRadius,
+          iconsRadius,
+          iconsRadius,
+          0,
+          2 * Math.PI
+        );
         CTX.closePath();
         CTX.fill();
       });
       CTX.translate(0, 80);
     }
 
-    // Draw SLINGSHOTS data section
     if (stats.slingshots.length) {
-      CTX.fillStyle = "white";
-      CTX.textBaseline = "top";
-      CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
-      CTX.textAlign = "left";
-      CTX.letterSpacing = "1px";
-      CTX.fillText(`SLINGSHOTS`, 0, 0);
-      CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
-      CTX.textAlign = "right";
-      CTX.letterSpacing = "0px";
-      CTX.translate(canvasManager.getWidth() - 64, 0);
-      CTX.fillText(`${stats.slingshots.length} Launched`, 0, 0);
-      CTX.translate(-canvasManager.getWidth() + 64, 32);
+      drawTitleLine(
+        canvasManager,
+        "SLINGSHOTS",
+        `${stats.slingshots.length} Launched`
+      );
+      CTX.translate(0, edgeMargin);
       stats.slingshots.forEach(({ popped }, index) => {
         CTX.beginPath();
         CTX.fillStyle = "red";
-        CTX.arc(72 * index + 12, 12, 12, 0, 2 * Math.PI);
-        CTX.textAlign = "left";
-        CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
-        CTX.fillStyle = "white";
-        CTX.fillText(`x${popped}`, 72 * index + 30, 1);
+        CTX.arc(
+          (iconSize + numPoppedTextWidth + 8) * index +
+            edgeMargin +
+            iconsRadius,
+          iconsRadius,
+          iconsRadius,
+          0,
+          2 * Math.PI
+        );
+        applyTextStyle3(CTX);
+        CTX.fillText(`x${popped}`, 72 * index + 62, 1);
         CTX.closePath();
         CTX.fill();
       });
       CTX.translate(0, 80);
     }
 
-    // Draw BLASTS data section
     if (stats.blasts.length) {
-      CTX.fillStyle = "white";
-      CTX.textBaseline = "top";
-      CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
-      CTX.textAlign = "left";
-      CTX.letterSpacing = "1px";
-      CTX.fillText(`BLASTS`, 0, 0);
-      CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
-      CTX.textAlign = "right";
-      CTX.letterSpacing = "0px";
-      CTX.translate(canvasManager.getWidth() - 64, 0);
-      CTX.fillText(`${stats.blasts.length} Detonated`, 0, 0);
-      CTX.translate(-canvasManager.getWidth() + 64, 32);
+      drawTitleLine(
+        canvasManager,
+        "BLASTS",
+        `${stats.blasts.length} Detonated`
+      );
+      CTX.translate(0, edgeMargin);
       stats.blasts.forEach(({ popped }, index) => {
         CTX.beginPath();
         CTX.fillStyle = "red";
-        CTX.arc(72 * index + 12, 12, 12, 0, 2 * Math.PI);
-        CTX.textAlign = "left";
-        CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
-        CTX.fillStyle = "white";
-        CTX.fillText(`x${popped}`, 72 * index + 30, 1);
+        CTX.arc(
+          (iconSize + numPoppedTextWidth + 8) * index +
+            edgeMargin +
+            iconsRadius,
+          iconsRadius,
+          iconsRadius,
+          0,
+          2 * Math.PI
+        );
+        applyTextStyle3(CTX);
+        CTX.fillText(`x${popped}`, 72 * index + 62, 1);
         CTX.closePath();
         CTX.fill();
       });
