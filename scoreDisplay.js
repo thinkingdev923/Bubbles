@@ -7,7 +7,6 @@ const numPoppedTextWidth = 40;
 
 const applyTextStyle1 = (CTX) => {
   CTX.fillStyle = "white";
-  CTX.textBaseline = "top";
   CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
   CTX.textAlign = "left";
   CTX.letterSpacing = "1px";
@@ -15,7 +14,6 @@ const applyTextStyle1 = (CTX) => {
 
 const applyTextStyle2 = (CTX) => {
   CTX.fillStyle = "white";
-  CTX.textBaseline = "top";
   CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
   CTX.textAlign = "right";
   CTX.letterSpacing = "0px";
@@ -23,7 +21,6 @@ const applyTextStyle2 = (CTX) => {
 
 const applyTextStyle3 = (CTX) => {
   CTX.fillStyle = "white";
-  CTX.textBaseline = "top";
   CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
   CTX.textAlign = "left";
   CTX.letterSpacing = "0px";
@@ -34,24 +31,27 @@ const drawTitleLine = (canvasManager, leftText, rightText) => {
 
   CTX.save();
   applyTextStyle1(CTX);
-  CTX.fillText(leftText, edgeMargin, 0);
   const leftTextWidth = CTX.measureText(leftText).width;
-  const textHeight =
-    CTX.measureText(leftText).actualBoundingBoxAscent +
-    CTX.measureText(leftText).actualBoundingBoxDescent;
+  const leftTextHeight = 10;
+
+  CTX.fillText(leftText, edgeMargin, leftTextHeight);
   CTX.restore();
 
   CTX.save();
   applyTextStyle2(CTX);
-  CTX.fillText(rightText, canvasManager.getWidth() - edgeMargin, 0);
   const rightTextWidth = CTX.measureText(rightText).width;
+  CTX.fillText(
+    rightText,
+    canvasManager.getWidth() - edgeMargin,
+    leftTextHeight
+  );
   CTX.restore();
 
   const lineMargin = 8;
   CTX.fillStyle = "rgba(255, 255, 255, .2)";
   CTX.fillRect(
     leftTextWidth + edgeMargin + lineMargin,
-    textHeight / 2,
+    leftTextHeight / 2,
     canvasManager.getWidth() -
       leftTextWidth -
       rightTextWidth -
@@ -101,7 +101,6 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillStyle = `rgba(255, 255, 255, 1)`;
       CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
       CTX.textAlign = "center";
-      CTX.textBaseline = "middle";
       if (specialState === "gameWon") CTX.fillText("You won!", 0, 0);
       if (specialState === "gameLost") CTX.fillText("You lost!", 0, 0);
       CTX.restore();
@@ -155,7 +154,12 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
           2 * Math.PI
         );
         applyTextStyle3(CTX);
-        CTX.fillText(`x${popped}`, 72 * index + 62, 1);
+        const textHeight = 17.2;
+        CTX.fillText(
+          `x${popped}`,
+          72 * index + 62,
+          iconsRadius + textHeight / 2
+        );
         CTX.closePath();
         CTX.fill();
       });
@@ -182,7 +186,12 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
           2 * Math.PI
         );
         applyTextStyle3(CTX);
-        CTX.fillText(`x${popped}`, 72 * index + 62, 1);
+        const textHeight = 17.2;
+        CTX.fillText(
+          `x${popped}`,
+          72 * index + 62,
+          iconsRadius + textHeight / 2
+        );
         CTX.closePath();
         CTX.fill();
       });
