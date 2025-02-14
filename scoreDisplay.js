@@ -47,7 +47,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
 
     CTX.save();
-    CTX.translate(32, 200);
+    CTX.translate(32, 168);
 
     // Draw TAPS data section
     if (stats.taps) {
