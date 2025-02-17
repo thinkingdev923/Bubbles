@@ -1,24 +1,27 @@
 import { FONT, FONT_WEIGHT_NORMAL, FONT_WEIGHT_BOLD } from "./constants.js";
 import { getGradientBitmap } from "./colors.js";
+import { clampedProgress, transition } from "./helpers.js";
+import { easeOutCirc, easeInOutSine } from "./easings.js";
 
 const edgeMargin = 32;
+const verticalMargin = 32;
+const verticalMarginBetweenSections = 80;
 const iconSize = 24;
 const iconsRadius = iconSize / 2;
 const numPoppedTextWidth = 40;
 
 export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
-  const scoreDisplayStart = Date.now();
   const CTX = canvasManager.getContext();
+  let scoreDisplayStart = Date.now();
   let mostRecentLevelDrawn = null;
   let stats = null;
 
   const updateStats = () => {
     const currentLevel = levelManager.getLevel();
+
     if (mostRecentLevelDrawn !== currentLevel) {
       stats = {
-        taps: {
-          ...scoreStore.sumCategoryLevelEvents("taps", currentLevel),
-        },
+        taps: { ...scoreStore.sumCategoryLevelEvents("taps", currentLevel) },
         slingshots: scoreStore.getSlingshots(currentLevel),
         blasts: scoreStore.getBlasts(currentLevel),
         totalPopped: scoreStore.sumPopped(currentLevel),
@@ -29,6 +32,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       };
 
       mostRecentLevelDrawn = currentLevel;
+      scoreDisplayStart = Date.now();
     }
   };
 
@@ -53,9 +57,24 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
 
     CTX.save();
-    CTX.translate(0, 168);
 
-    if (stats.taps) {
+    const opacityTransition = transition(
+      0,
+      1,
+      clampedProgress(0, 120, Date.now() - scoreDisplayStart),
+      easeInOutSine
+    );
+    const slideUpTransition = transition(
+      200,
+      168,
+      clampedProgress(0, 240, Date.now() - scoreDisplayStart),
+      easeOutCirc
+    );
+
+    CTX.globalAlpha = opacityTransition;
+    CTX.translate(0, slideUpTransition);
+
+    if (stats.taps.data) {
       drawTitleLine(
         canvasManager,
         "TAPS",
@@ -65,7 +84,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
           stats.taps.num - stats.taps.numPopped === 1 ? "Miss" : "Misses"
         }`
       );
-      CTX.translate(0, edgeMargin);
+      CTX.translate(0, verticalMargin);
       stats.taps.data.forEach(({ popped, fill }, index) => {
         if (popped) {
           const preRenderImage = getGradientBitmap(fill);
@@ -90,7 +109,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
           CTX.fill();
         }
       });
-      CTX.translate(0, 80);
+      CTX.translate(0, verticalMarginBetweenSections);
     }
 
     if (stats.slingshots.length) {
@@ -99,7 +118,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         "SLINGSHOTS",
         `${stats.slingshots.length} Launched`
       );
-      CTX.translate(0, edgeMargin);
+      CTX.translate(0, verticalMargin);
       stats.slingshots.forEach(({ popped }, index) => {
         CTX.beginPath();
         CTX.fillStyle = "red";
@@ -122,7 +141,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         CTX.closePath();
         CTX.fill();
       });
-      CTX.translate(0, 80);
+      CTX.translate(0, verticalMarginBetweenSections);
     }
 
     if (stats.blasts.length) {
