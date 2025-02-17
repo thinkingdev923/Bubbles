@@ -55,7 +55,7 @@ export const makeActivePointer = (
       );
       audioManager.playImpact();
     } else {
-      defaultPointerAction(currentPosition);
+      defaultPointerAction(startPosition);
     }
   };
 
