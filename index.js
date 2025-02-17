@@ -1,5 +1,5 @@
 import { makeCanvasManager } from "./canvas.js";
-import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
+import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import {
   animate,
   clampedProgress,
@@ -285,9 +285,9 @@ animate((deltaTime) => {
         100
       );
       const timeElapsed = Date.now() - c.timestamp;
-      const fadeInProgress = clampedProgress(0, 400, timeElapsed);
-      const scaleInProgress = clampedProgress(0, 800, timeElapsed);
-      const rotateProgress = clampedProgress(0, 1600, timeElapsed);
+      const fadeInProgress = clampedProgress(0, 120, timeElapsed);
+      const scaleInProgress = clampedProgress(0, 500, timeElapsed);
+      const rotateProgress = clampedProgress(0, 1400, timeElapsed);
       const rotateIn = transition(
         -Math.PI / 24,
         Math.PI / 80,
@@ -303,7 +303,7 @@ animate((deltaTime) => {
       CTX.translate(boundedPosition.x, boundedPosition.y);
       CTX.rotate(rotateIn);
       CTX.scale(scaleIn, scaleIn);
-      CTX.font = `${FONT_WEIGHT_NORMAL} 40px ${FONT}`;
+      CTX.font = `${FONT_WEIGHT_BOLD} 40px ${FONT}`;
 
       // Shadow
       CTX.fillStyle = "#000";
