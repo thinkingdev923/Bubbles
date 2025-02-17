@@ -6,62 +6,6 @@ const iconSize = 24;
 const iconsRadius = iconSize / 2;
 const numPoppedTextWidth = 40;
 
-const applyTextStyle1 = (CTX) => {
-  CTX.fillStyle = "white";
-  CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
-  CTX.textAlign = "left";
-  CTX.letterSpacing = "1px";
-};
-
-const applyTextStyle2 = (CTX) => {
-  CTX.fillStyle = "white";
-  CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
-  CTX.textAlign = "right";
-  CTX.letterSpacing = "0px";
-};
-
-const applyTextStyle3 = (CTX) => {
-  CTX.fillStyle = "white";
-  CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
-  CTX.textAlign = "left";
-  CTX.letterSpacing = "0px";
-};
-
-const drawTitleLine = (canvasManager, leftText, rightText) => {
-  const CTX = canvasManager.getContext();
-
-  CTX.save();
-  applyTextStyle1(CTX);
-  const leftTextWidth = CTX.measureText(leftText).width;
-  const leftTextHeight = 10;
-
-  CTX.fillText(leftText, edgeMargin, leftTextHeight);
-  CTX.restore();
-
-  CTX.save();
-  applyTextStyle2(CTX);
-  const rightTextWidth = CTX.measureText(rightText).width;
-  CTX.fillText(
-    rightText,
-    canvasManager.getWidth() - edgeMargin,
-    leftTextHeight
-  );
-  CTX.restore();
-
-  const lineMargin = 8;
-  CTX.fillStyle = "rgba(255, 255, 255, .2)";
-  CTX.fillRect(
-    leftTextWidth + edgeMargin + lineMargin,
-    leftTextHeight / 2,
-    canvasManager.getWidth() -
-      leftTextWidth -
-      rightTextWidth -
-      edgeMargin * 2 -
-      lineMargin * 2,
-    1
-  );
-};
-
 export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   const scoreDisplayStart = Date.now();
   const CTX = canvasManager.getContext();
@@ -72,15 +16,16 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     const currentLevel = levelManager.getLevel();
     if (mostRecentLevelDrawn !== currentLevel) {
       stats = {
-        tapsData: scoreStore.sumCategoryLevelEvents("taps", currentLevel).data,
-        taps: scoreStore.sumCategoryLevelEvents("taps", currentLevel).num,
-        tapsPopped: scoreStore.sumCategoryLevelEvents("taps", currentLevel)
-          .numPopped,
-        popped: scoreStore.sumPopped(currentLevel),
-        missed: scoreStore.sumCategoryLevelEvents("missedBubbles", currentLevel)
-          .num,
+        taps: {
+          ...scoreStore.sumCategoryLevelEvents("taps", currentLevel),
+        },
         slingshots: scoreStore.getSlingshots(currentLevel),
         blasts: scoreStore.getBlasts(currentLevel),
+        totalPopped: scoreStore.sumPopped(currentLevel),
+        totalMissed: scoreStore.sumCategoryLevelEvents(
+          "missedBubbles",
+          currentLevel
+        ).num,
       };
 
       mostRecentLevelDrawn = currentLevel;
@@ -114,12 +59,14 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       drawTitleLine(
         canvasManager,
         "TAPS",
-        `${stats.tapsPopped} ${stats.tapsPopped === 1 ? "Hit" : "Hits"}, ${
-          stats.taps - stats.tapsPopped
-        } ${stats.taps - stats.tapsPopped === 1 ? "Miss" : "Misses"}`
+        `${stats.taps.numPopped} ${
+          stats.taps.numPopped === 1 ? "Hit" : "Hits"
+        }, ${stats.taps.num - stats.taps.numPopped} ${
+          stats.taps.num - stats.taps.numPopped === 1 ? "Miss" : "Misses"
+        }`
       );
       CTX.translate(0, edgeMargin);
-      stats.tapsData.forEach(({ popped, fill }, index) => {
+      stats.taps.data.forEach(({ popped, fill }, index) => {
         if (popped) {
           const preRenderImage = getGradientBitmap(fill);
           CTX.drawImage(
@@ -214,3 +161,59 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
   return { draw };
 };
+
+function applyTextStyle1(CTX) {
+  CTX.fillStyle = "white";
+  CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
+  CTX.textAlign = "left";
+  CTX.letterSpacing = "1px";
+}
+
+function applyTextStyle2(CTX) {
+  CTX.fillStyle = "white";
+  CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
+  CTX.textAlign = "right";
+  CTX.letterSpacing = "0px";
+}
+
+function applyTextStyle3(CTX) {
+  CTX.fillStyle = "white";
+  CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
+  CTX.textAlign = "left";
+  CTX.letterSpacing = "0px";
+}
+
+function drawTitleLine(canvasManager, leftText, rightText) {
+  const CTX = canvasManager.getContext();
+
+  CTX.save();
+  applyTextStyle1(CTX);
+  const leftTextWidth = CTX.measureText(leftText).width;
+  const leftTextHeight = 10;
+
+  CTX.fillText(leftText, edgeMargin, leftTextHeight);
+  CTX.restore();
+
+  CTX.save();
+  applyTextStyle2(CTX);
+  const rightTextWidth = CTX.measureText(rightText).width;
+  CTX.fillText(
+    rightText,
+    canvasManager.getWidth() - edgeMargin,
+    leftTextHeight
+  );
+  CTX.restore();
+
+  const lineMargin = 8;
+  CTX.fillStyle = "rgba(255, 255, 255, .2)";
+  CTX.fillRect(
+    leftTextWidth + edgeMargin + lineMargin,
+    leftTextHeight / 2,
+    canvasManager.getWidth() -
+      leftTextWidth -
+      rightTextWidth -
+      edgeMargin * 2 -
+      lineMargin * 2,
+    1
+  );
+}
