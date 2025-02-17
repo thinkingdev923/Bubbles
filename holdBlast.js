@@ -67,8 +67,16 @@ export const makeHoldBlast = (
   );
   let gone = false;
   let numCollisions = 0;
+  let comboTrackerTimestamp = scoreStore.recordBlast(
+    { x, y },
+    startSize,
+    numCollisions
+  );
 
-  const logCollision = () => numCollisions++;
+  const logCollision = () => {
+    numCollisions++;
+    scoreStore.updateBlast(comboTrackerTimestamp, numCollisions);
+  };
 
   const getBlastProgress = () =>
     clampedProgress(0, blastDuration, Date.now() - blastStart);
@@ -91,10 +99,7 @@ export const makeHoldBlast = (
 
   const draw = () => {
     if (!gone) {
-      if (Date.now() - blastStart > blastDuration) {
-        gone = true;
-        scoreStore.recordBlast({ x, y }, startSize, numCollisions);
-      }
+      if (Date.now() - blastStart > blastDuration) gone = true;
 
       CTX.save();
       CTX.shadowColor = red;

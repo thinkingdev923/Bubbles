@@ -71,7 +71,6 @@ export const makeSlingshot = (
   );
   let gone = false;
   let numCollisions = 0;
-  let comboTrackerTimestamp = null;
   let positionHistory = [startPosition];
 
   const baseParticle = makeParticle(canvasManager, {
@@ -85,22 +84,19 @@ export const makeSlingshot = (
     onTopPassed: onLeaveScreen,
   });
 
+  let comboTrackerTimestamp = scoreStore.recordSlingshot(
+    baseParticle.getPosition(),
+    startVelocity,
+    numCollisions
+  );
+
   function onLeaveScreen() {
     gone = true;
   }
 
   const logCollision = () => {
     numCollisions++;
-
-    if (numCollisions > 1) {
-      scoreStore.updateSlingshot(comboTrackerTimestamp, numCollisions);
-    } else {
-      comboTrackerTimestamp = scoreStore.recordSlingshot(
-        baseParticle.getPosition(),
-        startVelocity,
-        numCollisions
-      );
-    }
+    scoreStore.updateSlingshot(comboTrackerTimestamp, numCollisions);
   };
 
   const draw = (deltaTime) => {

@@ -88,17 +88,34 @@ export const makeScoreStore = (levelManager) => {
     store.set("slingshots", slingshotsCopy);
   };
 
-  const recordBlast = (position, power, popped) =>
+  const recordBlast = (position, power, popped) => {
+    const timestamp = Date.now();
+
     store.set("blasts", [
       ...store.get("blasts"),
       {
-        timestamp: Date.now(),
+        timestamp,
         level: levelManager.getLevel(),
         position,
         power,
         popped,
       },
     ]);
+
+    return timestamp;
+  };
+
+  const updateBlast = (timestamp, popped) => {
+    const blastIndex = store
+      .get("blasts")
+      .findIndex((i) => i.timestamp === timestamp);
+
+    const blastsCopy = [...store.get("blasts")];
+
+    blastsCopy[blastIndex].popped = popped;
+
+    store.set("blasts", blastsCopy);
+  };
 
   const recordMiss = () =>
     store.set("missedBubbles", [
@@ -187,6 +204,7 @@ export const makeScoreStore = (levelManager) => {
     recordSlingshot,
     updateSlingshot,
     recordBlast,
+    updateBlast,
     recordMiss,
     sumCategoryLevelEvents,
     sumPopped,
