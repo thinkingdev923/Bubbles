@@ -1,5 +1,5 @@
 import { red } from "./colors.js";
-import { FONT, FONT_WEIGHT_NORMAL, LIVES } from "./constants.js";
+import { FONT, FONT_WEIGHT_BOLD, LIVES } from "./constants.js";
 import { drawTextRotate } from "./textRotate.js";
 
 export const makeLifeManager = (canvasManager) => {
@@ -28,7 +28,7 @@ export const makeLifeManager = (canvasManager) => {
     const marginFromBottom = 64;
 
     CTX.save();
-    CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
+    CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
     CTX.fillStyle = red;
     CTX.strokeStyle = red;
     CTX.lineWidth = 3;
