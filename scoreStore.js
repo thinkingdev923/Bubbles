@@ -164,6 +164,12 @@ export const makeScoreStore = (levelManager) => {
     return totalPopped;
   };
 
+  const getTaps = (passedLevel = null) => [
+    ...store
+      .get("taps")
+      .filter((s) => (passedLevel ? s.level === passedLevel : true)),
+  ];
+
   const getSlingshots = (passedLevel = null) => [
     ...store
       .get("slingshots")
@@ -208,6 +214,7 @@ export const makeScoreStore = (levelManager) => {
     recordMiss,
     sumCategoryLevelEvents,
     sumPopped,
+    getTaps,
     getSlingshots,
     getBlasts,
     recentCombos,
