@@ -251,7 +251,7 @@ animate((deltaTime) => {
         continueButtonManager.draw(msElapsed, 0, "Play");
       },
       firstMissMessage: (msElapsed) => {
-        centerTextBlock(canvasManager, [`Miss a bubble, lose a life`]);
+        scoreDisplay.draw("firstMiss");
         continueButtonManager.draw(msElapsed, 1000);
       },
       defaultMessage: (msElapsed) => {

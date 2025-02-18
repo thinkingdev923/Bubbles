@@ -42,7 +42,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   const draw = (specialState = false) => {
     updateStats();
 
-    if (specialState === "gameWon" || specialState === "gameLost") {
+    if (specialState) {
       CTX.save();
 
       // Darken screen so it looks different from normal interstitial
@@ -50,12 +50,15 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
       // Display special message
-      CTX.translate(canvasManager.getWidth() / 2, 52);
+      CTX.translate(canvasManager.getWidth() / 2, 56);
       CTX.fillStyle = `rgba(255, 255, 255, 1)`;
       CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
       CTX.textAlign = "center";
       if (specialState === "gameWon") CTX.fillText("You won!", 0, 0);
       if (specialState === "gameLost") CTX.fillText("You lost!", 0, 0);
+      if (specialState === "firstMiss")
+        CTX.fillText("Miss a bubble, lose a life", 0, 0);
+
       CTX.restore();
     }
 
