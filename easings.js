@@ -23,7 +23,7 @@ export const easeOutCubic = (x) => {
 };
 
 export const easeOutElastic = (x) => {
-  const c4 = (2 * Math.PI) / 3;
+  const c4 = (2 * Math.PI) / 5;
 
   return x === 0
     ? 0
@@ -37,3 +37,5 @@ export const easeOutQuart = (x) => 1 - Math.pow(1 - x, 4);
 export const easeOutCirc = (x) => Math.sqrt(1 - Math.pow(x - 1, 2));
 
 export const easeOutSine = (x) => Math.sin((x * Math.PI) / 2);
+
+export const easeOutQuint = (x) => 1 - Math.pow(1 - x, 5);

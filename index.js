@@ -23,7 +23,7 @@ import { centerTextBlock } from "./centerTextBlock.js";
 import { makeScoreDisplay } from "./scoreDisplay.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
-import { easeOutBack } from "./easings.js";
+import { easeOutElastic, easeOutQuint } from "./easings.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -287,26 +287,33 @@ animate((deltaTime) => {
         c.position,
         100
       );
-      const timeElapsed = Date.now() - c.timestamp;
-      const fadeInProgress = clampedProgress(0, 120, timeElapsed);
-      const scaleInProgress = clampedProgress(0, 500, timeElapsed);
-      const rotateProgress = clampedProgress(0, 1400, timeElapsed);
-      const rotateIn = transition(
-        -Math.PI / 24,
-        Math.PI / 80,
-        rotateProgress,
-        easeOutBack
-      );
-      const scaleIn = transition(0, 1, scaleInProgress, easeOutBack);
-      const fadeIn = transition(0, 1, fadeInProgress, easeOutBack);
       const text = `x${c.popped}!`;
+      const textHeight = 48;
+
+      const slideUp = transition(
+        boundedPosition.y + 60,
+        boundedPosition.y + textHeight / 2,
+        clampedProgress(0, 300, Date.now() - c.timestamp),
+        easeOutQuint
+      );
+      const rotateIn = transition(
+        -Math.PI / 2,
+        Math.PI / 80,
+        clampedProgress(0, 1600, Date.now() - c.timestamp),
+        easeOutElastic
+      );
+      const scaleIn = transition(
+        0.01,
+        1,
+        clampedProgress(0, 400, Date.now() - c.timestamp),
+        easeOutQuint
+      );
 
       CTX.save();
-      CTX.globalAlpha = fadeIn;
-      CTX.translate(boundedPosition.x, boundedPosition.y);
+      CTX.translate(boundedPosition.x, slideUp);
       CTX.rotate(rotateIn);
       CTX.scale(scaleIn, scaleIn);
-      CTX.font = `${FONT_WEIGHT_BOLD} 40px ${FONT}`;
+      CTX.font = `${FONT_WEIGHT_BOLD} 64px ${FONT}`;
 
       // Shadow
       CTX.fillStyle = "#000";
