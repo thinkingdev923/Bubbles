@@ -69,9 +69,10 @@ export const makeSlingshot = (
     distance / 10,
     getHeadingInRadsFromTwoPoints(startPosition, endPosition)
   );
-  let gone = false;
+  let particleGone = false;
   let numCollisions = 0;
   let positionHistory = [startPosition];
+  const positionHistoryLength = 40;
 
   const baseParticle = makeParticle(canvasManager, {
     radius: slingshotRadius(distance),
@@ -91,7 +92,7 @@ export const makeSlingshot = (
   );
 
   function onLeaveScreen() {
-    gone = true;
+    particleGone = true;
   }
 
   const logCollision = () => {
@@ -100,11 +101,16 @@ export const makeSlingshot = (
   };
 
   const draw = (deltaTime) => {
-    if (!gone) {
-      baseParticle.update(deltaTime);
+    if (!particleGone) baseParticle.update(deltaTime);
 
-      positionHistory.push({ ...baseParticle.getPosition() });
-      if (positionHistory.length > 40) positionHistory.shift();
+    if (positionHistory.length > 0) {
+      if (!particleGone) {
+        positionHistory.push({ ...baseParticle.getPosition() });
+        if (positionHistory.length > positionHistoryLength)
+          positionHistory.shift();
+      } else {
+        positionHistory.shift();
+      }
 
       CTX.save();
       positionHistory.forEach(({ x, y }, index) => {
@@ -120,7 +126,9 @@ export const makeSlingshot = (
         }
       });
       CTX.restore();
+    }
 
+    if (!particleGone) {
       CTX.save();
       CTX.fillStyle = red;
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
@@ -140,7 +148,7 @@ export const makeSlingshot = (
     setVelocity: baseParticle.setVelocity,
     draw,
     logCollision,
-    isGone: () => gone,
+    isGone: () => particleGone,
     causesShake: () => false,
     isSlingshot: () => true,
     isHoldBlast: () => false,
