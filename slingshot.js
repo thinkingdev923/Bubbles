@@ -103,22 +103,23 @@ export const makeSlingshot = (
     if (!gone) {
       baseParticle.update(deltaTime);
 
-      positionHistory.unshift({ ...baseParticle.getPosition() });
-      if (positionHistory.length > 20) {
-        positionHistory.pop();
-      }
+      positionHistory.push({ ...baseParticle.getPosition() });
+      if (positionHistory.length > 40) positionHistory.shift();
 
+      CTX.save();
       positionHistory.forEach(({ x, y }, index) => {
-        CTX.save();
-        CTX.fillStyle = red;
-        CTX.globalAlpha = 1 / index + 1 / positionHistory.length;
-        CTX.translate(x, y);
-        CTX.beginPath();
-        CTX.arc(0, 0, baseParticle.getRadius(), 0, 2 * Math.PI);
-        CTX.closePath();
-        CTX.fill();
-        CTX.restore();
+        if (positionHistory.length > index + 1) {
+          const nextPosition = positionHistory[index + 1];
+          CTX.lineWidth = baseParticle.getRadius() * 2;
+          CTX.strokeStyle = red;
+          CTX.globalAlpha = index / positionHistory.length;
+          CTX.beginPath();
+          CTX.moveTo(x, y);
+          CTX.lineTo(nextPosition.x, nextPosition.y);
+          CTX.stroke();
+        }
       });
+      CTX.restore();
 
       CTX.save();
       CTX.fillStyle = red;
