@@ -39,6 +39,117 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
   };
 
+  const drawTitleLine = (leftText, rightText) => {
+    CTX.save();
+    applyTextStyle1(CTX);
+    const leftTextWidth = CTX.measureText(leftText).width;
+    const leftTextHeight = 10;
+
+    CTX.fillText(leftText, edgeMargin, leftTextHeight);
+    CTX.restore();
+
+    CTX.save();
+    applyTextStyle2(CTX);
+    const rightTextWidth = CTX.measureText(rightText).width;
+    CTX.fillText(
+      rightText,
+      canvasManager.getWidth() - edgeMargin,
+      leftTextHeight
+    );
+    CTX.restore();
+
+    const lineMargin = 8;
+    CTX.fillStyle = "rgba(255, 255, 255, .2)";
+    CTX.fillRect(
+      leftTextWidth + edgeMargin + lineMargin,
+      leftTextHeight / 2,
+      canvasManager.getWidth() -
+        leftTextWidth -
+        rightTextWidth -
+        edgeMargin * 2 -
+        lineMargin * 2,
+      1
+    );
+  };
+
+  const drawTapItem = ({ popped, fill }) => {
+    if (popped) {
+      const preRenderImage = getGradientBitmap(fill);
+      CTX.drawImage(
+        preRenderImage,
+        0,
+        0,
+        iconSize * canvasManager.getScaleFactor(),
+        iconSize * canvasManager.getScaleFactor()
+      );
+    } else {
+      CTX.strokeStyle = red;
+      CTX.lineWidth = 2;
+      CTX.beginPath();
+      CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
+      CTX.closePath();
+      CTX.stroke();
+
+      CTX.lineWidth = 1;
+      CTX.globalAlpha = 0.6;
+      CTX.beginPath();
+      CTX.arc(iconsRadius, iconsRadius, iconsRadius / 2, 0, 2 * Math.PI);
+      CTX.closePath();
+      CTX.stroke();
+    }
+  };
+
+  const drawSlingshotItem = ({ popped }) => {
+    const textHeight = 17.2;
+
+    if (popped) {
+      CTX.fillStyle = red;
+    } else {
+      CTX.fillStyle = `rgba(255, 255, 255, .3)`;
+    }
+    CTX.beginPath();
+    CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
+    CTX.closePath();
+    CTX.fill();
+    applyTextStyle3(CTX);
+    CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
+  };
+
+  const drawBlastItem = ({ popped }) => {
+    const textHeight = 17.2;
+    const blastIconNumVertices = 12;
+    const blastIconVertices = new Array(blastIconNumVertices)
+      .fill()
+      .map((_, index) => {
+        const angle = (index / blastIconNumVertices) * Math.PI * 2;
+        const distance = randomBetween(iconsRadius - 2, iconsRadius + 2);
+        return {
+          x: iconsRadius + Math.cos(angle) * distance,
+          y: iconsRadius + Math.sin(angle) * distance,
+        };
+      });
+
+    if (popped > 0) {
+      CTX.fillStyle = red;
+      CTX.strokeStyle = red;
+    } else {
+      CTX.fillStyle = `rgba(255, 255, 255, .3)`;
+      CTX.strokeStyle = `rgba(255, 255, 255, .5)`;
+    }
+    CTX.globalAlpha = 0.2;
+    CTX.beginPath();
+    blastIconVertices.forEach(({ x, y }, index) => {
+      index === 0 ? CTX.moveTo(x, y) : CTX.lineTo(x, y);
+    });
+    CTX.closePath();
+    CTX.fill();
+    CTX.globalAlpha = 1;
+    CTX.stroke();
+
+    applyTextStyle3(CTX);
+    CTX.fillText(`x${popped}`, 32, iconsRadius + textHeight / 2);
+  };
+
   const draw = (specialState = false) => {
     updateStats();
 
@@ -82,7 +193,6 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
     if (stats.taps.length) {
       drawTitleLine(
-        canvasManager,
         "TAPS",
         `${stats.tapsPopped} ${stats.tapsPopped === 1 ? "Hit" : "Hits"}, ${
           stats.taps.length - stats.tapsPopped
@@ -96,42 +206,13 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         itemHeight: iconSize,
       });
 
-      tapsGrid.drawItems(({ popped, fill }) => {
-        if (popped) {
-          const preRenderImage = getGradientBitmap(fill);
-          CTX.drawImage(
-            preRenderImage,
-            0,
-            0,
-            iconSize * canvasManager.getScaleFactor(),
-            iconSize * canvasManager.getScaleFactor()
-          );
-        } else {
-          CTX.strokeStyle = red;
-          CTX.lineWidth = 2;
-          CTX.beginPath();
-          CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
-          CTX.closePath();
-          CTX.stroke();
-
-          CTX.lineWidth = 1;
-          CTX.globalAlpha = 0.6;
-          CTX.beginPath();
-          CTX.arc(iconsRadius, iconsRadius, iconsRadius / 2, 0, 2 * Math.PI);
-          CTX.closePath();
-          CTX.stroke();
-        }
-      });
+      tapsGrid.drawItems(drawTapItem);
 
       CTX.translate(0, tapsGrid.getHeight() + verticalMarginBetweenSections);
     }
 
     if (stats.slingshots.length) {
-      drawTitleLine(
-        canvasManager,
-        "SLINGSHOTS",
-        `${stats.slingshots.length} Launched`
-      );
+      drawTitleLine("SLINGSHOTS", `${stats.slingshots.length} Launched`);
 
       CTX.translate(0, verticalMargin);
 
@@ -140,21 +221,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         itemHeight: iconSize,
       });
 
-      slingshotsGrid.drawItems(({ popped }) => {
-        const textHeight = 17.2;
-
-        if (popped) {
-          CTX.fillStyle = red;
-        } else {
-          CTX.fillStyle = `rgba(255, 255, 255, .3)`;
-        }
-        CTX.beginPath();
-        CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
-        CTX.closePath();
-        CTX.fill();
-        applyTextStyle3(CTX);
-        CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
-      });
+      slingshotsGrid.drawItems(drawSlingshotItem);
 
       CTX.translate(
         0,
@@ -163,11 +230,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
 
     if (stats.blasts.length) {
-      drawTitleLine(
-        canvasManager,
-        "BLASTS",
-        `${stats.blasts.length} Detonated`
-      );
+      drawTitleLine("BLASTS", `${stats.blasts.length} Detonated`);
 
       CTX.translate(0, edgeMargin);
 
@@ -176,40 +239,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         itemHeight: iconSize,
       });
 
-      blastsGrid.drawItems(({ popped }) => {
-        const textHeight = 17.2;
-        const blastIconNumVertices = 12;
-        const blastIconVertices = new Array(blastIconNumVertices)
-          .fill()
-          .map((_, index) => {
-            const angle = (index / blastIconNumVertices) * Math.PI * 2;
-            const distance = randomBetween(iconsRadius - 2, iconsRadius + 2);
-            return {
-              x: iconsRadius + Math.cos(angle) * distance,
-              y: iconsRadius + Math.sin(angle) * distance,
-            };
-          });
-
-        if (popped > 0) {
-          CTX.fillStyle = red;
-          CTX.strokeStyle = red;
-        } else {
-          CTX.fillStyle = `rgba(255, 255, 255, .3)`;
-          CTX.strokeStyle = `rgba(255, 255, 255, .5)`;
-        }
-        CTX.globalAlpha = 0.2;
-        CTX.beginPath();
-        blastIconVertices.forEach(({ x, y }, index) => {
-          index === 0 ? CTX.moveTo(x, y) : CTX.lineTo(x, y);
-        });
-        CTX.closePath();
-        CTX.fill();
-        CTX.globalAlpha = 1;
-        CTX.stroke();
-
-        applyTextStyle3(CTX);
-        CTX.fillText(`x${popped}`, 32, iconsRadius + textHeight / 2);
-      });
+      blastsGrid.drawItems(drawBlastItem);
     }
 
     CTX.restore();
@@ -237,39 +267,4 @@ function applyTextStyle3(CTX) {
   CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
   CTX.textAlign = "left";
   CTX.letterSpacing = "0px";
-}
-
-function drawTitleLine(canvasManager, leftText, rightText) {
-  const CTX = canvasManager.getContext();
-
-  CTX.save();
-  applyTextStyle1(CTX);
-  const leftTextWidth = CTX.measureText(leftText).width;
-  const leftTextHeight = 10;
-
-  CTX.fillText(leftText, edgeMargin, leftTextHeight);
-  CTX.restore();
-
-  CTX.save();
-  applyTextStyle2(CTX);
-  const rightTextWidth = CTX.measureText(rightText).width;
-  CTX.fillText(
-    rightText,
-    canvasManager.getWidth() - edgeMargin,
-    leftTextHeight
-  );
-  CTX.restore();
-
-  const lineMargin = 8;
-  CTX.fillStyle = "rgba(255, 255, 255, .2)";
-  CTX.fillRect(
-    leftTextWidth + edgeMargin + lineMargin,
-    leftTextHeight / 2,
-    canvasManager.getWidth() -
-      leftTextWidth -
-      rightTextWidth -
-      edgeMargin * 2 -
-      lineMargin * 2,
-    1
-  );
 }
