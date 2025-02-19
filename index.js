@@ -267,8 +267,11 @@ animate((deltaTime) => {
         continueButtonManager.draw(msElapsed, 2000, "Play Again");
       },
     });
+
     levelManager.drawLevelNumber();
-    if (!levelManager.isGameOver()) lifeManager.draw();
+
+    if (!levelManager.isInterstitialShowing() && !levelManager.isGameOver())
+      lifeManager.draw();
 
     // Draw main game elements
     ripples.forEach((r) => r.draw());

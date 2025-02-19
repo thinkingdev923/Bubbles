@@ -8,8 +8,7 @@ export const makeContinueButtonManager = (canvasManager) => {
   const buttonPath = new Path2D();
   const buttonWidth = 260;
   const buttonHeight = 80;
-  const lifeIndicatorClearanceOffset = 65;
-  const margin = 27;
+  const margin = 32;
   let isHovering;
   let hoverStart;
   let hoverEnd;
@@ -19,10 +18,7 @@ export const makeContinueButtonManager = (canvasManager) => {
   const applyButtonTransforms = () => {
     CTX.translate(
       canvasManager.getWidth() / 2,
-      canvasManager.getHeight() -
-        lifeIndicatorClearanceOffset -
-        margin -
-        buttonHeight / 2
+      canvasManager.getHeight() - margin - buttonHeight / 2
     );
   };
 
