@@ -1,6 +1,6 @@
 import { FONT, FONT_WEIGHT_NORMAL, FONT_WEIGHT_BOLD } from "./constants.js";
 import { getGradientBitmap, red } from "./colors.js";
-import { clampedProgress, transition } from "./helpers.js";
+import { clampedProgress, transition, randomBetween } from "./helpers.js";
 import { easeOutCirc, easeInOutSine } from "./easings.js";
 import { makeGrid } from "./grid.js";
 
@@ -143,13 +143,17 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       slingshotsGrid.drawItems(({ popped }) => {
         const textHeight = 17.2;
 
-        CTX.fillStyle = "red";
+        if (popped) {
+          CTX.fillStyle = red;
+        } else {
+          CTX.fillStyle = `rgba(255, 255, 255, .3)`;
+        }
         CTX.beginPath();
         CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
-        applyTextStyle3(CTX);
-        CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
         CTX.closePath();
         CTX.fill();
+        applyTextStyle3(CTX);
+        CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
       });
 
       CTX.translate(
@@ -174,14 +178,37 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
       blastsGrid.drawItems(({ popped }) => {
         const textHeight = 17.2;
+        const blastIconNumVertices = 12;
+        const blastIconVertices = new Array(blastIconNumVertices)
+          .fill()
+          .map((_, index) => {
+            const angle = (index / blastIconNumVertices) * Math.PI * 2;
+            const distance = randomBetween(iconsRadius - 2, iconsRadius + 2);
+            return {
+              x: iconsRadius + Math.cos(angle) * distance,
+              y: iconsRadius + Math.sin(angle) * distance,
+            };
+          });
 
-        CTX.fillStyle = "red";
+        if (popped > 0) {
+          CTX.fillStyle = red;
+          CTX.strokeStyle = red;
+        } else {
+          CTX.fillStyle = `rgba(255, 255, 255, .3)`;
+          CTX.strokeStyle = `rgba(255, 255, 255, .5)`;
+        }
+        CTX.globalAlpha = 0.2;
         CTX.beginPath();
-        CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
-        applyTextStyle3(CTX);
-        CTX.fillText(`x${popped}`, 32, iconsRadius + textHeight / 2);
+        blastIconVertices.forEach(({ x, y }, index) => {
+          index === 0 ? CTX.moveTo(x, y) : CTX.lineTo(x, y);
+        });
         CTX.closePath();
         CTX.fill();
+        CTX.globalAlpha = 1;
+        CTX.stroke();
+
+        applyTextStyle3(CTX);
+        CTX.fillText(`x${popped}`, 32, iconsRadius + textHeight / 2);
       });
     }
 
