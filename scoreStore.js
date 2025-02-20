@@ -195,14 +195,25 @@ export const makeScoreStore = (levelManager) => {
     const levelData = levels[passedLevel - 1];
     const numBubbles = countLevelBalls(levelData);
     const numMoves =
-      store.get("taps").filter((s) => s.level === passedLevel).length +
+      store.get("taps").filter((t) => t.level === passedLevel).length +
       store.get("slingshots").filter((s) => s.level === passedLevel).length +
-      store.get("blasts").filter((s) => s.level === passedLevel).length;
+      store.get("blasts").filter((b) => b.level === passedLevel).length;
 
-    // deduct for balls missed
-    // deduct more for missed taps/slingshots/blasts
+    const numMissed =
+      store.get("missedBubbles").filter((m) => m.level === passedLevel).length +
+      1;
 
-    return numBubbles / numMoves;
+    // console log each var with labels
+    console.log(
+      "numBubbles",
+      numBubbles,
+      "numMoves",
+      numMoves,
+      "numMissed",
+      numMissed
+    );
+
+    return numBubbles / numMoves / numMissed;
   };
 
   const getTaps = (passedLevel = null) => [
