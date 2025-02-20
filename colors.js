@@ -67,6 +67,23 @@ const makeBitmap = (gradientFunc) => {
   preRenderContext.arc(0, 0, BUBBLE_RADIUS, 0, 2 * Math.PI);
   preRenderContext.closePath();
   preRenderContext.fill();
+
+  const strokeGradient = preRenderContext.createLinearGradient(
+    BUBBLE_RADIUS * 4,
+    BUBBLE_RADIUS * 4,
+    -BUBBLE_RADIUS,
+    -BUBBLE_RADIUS
+  );
+  strokeGradient.addColorStop(0, "rgba(255, 255, 255, .4)");
+  strokeGradient.addColorStop(1, "rgba(255, 255, 255, 0");
+
+  preRenderContext.strokeStyle = strokeGradient;
+  preRenderContext.lineWidth = 2;
+  preRenderContext.beginPath();
+  preRenderContext.arc(0, 0, BUBBLE_RADIUS - 2, 0, 2 * Math.PI);
+  preRenderContext.closePath();
+  preRenderContext.stroke();
+
   return preRenderCanvas.getBitmap();
 };
 
