@@ -168,11 +168,20 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
   };
 
-  const drawSlingshotItem = ({ popped, velocity }) => {
+  const drawSlingshotItem = ({ popped, velocity }, index) => {
+    const animationDelay = index * 88;
     const textHeight = 17.2;
     const angleInRads = Math.atan2(velocity.y, velocity.x);
-    const arrowLength = 8;
-    const arrowWidth = 6;
+    const rotateIn = transition(
+      0,
+      angleInRads,
+      clampedProgress(
+        animationDelay,
+        600 + animationDelay,
+        Date.now() - scoreDisplayStart
+      ),
+      easeOutBack
+    );
 
     CTX.save();
     if (popped) {
@@ -183,22 +192,20 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillStyle = `rgba(255, 255, 255, .3)`;
     }
 
-    // Draw line
-    CTX.lineWidth = 4;
-    CTX.translate(iconRadius, iconSize);
-    CTX.rotate(angleInRads);
-    CTX.beginPath();
-    CTX.moveTo(0, 0);
-    CTX.lineTo(iconSize - arrowLength, 0);
-    CTX.closePath();
-    CTX.stroke();
+    const arrowLength = 10;
+    const arrowWidth = 6;
+    const lineWidth = 5;
 
-    // Draw arrowhead
-    CTX.translate(iconSize, 0);
+    CTX.translate(iconRadius, iconRadius);
+    CTX.rotate(rotateIn);
     CTX.beginPath();
-    CTX.moveTo(-arrowLength, -arrowWidth);
-    CTX.lineTo(0, 0);
-    CTX.lineTo(-arrowLength, arrowWidth);
+    CTX.moveTo(-iconRadius, -lineWidth / 2);
+    CTX.lineTo(iconRadius - arrowLength, -lineWidth / 2);
+    CTX.lineTo(iconRadius - arrowLength, -lineWidth / 2 - arrowWidth);
+    CTX.lineTo(iconRadius, 0);
+    CTX.lineTo(iconRadius - arrowLength, lineWidth / 2 + arrowWidth);
+    CTX.lineTo(iconRadius - arrowLength, lineWidth / 2);
+    CTX.lineTo(-iconRadius, lineWidth / 2);
     CTX.closePath();
     CTX.fill();
     CTX.restore();
