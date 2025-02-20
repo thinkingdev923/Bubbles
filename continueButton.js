@@ -6,9 +6,9 @@ import { randomColor, background } from "./colors.js";
 export const makeContinueButtonManager = (canvasManager) => {
   const CTX = canvasManager.getContext();
   const buttonPath = new Path2D();
-  const buttonWidth = 256;
   const buttonHeight = 72;
-  const margin = 32;
+  const margin = 24;
+  const buttonWidth = canvasManager.getWidth() - margin * 2;
   let isHovering;
   let hoverStart;
   let hoverEnd;

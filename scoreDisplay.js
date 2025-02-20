@@ -341,8 +341,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       easeInOutSine
     );
     const slideUpTransition = transition(
-      128,
-      88,
+      144,
+      112,
       clampedProgress(0, 240, Date.now() - scoreDisplayStart),
       easeOutCirc
     );
