@@ -244,11 +244,11 @@ animate((deltaTime) => {
     levelManager.drawInterstitialMessage({
       previewInitialMessage: (msElapsed) => {
         centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
-        continueButtonManager.draw(msElapsed, 0, "Play Preview");
+        continueButtonManager.draw(msElapsed, 800, "Play Preview");
       },
       initialMessage: (msElapsed) => {
         centerTextBlock(canvasManager, [`Pop the bubble`]);
-        continueButtonManager.draw(msElapsed, 0, "Play");
+        continueButtonManager.draw(msElapsed, 800, "Play");
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw("firstMiss");
