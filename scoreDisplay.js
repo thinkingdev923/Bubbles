@@ -6,7 +6,7 @@ import {
 } from "./constants.js";
 import { getGradientBitmap, red } from "./colors.js";
 import { clampedProgress, transition, randomBetween } from "./helpers.js";
-import { easeOutCirc, easeInOutSine } from "./easings.js";
+import { easeOutCirc, easeInOutSine, easeOutQuad } from "./easings.js";
 import { makeGrid } from "./grid.js";
 
 const edgeMargin = 32;
@@ -88,34 +88,108 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         iconSize * canvasManager.getScaleFactor()
       );
     } else {
+      const animationProgress = clampedProgress(
+        0,
+        2000,
+        Date.now() - scoreDisplayStart
+      );
+      const outerCircleRadius = transition(
+        iconsRadius,
+        iconsRadius * 1.4,
+        animationProgress,
+        easeOutQuad
+      );
+      const outerCircleFade = transition(1, 0, animationProgress, easeOutQuad);
+      const outerCircleLineWidth = transition(
+        2,
+        3,
+        animationProgress,
+        easeOutQuad
+      );
+      const innerCircleRadius = transition(
+        iconsRadius / 2,
+        iconsRadius,
+        animationProgress,
+        easeOutQuad
+      );
+      const innerCircleFade = transition(
+        0.6,
+        1,
+        animationProgress,
+        easeOutQuad
+      );
+      const innerCircleLineWidth = transition(
+        1,
+        2,
+        animationProgress,
+        easeOutQuad
+      );
+      const hiddenCircleRadius = transition(
+        0,
+        iconsRadius / 2,
+        animationProgress,
+        easeOutQuad
+      );
+
       CTX.strokeStyle = red;
-      CTX.lineWidth = 2;
+      CTX.lineWidth = outerCircleLineWidth;
+      CTX.globalAlpha = outerCircleFade;
       CTX.beginPath();
-      CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
+      CTX.arc(iconsRadius, iconsRadius, outerCircleRadius, 0, 2 * Math.PI);
+      CTX.closePath();
+      CTX.stroke();
+
+      CTX.lineWidth = innerCircleLineWidth;
+      CTX.globalAlpha = innerCircleFade;
+      CTX.beginPath();
+      CTX.arc(iconsRadius, iconsRadius, innerCircleRadius, 0, 2 * Math.PI);
       CTX.closePath();
       CTX.stroke();
 
       CTX.lineWidth = 1;
       CTX.globalAlpha = 0.6;
       CTX.beginPath();
-      CTX.arc(iconsRadius, iconsRadius, iconsRadius / 2, 0, 2 * Math.PI);
+      CTX.arc(iconsRadius, iconsRadius, hiddenCircleRadius, 0, 2 * Math.PI);
       CTX.closePath();
       CTX.stroke();
     }
   };
 
-  const drawSlingshotItem = ({ popped }) => {
+  const drawSlingshotItem = ({ popped, velocity }) => {
     const textHeight = 17.2;
+    const angleInRads = Math.atan2(velocity.y, velocity.x);
+    const arrowLength = 8;
+    const arrowWidth = 6;
 
+    CTX.save();
     if (popped) {
+      CTX.strokeStyle = red;
       CTX.fillStyle = red;
     } else {
+      CTX.strokeStyle = `rgba(255, 255, 255, .3)`;
       CTX.fillStyle = `rgba(255, 255, 255, .3)`;
     }
+
+    // Draw line
+    CTX.lineWidth = 4;
+    CTX.translate(iconsRadius, iconSize);
+    CTX.rotate(angleInRads);
     CTX.beginPath();
-    CTX.arc(iconsRadius, iconsRadius, iconsRadius, 0, 2 * Math.PI);
+    CTX.moveTo(0, 0);
+    CTX.lineTo(iconSize - arrowLength, 0);
+    CTX.closePath();
+    CTX.stroke();
+
+    // Draw arrowhead
+    CTX.translate(iconSize, 0);
+    CTX.beginPath();
+    CTX.moveTo(-arrowLength, -arrowWidth);
+    CTX.lineTo(0, 0);
+    CTX.lineTo(-arrowLength, arrowWidth);
     CTX.closePath();
     CTX.fill();
+    CTX.restore();
+
     applyTextStyle3(CTX);
     CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
   };

@@ -39,3 +39,5 @@ export const easeOutCirc = (x) => Math.sqrt(1 - Math.pow(x - 1, 2));
 export const easeOutSine = (x) => Math.sin((x * Math.PI) / 2);
 
 export const easeOutQuint = (x) => 1 - Math.pow(1 - x, 5);
+
+export const easeOutQuad = (x) => 1 - (1 - x) * (1 - x);
