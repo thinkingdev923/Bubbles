@@ -128,13 +128,18 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       iconsRadius * 1.2,
       clampedProgress(0, BLAST_MAX_SIZE, power)
     );
+    const blastIconJitter = transition(
+      1,
+      3,
+      clampedProgress(0, BLAST_MAX_SIZE, power)
+    );
     const blastIconVertices = new Array(blastIconNumVertices)
       .fill()
       .map((_, index) => {
         const angle = (index / blastIconNumVertices) * Math.PI * 2;
         const distance = randomBetween(
-          blastIconRadius - 2,
-          blastIconRadius + 2
+          blastIconRadius - blastIconJitter,
+          blastIconRadius + blastIconJitter
         );
         return {
           x: iconsRadius + Math.cos(angle) * distance,
