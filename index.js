@@ -244,27 +244,27 @@ animate((deltaTime) => {
     levelManager.drawInterstitialMessage({
       previewInitialMessage: (msElapsed) => {
         centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
-        continueButtonManager.draw(msElapsed, 800, "Play Preview");
+        continueButtonManager.draw(msElapsed, 600, "Play Preview");
       },
       initialMessage: (msElapsed) => {
         centerTextBlock(canvasManager, [`Pop the bubble`]);
-        continueButtonManager.draw(msElapsed, 800, "Play");
+        continueButtonManager.draw(msElapsed, 600, "Play");
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw("firstMiss");
-        continueButtonManager.draw(msElapsed, 1000);
+        continueButtonManager.draw(msElapsed, 960);
       },
       defaultMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(msElapsed, 2000);
+        continueButtonManager.draw(msElapsed, 960);
       },
       endGameMessage: (msElapsed) => {
         scoreDisplay.draw("gameLost");
-        continueButtonManager.draw(msElapsed, 2000, "Try Again");
+        continueButtonManager.draw(msElapsed, 1920, "Try Again");
       },
       reachedEndOfGameMessage: (msElapsed) => {
         scoreDisplay.draw("gameWon");
-        continueButtonManager.draw(msElapsed, 2000, "Play Again");
+        continueButtonManager.draw(msElapsed, 1920, "Play Again");
       },
     });
 

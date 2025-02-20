@@ -1,13 +1,13 @@
 import { easeInOutSine, easeOutQuart } from "./easings.js";
 import { clampedProgress, transition } from "./helpers.js";
-import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
+import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { randomColor, background } from "./colors.js";
 
 export const makeContinueButtonManager = (canvasManager) => {
   const CTX = canvasManager.getContext();
   const buttonPath = new Path2D();
-  const buttonWidth = 260;
-  const buttonHeight = 80;
+  const buttonWidth = 256;
+  const buttonHeight = 72;
   const margin = 32;
   let isHovering;
   let hoverStart;
@@ -27,7 +27,7 @@ export const makeContinueButtonManager = (canvasManager) => {
     -buttonHeight / 2,
     buttonWidth,
     buttonHeight,
-    12
+    16
   );
 
   const pointInButton = ({ x, y }) => {
@@ -148,7 +148,7 @@ export const makeContinueButtonManager = (canvasManager) => {
       CTX.scale(hoverTextShrink, hoverTextShrink);
       CTX.translate(0, hoverTextMoveBack);
     }
-    CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
+    CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
     CTX.fillStyle = background;
     CTX.textAlign = "center";
     CTX.textBaseline = "middle";
