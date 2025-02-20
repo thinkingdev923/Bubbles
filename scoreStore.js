@@ -1,4 +1,5 @@
 import { levels, countLevelBalls } from "./levelData.js";
+import { progress } from "./helpers.js";
 
 export const makeScoreStore = (levelManager) => {
   // MAP STRUCTURE EXAMPLE
@@ -213,7 +214,9 @@ export const makeScoreStore = (levelManager) => {
       numMissed
     );
 
-    return numBubbles / numMoves / numMissed;
+    const score = progress(0, 6, numBubbles / numMoves / numMissed);
+
+    return Math.round(score * 100);
   };
 
   const getTaps = (passedLevel = null) => [
