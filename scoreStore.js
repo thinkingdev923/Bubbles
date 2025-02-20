@@ -204,9 +204,17 @@ export const makeScoreStore = (levelManager) => {
       store.get("missedBubbles").filter((m) => m.level === passedLevel).length +
       1;
 
-    const score = progress(0, 6, numBubbles / numMoves / numMissed);
+    const maxPossiblePoppedPerMove = 15;
+    const mostEfficientNumMoves = Math.min(
+      numBubbles,
+      maxPossiblePoppedPerMove
+    );
+    const score = Math.round(
+      progress(0, mostEfficientNumMoves, numBubbles / numMoves - numMissed) *
+        100
+    );
 
-    return Math.round(score * 100);
+    return score;
   };
 
   const getTaps = (passedLevel = null) => [
