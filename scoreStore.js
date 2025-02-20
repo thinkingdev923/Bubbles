@@ -1,3 +1,5 @@
+import { levels, countLevelBalls } from "./levelData.js";
+
 export const makeScoreStore = (levelManager) => {
   // MAP STRUCTURE EXAMPLE
   // We store discrete actions that we can flexibly sum, score, etc. later
@@ -164,24 +166,6 @@ export const makeScoreStore = (levelManager) => {
     return totalPopped;
   };
 
-  const getTaps = (passedLevel = null) => [
-    ...store
-      .get("taps")
-      .filter((s) => (passedLevel ? s.level === passedLevel : true)),
-  ];
-
-  const getSlingshots = (passedLevel = null) => [
-    ...store
-      .get("slingshots")
-      .filter((s) => (passedLevel ? s.level === passedLevel : true)),
-  ];
-
-  const getBlasts = (passedLevel = null) => [
-    ...store
-      .get("blasts")
-      .filter((b) => (passedLevel ? b.level === passedLevel : true)),
-  ];
-
   const recentCombos = (level) => {
     const recentTimeframeInMS = 2400;
 
@@ -205,6 +189,40 @@ export const makeScoreStore = (levelManager) => {
     ];
   };
 
+  const levelScoreNumber = (passedLevel) => {
+    // Fetching ball count via level number doens't work for preview. Need to figure
+    // out a way to read level data directly
+    const levelData = levels[passedLevel - 1];
+    const numBubbles = countLevelBalls(levelData);
+    const numMoves =
+      store.get("taps").filter((s) => s.level === passedLevel).length +
+      store.get("slingshots").filter((s) => s.level === passedLevel).length +
+      store.get("blasts").filter((s) => s.level === passedLevel).length;
+
+    // deduct for balls missed
+    // deduct more for missed taps/slingshots/blasts
+
+    return numBubbles / numMoves;
+  };
+
+  const getTaps = (passedLevel = null) => [
+    ...store
+      .get("taps")
+      .filter((s) => (passedLevel ? s.level === passedLevel : true)),
+  ];
+
+  const getSlingshots = (passedLevel = null) => [
+    ...store
+      .get("slingshots")
+      .filter((s) => (passedLevel ? s.level === passedLevel : true)),
+  ];
+
+  const getBlasts = (passedLevel = null) => [
+    ...store
+      .get("blasts")
+      .filter((b) => (passedLevel ? b.level === passedLevel : true)),
+  ];
+
   return {
     recordTap,
     recordSlingshot,
@@ -214,10 +232,11 @@ export const makeScoreStore = (levelManager) => {
     recordMiss,
     sumCategoryLevelEvents,
     sumPopped,
+    recentCombos,
+    levelScoreNumber,
     getTaps,
     getSlingshots,
     getBlasts,
-    recentCombos,
     reset,
   };
 };
