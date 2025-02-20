@@ -29,7 +29,7 @@ export const makeGrid = (
         itemHeight * rowIndex + spaceBetweenV * rowIndex
       );
 
-      drawFunc(item);
+      drawFunc(item, index);
 
       CTX.restore();
     });

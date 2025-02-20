@@ -6,14 +6,20 @@ import {
 } from "./constants.js";
 import { getGradientBitmap, red } from "./colors.js";
 import { clampedProgress, transition, randomBetween } from "./helpers.js";
-import { easeOutCirc, easeInOutSine, easeOutQuad } from "./easings.js";
+import {
+  easeOutCirc,
+  easeInOutSine,
+  easeOutQuad,
+  easeOutCubic,
+  easeOutBack,
+} from "./easings.js";
 import { makeGrid } from "./grid.js";
 
 const edgeMargin = 32;
 const verticalMargin = 32;
 const verticalMarginBetweenSections = 56;
 const iconSize = 24;
-const iconsRadius = iconSize / 2;
+const iconRadius = iconSize / 2;
 const numPoppedTextWidth = 40;
 
 export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
@@ -77,57 +83,64 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     );
   };
 
-  const drawTapItem = ({ popped, fill }) => {
+  const drawTapItem = ({ popped, fill }, index) => {
+    const animationDelay = index * 88;
+
     if (popped) {
+      const fallProgress = clampedProgress(
+        animationDelay,
+        300 + animationDelay,
+        Date.now() - scoreDisplayStart
+      );
+      const scaleIn = transition(0, 1, fallProgress, easeOutBack);
+      const slideDown = transition(-120, 0, fallProgress, easeOutCubic);
+
       const preRenderImage = getGradientBitmap(fill);
+      CTX.translate(iconRadius, slideDown);
+      CTX.scale(scaleIn, scaleIn);
       CTX.drawImage(
         preRenderImage,
-        0,
+        -iconRadius,
         0,
         iconSize * canvasManager.getScaleFactor(),
         iconSize * canvasManager.getScaleFactor()
       );
     } else {
-      const animationProgress = clampedProgress(
-        0,
-        2000,
+      const rippleProgress = clampedProgress(
+        animationDelay,
+        2000 + animationDelay,
         Date.now() - scoreDisplayStart
       );
       const outerCircleRadius = transition(
-        iconsRadius,
-        iconsRadius * 1.4,
-        animationProgress,
+        iconRadius,
+        iconRadius * 1.4,
+        rippleProgress,
         easeOutQuad
       );
-      const outerCircleFade = transition(1, 0, animationProgress, easeOutQuad);
+      const outerCircleFade = transition(1, 0, rippleProgress, easeOutQuad);
       const outerCircleLineWidth = transition(
         2,
         3,
-        animationProgress,
+        rippleProgress,
         easeOutQuad
       );
       const innerCircleRadius = transition(
-        iconsRadius / 2,
-        iconsRadius,
-        animationProgress,
+        iconRadius / 2,
+        iconRadius,
+        rippleProgress,
         easeOutQuad
       );
-      const innerCircleFade = transition(
-        0.6,
-        1,
-        animationProgress,
-        easeOutQuad
-      );
+      const innerCircleFade = transition(0.6, 1, rippleProgress, easeOutQuad);
       const innerCircleLineWidth = transition(
         1,
         2,
-        animationProgress,
+        rippleProgress,
         easeOutQuad
       );
       const hiddenCircleRadius = transition(
         0,
-        iconsRadius / 2,
-        animationProgress,
+        iconRadius / 2,
+        rippleProgress,
         easeOutQuad
       );
 
@@ -135,21 +148,21 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.lineWidth = outerCircleLineWidth;
       CTX.globalAlpha = outerCircleFade;
       CTX.beginPath();
-      CTX.arc(iconsRadius, iconsRadius, outerCircleRadius, 0, 2 * Math.PI);
+      CTX.arc(iconRadius, iconRadius, outerCircleRadius, 0, 2 * Math.PI);
       CTX.closePath();
       CTX.stroke();
 
       CTX.lineWidth = innerCircleLineWidth;
       CTX.globalAlpha = innerCircleFade;
       CTX.beginPath();
-      CTX.arc(iconsRadius, iconsRadius, innerCircleRadius, 0, 2 * Math.PI);
+      CTX.arc(iconRadius, iconRadius, innerCircleRadius, 0, 2 * Math.PI);
       CTX.closePath();
       CTX.stroke();
 
       CTX.lineWidth = 1;
       CTX.globalAlpha = 0.6;
       CTX.beginPath();
-      CTX.arc(iconsRadius, iconsRadius, hiddenCircleRadius, 0, 2 * Math.PI);
+      CTX.arc(iconRadius, iconRadius, hiddenCircleRadius, 0, 2 * Math.PI);
       CTX.closePath();
       CTX.stroke();
     }
@@ -172,7 +185,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
     // Draw line
     CTX.lineWidth = 4;
-    CTX.translate(iconsRadius, iconSize);
+    CTX.translate(iconRadius, iconSize);
     CTX.rotate(angleInRads);
     CTX.beginPath();
     CTX.moveTo(0, 0);
@@ -191,22 +204,34 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     CTX.restore();
 
     applyTextStyle3(CTX);
-    CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
+    CTX.fillText(`x${popped}`, 30, iconRadius + textHeight / 2);
   };
 
-  const drawBlastItem = ({ popped, power }) => {
+  const drawBlastItem = ({ popped, power }, index) => {
+    const animationDelay = index * 88;
     const textHeight = 17.2;
     const blastIconNumVertices = 12;
     const blastIconRadius = transition(
-      iconsRadius / 3,
-      iconsRadius * 1.2,
+      iconRadius / 3,
+      iconRadius * 1.2,
       clampedProgress(0, BLAST_MAX_SIZE, power)
     );
     const blastIconJitter = transition(
       1,
-      3,
+      2.25,
       clampedProgress(0, BLAST_MAX_SIZE, power)
     );
+    const scaleIn = transition(
+      0,
+      1,
+      clampedProgress(
+        animationDelay,
+        300 + animationDelay,
+        Date.now() - scoreDisplayStart
+      ),
+      easeOutQuad
+    );
+
     const blastIconVertices = new Array(blastIconNumVertices)
       .fill()
       .map((_, index) => {
@@ -216,11 +241,12 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
           blastIconRadius + blastIconJitter
         );
         return {
-          x: iconsRadius + Math.cos(angle) * distance,
-          y: iconsRadius + Math.sin(angle) * distance,
+          x: Math.cos(angle) * distance,
+          y: Math.sin(angle) * distance,
         };
       });
 
+    CTX.save();
     if (popped > 0) {
       CTX.fillStyle = red;
       CTX.strokeStyle = red;
@@ -229,6 +255,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.strokeStyle = `rgba(255, 255, 255, .5)`;
     }
     CTX.globalAlpha = 0.2;
+    CTX.translate(iconRadius, iconRadius);
+    CTX.scale(scaleIn, scaleIn);
     CTX.beginPath();
     blastIconVertices.forEach(({ x, y }, index) => {
       index === 0 ? CTX.moveTo(x, y) : CTX.lineTo(x, y);
@@ -237,9 +265,10 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     CTX.fill();
     CTX.globalAlpha = 1;
     CTX.stroke();
+    CTX.restore();
 
     applyTextStyle3(CTX);
-    CTX.fillText(`x${popped}`, 32, iconsRadius + textHeight / 2);
+    CTX.fillText(`x${popped}`, 32, iconRadius + textHeight / 2);
   };
 
   const draw = (specialState = false) => {
