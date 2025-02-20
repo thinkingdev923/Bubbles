@@ -204,16 +204,6 @@ export const makeScoreStore = (levelManager) => {
       store.get("missedBubbles").filter((m) => m.level === passedLevel).length +
       1;
 
-    // console log each var with labels
-    console.log(
-      "numBubbles",
-      numBubbles,
-      "numMoves",
-      numMoves,
-      "numMissed",
-      numMissed
-    );
-
     const score = progress(0, 6, numBubbles / numMoves / numMissed);
 
     return Math.round(score * 100);

@@ -88,17 +88,30 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     const animationDelay = Math.min(index * 68, 816);
 
     if (popped) {
-      const fallProgress = clampedProgress(
-        animationDelay,
-        300 + animationDelay,
-        Date.now() - scoreDisplayStart
+      const slideUp = transition(
+        2,
+        0,
+        clampedProgress(
+          animationDelay,
+          200 + animationDelay,
+          Date.now() - scoreDisplayStart
+        ),
+        easeOutCubic
       );
-      const scaleIn = transition(0, 1, fallProgress, easeOutBack);
-      const slideDown = transition(-120, 0, fallProgress, easeOutCubic);
+      const scaleUp = transition(
+        0.98,
+        1,
+        clampedProgress(
+          animationDelay,
+          180 + animationDelay,
+          Date.now() - scoreDisplayStart
+        ),
+        easeOutCubic
+      );
 
       const preRenderImage = getGradientBitmap(fill);
-      CTX.translate(iconRadius, slideDown);
-      CTX.scale(scaleIn, scaleIn);
+      CTX.translate(iconRadius, slideUp);
+      CTX.scale(scaleUp, scaleUp);
       CTX.drawImage(
         preRenderImage,
         -iconRadius,
