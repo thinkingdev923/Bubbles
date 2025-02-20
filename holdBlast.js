@@ -7,7 +7,11 @@ import {
 } from "./helpers.js";
 import { easeOutCubic, easeOutSine } from "./easings.js";
 import { red } from "./colors.js";
-import { BLAST_HOLD_THRESHOLD, BLAST_MAX_DURATION } from "./constants.js";
+import {
+  BLAST_HOLD_THRESHOLD,
+  BLAST_MAX_DURATION,
+  BLAST_MAX_SIZE,
+} from "./constants.js";
 
 export const drawHoldBlastPreview = (
   canvasManager,
@@ -61,7 +65,7 @@ export const makeHoldBlast = (
   const blastDuration = 400;
   const startSize = transition(
     0,
-    140,
+    BLAST_MAX_SIZE,
     clampedProgress(BLAST_HOLD_THRESHOLD, BLAST_MAX_DURATION, holdDuration),
     easeOutSine
   );

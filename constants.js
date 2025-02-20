@@ -5,6 +5,7 @@ export const FONT_WEIGHT_NORMAL = "400";
 export const FONT_WEIGHT_BOLD = "600";
 export const BLAST_HOLD_THRESHOLD = 212;
 export const BLAST_MAX_DURATION = 2000;
+export const BLAST_MAX_SIZE = 140;
 export const SLINGSHOT_MOVE_THRESHOLD = 36;
 export const LIVES = 5;
 export const BUBBLE_RADIUS = 44;

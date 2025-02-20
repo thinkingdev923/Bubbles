@@ -1,4 +1,9 @@
-import { FONT, FONT_WEIGHT_NORMAL, FONT_WEIGHT_BOLD } from "./constants.js";
+import {
+  FONT,
+  FONT_WEIGHT_NORMAL,
+  FONT_WEIGHT_BOLD,
+  BLAST_MAX_SIZE,
+} from "./constants.js";
 import { getGradientBitmap, red } from "./colors.js";
 import { clampedProgress, transition, randomBetween } from "./helpers.js";
 import { easeOutCirc, easeInOutSine } from "./easings.js";
@@ -115,14 +120,22 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     CTX.fillText(`x${popped}`, 30, iconsRadius + textHeight / 2);
   };
 
-  const drawBlastItem = ({ popped }) => {
+  const drawBlastItem = ({ popped, power }) => {
     const textHeight = 17.2;
     const blastIconNumVertices = 12;
+    const blastIconRadius = transition(
+      iconsRadius / 3,
+      iconsRadius * 1.2,
+      clampedProgress(0, BLAST_MAX_SIZE, power)
+    );
     const blastIconVertices = new Array(blastIconNumVertices)
       .fill()
       .map((_, index) => {
         const angle = (index / blastIconNumVertices) * Math.PI * 2;
-        const distance = randomBetween(iconsRadius - 2, iconsRadius + 2);
+        const distance = randomBetween(
+          blastIconRadius - 2,
+          blastIconRadius + 2
+        );
         return {
           x: iconsRadius + Math.cos(angle) * distance,
           y: iconsRadius + Math.sin(angle) * distance,
