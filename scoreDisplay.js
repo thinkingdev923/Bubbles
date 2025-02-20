@@ -12,6 +12,7 @@ import {
   easeOutQuad,
   easeOutCubic,
   easeOutBack,
+  easeOutQuart,
 } from "./easings.js";
 import { makeGrid } from "./grid.js";
 
@@ -84,7 +85,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   };
 
   const drawTapItem = ({ popped, fill }, index) => {
-    const animationDelay = index * 88;
+    const animationDelay = Math.min(index * 68, 816);
 
     if (popped) {
       const fallProgress = clampedProgress(
@@ -169,9 +170,19 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   };
 
   const drawSlingshotItem = ({ popped, velocity }, index) => {
-    const animationDelay = index * 88;
+    const animationDelay = Math.min(index * 64, 768);
     const textHeight = 17.2;
     const angleInRads = Math.atan2(velocity.y, velocity.x);
+    const scaleIn = transition(
+      0,
+      1,
+      clampedProgress(
+        animationDelay,
+        600 + animationDelay,
+        Date.now() - scoreDisplayStart
+      ),
+      easeOutQuart
+    );
     const rotateIn = transition(
       0,
       angleInRads,
@@ -197,6 +208,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     const lineWidth = 5;
 
     CTX.translate(iconRadius, iconRadius);
+    CTX.scale(scaleIn, scaleIn);
     CTX.rotate(rotateIn);
     CTX.beginPath();
     CTX.moveTo(-iconRadius, -lineWidth / 2);
