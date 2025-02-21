@@ -194,7 +194,7 @@ export const makeScoreStore = (levelManager) => {
     // Fetching ball count via level number doens't work for preview. Need to figure
     // out a way to read level data directly
     const levelData = levels[passedLevel - 1];
-    const numBubbles = countLevelBalls(levelData);
+    const par = levelData.par;
     const numMoves =
       store.get("taps").filter((t) => t.level === passedLevel).length +
       store.get("slingshots").filter((s) => s.level === passedLevel).length +
@@ -204,17 +204,7 @@ export const makeScoreStore = (levelManager) => {
       .get("missedBubbles")
       .filter((m) => m.level === passedLevel).length;
 
-    const maxPossiblePoppedPerMove = 15;
-    const mostEfficientNumMoves = Math.min(
-      numBubbles,
-      maxPossiblePoppedPerMove
-    );
-    const score = Math.round(
-      progress(0, mostEfficientNumMoves, numBubbles / numMoves - numMissed) *
-        100
-    );
-
-    return score;
+    return numMoves - par + numMissed;
   };
 
   const getTaps = (passedLevel = null) => [

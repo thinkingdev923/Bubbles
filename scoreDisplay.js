@@ -307,11 +307,14 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     updateStats();
 
     CTX.save();
+    const score = scoreStore.levelScoreNumber(levelManager.getLevel());
     CTX.fillStyle = "white";
     CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
     CTX.textAlign = "center";
     CTX.fillText(
-      `SCORE: ${scoreStore.levelScoreNumber(levelManager.getLevel())}`,
+      `${score > 0 || score < 0 ? score : ""} ${
+        score > 0 ? "OVER" : score < 0 ? "UNDER" : "AT"
+      } PAR`,
       canvasManager.getWidth() / 2,
       44
     );
