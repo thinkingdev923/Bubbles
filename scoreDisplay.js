@@ -4,7 +4,7 @@ import {
   FONT_WEIGHT_BOLD,
   BLAST_MAX_SIZE,
 } from "./constants.js";
-import { getGradientBitmap, red } from "./colors.js";
+import { getGradientBitmap, red, white } from "./colors.js";
 import { clampedProgress, transition, randomBetween } from "./helpers.js";
 import {
   easeOutCirc,
@@ -51,7 +51,122 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
   };
 
-  const drawTitleLine = (leftText, rightText) => {
+  const draw = (specialState = false) => {
+    updateStats();
+
+    // Draw top text section
+
+    CTX.save();
+
+    // Darken screen so it looks different from normal interstitial
+    if (specialState) {
+      CTX.fillStyle = `rgba(0, 0, 0, 0.4)`;
+      CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
+    }
+
+    // TODO calc text height based on these two conditional lines (specialState and totalMissed)
+    // Then use that to update translation of stats sections
+    CTX.translate(edgeMargin, 56);
+    CTX.fillStyle = white;
+    CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
+    if (specialState === "gameWon") {
+      CTX.fillText("You won!", 0, 0);
+    } else if (specialState === "gameLost") {
+      CTX.fillText("You lost!", 0, 0);
+    } else if (specialState === "firstMiss") {
+      CTX.fillText("Miss a bubble, lose a life", 0, 0);
+    }
+
+    const score = scoreStore.levelScoreNumber(levelManager.getLevel());
+    CTX.fillText(
+      `${score > 0 || score < 0 ? score : ""} ${
+        score > 0 ? "over" : score < 0 ? "under" : "At"
+      } par`,
+      0,
+      32
+    );
+
+    if (stats.totalMissed) {
+      CTX.fillText(`Lost ${stats.totalMissed} lives`, 0, 64);
+    }
+
+    CTX.restore();
+
+    // Draw stats sections
+
+    CTX.save();
+
+    const opacityTransition = transition(
+      0,
+      1,
+      clampedProgress(0, 120, Date.now() - scoreDisplayStart),
+      easeInOutSine
+    );
+    const slideUpTransition = transition(
+      144,
+      112,
+      clampedProgress(0, 240, Date.now() - scoreDisplayStart),
+      easeOutCirc
+    );
+
+    CTX.globalAlpha = opacityTransition;
+    CTX.translate(0, slideUpTransition);
+
+    if (stats.taps.length) {
+      drawTitleLine(
+        "TAPS",
+        `${stats.tapsPopped} ${stats.tapsPopped === 1 ? "Hit" : "Hits"}, ${
+          stats.taps.length - stats.tapsPopped
+        } ${stats.taps.length - stats.tapsPopped === 1 ? "Miss" : "Misses"}`
+      );
+
+      CTX.translate(0, verticalMargin);
+
+      const tapsGrid = makeGrid(canvasManager, stats.taps, {
+        itemWidth: iconSize,
+        itemHeight: iconSize,
+      });
+
+      tapsGrid.drawItems(drawTapItem);
+
+      CTX.translate(0, tapsGrid.getHeight() + verticalMarginBetweenSections);
+    }
+
+    if (stats.slingshots.length) {
+      drawTitleLine("SLINGSHOTS", `${stats.slingshots.length} Launched`);
+
+      CTX.translate(0, verticalMargin);
+
+      const slingshotsGrid = makeGrid(canvasManager, stats.slingshots, {
+        itemWidth: iconSize + 8 + numPoppedTextWidth,
+        itemHeight: iconSize,
+      });
+
+      slingshotsGrid.drawItems(drawSlingshotItem);
+
+      CTX.translate(
+        0,
+        slingshotsGrid.getHeight() + verticalMarginBetweenSections
+      );
+    }
+
+    if (stats.blasts.length) {
+      drawTitleLine("BLASTS", `${stats.blasts.length} Detonated`);
+
+      CTX.translate(0, edgeMargin);
+
+      const blastsGrid = makeGrid(canvasManager, stats.blasts, {
+        itemWidth: iconSize + 8 + numPoppedTextWidth,
+        itemHeight: iconSize,
+      });
+
+      blastsGrid.drawItems(drawBlastItem);
+    }
+
+    CTX.restore();
+  };
+
+  function drawTitleLine(leftText, rightText) {
     CTX.save();
     applyTextStyle1(CTX);
     const leftTextWidth = CTX.measureText(leftText).width;
@@ -82,9 +197,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         lineMargin * 2,
       1
     );
-  };
+  }
 
-  const drawTapItem = ({ popped, fill }, index) => {
+  function drawTapItem({ popped, fill }, index) {
     const animationDelay = Math.min(index * 68, 816);
 
     if (popped) {
@@ -180,9 +295,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.closePath();
       CTX.stroke();
     }
-  };
+  }
 
-  const drawSlingshotItem = ({ popped, velocity }, index) => {
+  function drawSlingshotItem({ popped, velocity }, index) {
     const animationDelay = Math.min(index * 64, 768);
     const textHeight = 17.2;
     const angleInRads = Math.atan2(velocity.y, velocity.x);
@@ -237,9 +352,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
     applyTextStyle3(CTX);
     CTX.fillText(`x${popped}`, 30, iconRadius + textHeight / 2);
-  };
+  }
 
-  const drawBlastItem = ({ popped, power }, index) => {
+  function drawBlastItem({ popped, power }, index) {
     const animationDelay = index * 88;
     const textHeight = 17.2;
     const blastIconNumVertices = 12;
@@ -301,136 +416,27 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
     applyTextStyle3(CTX);
     CTX.fillText(`x${popped}`, 32, iconRadius + textHeight / 2);
-  };
-
-  const draw = (specialState = false) => {
-    updateStats();
-
-    CTX.save();
-    const score = scoreStore.levelScoreNumber(levelManager.getLevel());
-    CTX.fillStyle = "white";
-    CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
-    CTX.textAlign = "center";
-    CTX.fillText(
-      `${score > 0 || score < 0 ? score : ""} ${
-        score > 0 ? "OVER" : score < 0 ? "UNDER" : "AT"
-      } PAR`,
-      canvasManager.getWidth() / 2,
-      44
-    );
-    CTX.restore();
-
-    if (specialState) {
-      CTX.save();
-
-      // Darken screen so it looks different from normal interstitial
-      CTX.fillStyle = `rgba(0, 0, 0, 0.4)`;
-      CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
-
-      // Display special message
-      CTX.translate(canvasManager.getWidth() / 2, 56);
-      CTX.fillStyle = `rgba(255, 255, 255, 1)`;
-      CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
-      CTX.textAlign = "center";
-      if (specialState === "gameWon") CTX.fillText("You won!", 0, 0);
-      if (specialState === "gameLost") CTX.fillText("You lost!", 0, 0);
-      if (specialState === "firstMiss")
-        CTX.fillText("Miss a bubble, lose a life", 0, 0);
-
-      CTX.restore();
-    }
-
-    CTX.save();
-
-    const opacityTransition = transition(
-      0,
-      1,
-      clampedProgress(0, 120, Date.now() - scoreDisplayStart),
-      easeInOutSine
-    );
-    const slideUpTransition = transition(
-      144,
-      112,
-      clampedProgress(0, 240, Date.now() - scoreDisplayStart),
-      easeOutCirc
-    );
-
-    CTX.globalAlpha = opacityTransition;
-    CTX.translate(0, slideUpTransition);
-
-    if (stats.taps.length) {
-      drawTitleLine(
-        "TAPS",
-        `${stats.tapsPopped} ${stats.tapsPopped === 1 ? "Hit" : "Hits"}, ${
-          stats.taps.length - stats.tapsPopped
-        } ${stats.taps.length - stats.tapsPopped === 1 ? "Miss" : "Misses"}`
-      );
-
-      CTX.translate(0, verticalMargin);
-
-      const tapsGrid = makeGrid(canvasManager, stats.taps, {
-        itemWidth: iconSize,
-        itemHeight: iconSize,
-      });
-
-      tapsGrid.drawItems(drawTapItem);
-
-      CTX.translate(0, tapsGrid.getHeight() + verticalMarginBetweenSections);
-    }
-
-    if (stats.slingshots.length) {
-      drawTitleLine("SLINGSHOTS", `${stats.slingshots.length} Launched`);
-
-      CTX.translate(0, verticalMargin);
-
-      const slingshotsGrid = makeGrid(canvasManager, stats.slingshots, {
-        itemWidth: iconSize + 8 + numPoppedTextWidth,
-        itemHeight: iconSize,
-      });
-
-      slingshotsGrid.drawItems(drawSlingshotItem);
-
-      CTX.translate(
-        0,
-        slingshotsGrid.getHeight() + verticalMarginBetweenSections
-      );
-    }
-
-    if (stats.blasts.length) {
-      drawTitleLine("BLASTS", `${stats.blasts.length} Detonated`);
-
-      CTX.translate(0, edgeMargin);
-
-      const blastsGrid = makeGrid(canvasManager, stats.blasts, {
-        itemWidth: iconSize + 8 + numPoppedTextWidth,
-        itemHeight: iconSize,
-      });
-
-      blastsGrid.drawItems(drawBlastItem);
-    }
-
-    CTX.restore();
-  };
+  }
 
   return { draw };
 };
 
 function applyTextStyle1(CTX) {
-  CTX.fillStyle = "white";
+  CTX.fillStyle = white;
   CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
   CTX.textAlign = "left";
   CTX.letterSpacing = "1px";
 }
 
 function applyTextStyle2(CTX) {
-  CTX.fillStyle = "white";
+  CTX.fillStyle = white;
   CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
   CTX.textAlign = "right";
   CTX.letterSpacing = "0px";
 }
 
 function applyTextStyle3(CTX) {
-  CTX.fillStyle = "white";
+  CTX.fillStyle = white;
   CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
   CTX.textAlign = "left";
   CTX.letterSpacing = "0px";
