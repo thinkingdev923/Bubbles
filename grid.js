@@ -1,3 +1,6 @@
+import { white } from "./colors.js";
+import { FONT_WEIGHT_BOLD, FONT } from "./constants.js";
+
 export const makeGrid = (
   canvasManager,
   items,
@@ -7,6 +10,7 @@ export const makeGrid = (
     edgeMargin = 32,
     spaceBetweenH = 8,
     spaceBetweenV = 12,
+    maxRows = 3,
   }
 ) => {
   const CTX = canvasManager.getContext();
@@ -15,24 +19,51 @@ export const makeGrid = (
     (gridWidth + spaceBetweenH) / (itemWidth + spaceBetweenH)
   );
   const totalRows = Math.ceil(items.length / itemsPerRow);
-  const gridHeight = (itemHeight + spaceBetweenV) * totalRows - spaceBetweenV;
+  const gridHeight =
+    (itemHeight + spaceBetweenV) * Math.min(totalRows, maxRows) - spaceBetweenV;
 
   const drawItems = (drawFunc) => {
-    items.forEach((item, index) => {
-      CTX.save();
+    let truncatedIndex = false;
 
+    items.forEach((item, index) => {
       const colIndex = index % itemsPerRow;
       const rowIndex = Math.floor(index / itemsPerRow);
+      const lastRowItem =
+        rowIndex + 1 === maxRows && colIndex + 1 === itemsPerRow;
 
-      CTX.translate(
-        edgeMargin + itemWidth * colIndex + spaceBetweenH * colIndex,
-        itemHeight * rowIndex + spaceBetweenV * rowIndex
-      );
+      if (rowIndex < maxRows && !lastRowItem) {
+        CTX.save();
 
-      drawFunc(item, index);
+        CTX.translate(
+          edgeMargin + itemWidth * colIndex + spaceBetweenH * colIndex,
+          itemHeight * rowIndex + spaceBetweenV * rowIndex
+        );
 
-      CTX.restore();
+        drawFunc(item, index);
+        CTX.restore();
+      } else if (!truncatedIndex) {
+        truncatedIndex = index;
+      }
     });
+
+    if (truncatedIndex) {
+      CTX.save();
+      CTX.translate(
+        edgeMargin +
+          itemWidth * (itemsPerRow - 1) +
+          spaceBetweenH * (itemsPerRow - 1),
+        itemHeight * (maxRows - 1) + spaceBetweenV * (maxRows - 1)
+      );
+      CTX.fillStyle = white;
+      CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
+      CTX.textAlign = "center";
+      CTX.fillText(
+        `+${items.length - truncatedIndex}`,
+        itemWidth / 2,
+        itemHeight / 2 + 4.5
+      );
+      CTX.restore();
+    }
   };
 
   return {
