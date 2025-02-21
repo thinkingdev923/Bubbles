@@ -4,11 +4,13 @@ import { BUBBLE_RADIUS } from "./constants.js";
 export const levels = [
   {
     name: "LEVEL 1",
+    par: 1,
     gravity: 0.05,
     balls: [[0, 0, { v: { x: 2, y: 1 }, c: "#FCF6E8" }, 0, 0, 0]],
   },
   {
     name: "LEVEL 2",
+    par: 1,
     gravity: 0.05,
     balls: [
       [0, 0, 0, 0, { v: { x: -2, y: 2 }, c: "#DF432A" }, 0],
@@ -18,6 +20,7 @@ export const levels = [
   },
   {
     name: "LEVEL 3",
+    par: 2,
     gravity: 0.05,
     balls: [
       [
@@ -43,6 +46,7 @@ export const levels = [
   },
   {
     name: "LEVEL 4",
+    par: 1,
     gravity: 0.06,
     balls: [
       [0, 0, 0, 0, 0, { v: { x: 0, y: 0 }, c: "#EA98AA" }],
@@ -55,6 +59,7 @@ export const levels = [
   },
   {
     name: "LEVEL 5",
+    par: 2,
     gravity: 0.06,
     balls: [
       [{ v: { x: 0, y: 0 }, c: "#EA98AA" }, 0, 0, 0, 0, 0],
@@ -69,6 +74,7 @@ export const levels = [
   },
   {
     name: "LEVEL 6",
+    par: 2,
     gravity: 0.06,
     balls: [
       [{ v: { x: 0, y: 0 }, c: "#EA98AA" }, 0, 0, 0, 0, 0],
@@ -94,6 +100,7 @@ export const levels = [
   },
   {
     name: "LEVEL 7",
+    par: 1,
     gravity: "0.06",
     balls: [
       [
@@ -113,6 +120,7 @@ export const levels = [
   },
   {
     name: "LEVEL 8",
+    par: 3,
     gravity: 0.06,
     balls: [
       [
@@ -169,6 +177,7 @@ export const levels = [
   },
   {
     name: "LEVEL 9",
+    par: 4,
     gravity: "0.06",
     balls: [
       [
@@ -247,6 +256,7 @@ export const levels = [
   },
   {
     name: "LEVEL 10",
+    par: 12,
     gravity: "0.06",
     balls: [
       [
@@ -372,6 +382,7 @@ export const levels = [
   },
   {
     name: "LEVEL 11",
+    par: 9,
     gravity: 0.07,
     balls: [
       [

@@ -16,6 +16,7 @@ let currentlyDisplayedData = {
 
 const levelDataEl = document.querySelector("#levelData");
 const layoutNameEl = document.querySelector("#layout-name");
+const layoutParEl = document.querySelector("#layout-par");
 const layoutGravityEl = document.querySelector("#layout-gravity");
 const layoutPreviewEl = document.querySelector("#layout-preview");
 const addRowEl = document.querySelector("#addRow");
@@ -38,6 +39,8 @@ const populateListOfLevels = () => {
 
 const updateName = (newName) => (currentlyDisplayedData.name = newName);
 
+const updatePar = (newPar) => (currentlyDisplayedData.par = newPar);
+
 const updateGravity = (newGrav) => (currentlyDisplayedData.gravity = newGrav);
 
 const updateLevelHref = () => {
@@ -52,6 +55,7 @@ const updateLevelHref = () => {
 
 const drawLevel = () => {
   layoutNameEl.value = currentlyDisplayedData.name;
+  layoutParEl.value = currentlyDisplayedData.par;
   layoutGravityEl.value = currentlyDisplayedData.gravity;
 
   const newNodes = document.createDocumentFragment();
@@ -101,6 +105,11 @@ const copyJSON = () =>
 
 layoutNameEl.addEventListener("change", (e) => {
   updateName(e.target.value);
+  e.preventDefault();
+});
+
+layoutParEl.addEventListener("change", (e) => {
+  updatePar(e.target.value);
   e.preventDefault();
 });
 
