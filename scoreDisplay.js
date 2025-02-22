@@ -78,8 +78,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     }
 
     const score = scoreStore.levelScoreNumber(levelManager.getLevel());
+    const displayScore = Math.abs(score);
     CTX.fillText(
-      `${score > 0 || score < 0 ? score : ""} ${
+      `${score > 0 || score < 0 ? `${displayScore} ` : ""}${
         score > 0 ? "over" : score < 0 ? "under" : "At"
       } par`,
       0,
@@ -87,7 +88,13 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     );
 
     if (stats.totalMissed) {
-      CTX.fillText(`Lost ${stats.totalMissed} lives`, 0, 64);
+      CTX.fillText(
+        `Lost ${stats.totalMissed} ${
+          stats.totalMissed === 1 ? "life" : "lives"
+        }`,
+        0,
+        64
+      );
     }
 
     CTX.restore();
