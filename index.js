@@ -66,7 +66,6 @@ const CTX = canvasManager.getContext();
 // These are all reset on game restart
 let activePointers;
 let pointerTriggerOutput;
-let pointerPosition;
 let levelStarted;
 let par;
 let previousLevelBalls;
@@ -76,7 +75,6 @@ let ripples;
 function resetGame() {
   activePointers = [];
   pointerTriggerOutput = [];
-  pointerPosition = null;
   levelStarted = null;
   par = null;
   previousLevelBalls = [];
@@ -143,8 +141,6 @@ canvasManager.getElement().addEventListener("pointerup", (e) => {
 
 canvasManager.getElement().addEventListener("pointermove", (e) => {
   const { pointerId, offsetX: x, offsetY: y } = e;
-
-  pointerPosition = { x, y };
 
   activePointers.forEach((pointer) => {
     if (pointerId === pointer.getId()) pointer.setPosition({ x, y });
