@@ -67,6 +67,9 @@ const CTX = canvasManager.getContext();
 let activePointers;
 let pointerTriggerOutput;
 let pointerPosition;
+let levelStarted;
+let par;
+let previousLevelBalls;
 let balls;
 let ripples;
 
@@ -74,6 +77,9 @@ function resetGame() {
   activePointers = [];
   pointerTriggerOutput = [];
   pointerPosition = null;
+  levelStarted = null;
+  par = null;
+  previousLevelBalls = [];
   balls = [];
   ripples = [];
   lifeManager.reset();
@@ -275,8 +281,20 @@ animate((deltaTime) => {
 
     // Draw main game elements
     ripples.forEach((r) => r.draw());
+    previousLevelBalls.forEach((b) => b.draw(deltaTime));
+
+    if (Date.now() - levelStarted < 3000) {
+      const timeElapsed = Date.now() - levelStarted;
+      centerTextBlock(canvasManager, [
+        `Par of ${par}`,
+        "",
+        `${Math.ceil(3 - timeElapsed / 1000)}`,
+      ]);
+    } else {
+      balls.forEach((b) => b.draw(deltaTime));
+    }
+
     pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
-    balls.forEach((b) => b.draw(deltaTime));
     activePointers.forEach((p) => p.draw());
 
     // Draw combo messages over everything
@@ -383,10 +401,12 @@ function onLevelAdvance() {
   resetLevelData();
 
   const levelData = levels[levelManager.getLevel() - 1];
+  levelStarted = Date.now();
+  par = levelData.par;
+
   // Allow popping animation to finish playing for previous level bubbles
-  balls = balls
-    .filter((b) => b.isPopping())
-    .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
+  previousLevelBalls = balls.filter((b) => b.isPopping());
+  balls = makeLevelBalls(canvasManager, levelData, onPop, onMiss);
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
