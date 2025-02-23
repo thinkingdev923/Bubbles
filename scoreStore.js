@@ -200,11 +200,7 @@ export const makeScoreStore = (levelManager) => {
       store.get("slingshots").filter((s) => s.level === passedLevel).length +
       store.get("blasts").filter((b) => b.level === passedLevel).length;
 
-    const numMissed = store
-      .get("missedBubbles")
-      .filter((m) => m.level === passedLevel).length;
-
-    return numMoves - par + numMissed;
+    return numMoves - par;
   };
 
   const getTaps = (passedLevel = null) => [
