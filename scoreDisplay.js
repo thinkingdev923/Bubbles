@@ -15,6 +15,7 @@ import {
   easeOutQuart,
 } from "./easings.js";
 import { makeGrid } from "./grid.js";
+import { makeTextBlock } from "./textBlock.js";
 
 const edgeMargin = 32;
 const verticalMargin = 32;
@@ -64,38 +65,39 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
     }
 
-    // TODO calc text height based on these two conditional lines (specialState and totalMissed)
-    // Then use that to update translation of stats sections
-    CTX.translate(edgeMargin, 56);
-    CTX.fillStyle = white;
-    CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
-    if (specialState === "gameWon") {
-      CTX.fillText("You won!", 0, 0);
-    } else if (specialState === "gameLost") {
-      CTX.fillText("You lost!", 0, 0);
-    } else if (specialState === "firstMiss") {
-      CTX.fillText("Miss a bubble, lose a life", 0, 0);
-    }
+    const textLines = [];
+
+    if (specialState === "gameWon") textLines.push("You won!");
+    if (specialState === "gameLost") textLines.push("You lost!");
 
     const score = scoreStore.levelScoreNumber(levelManager.getLevel());
-    const displayScore = Math.abs(score);
-    CTX.fillText(
-      `${score > 0 || score < 0 ? `${displayScore} ` : ""}${
+    textLines.push(
+      `${score > 0 || score < 0 ? `${Math.abs(score)} ` : ""}${
         score > 0 ? "over" : score < 0 ? "under" : "At"
-      } par`,
-      0,
-      32
+      } par`
     );
 
     if (stats.totalMissed) {
-      CTX.fillText(
+      textLines.push(
         `Lost ${stats.totalMissed} ${
           stats.totalMissed === 1 ? "life" : "lives"
-        }`,
-        0,
-        64
+        }`
       );
     }
+
+    const topText = makeTextBlock(
+      canvasManager,
+      {
+        xPos: edgeMargin,
+        yPos: verticalMarginBetweenSections,
+        fontSize: 24,
+        fontWeight: FONT_WEIGHT_BOLD,
+        lineHeight: 32,
+      },
+      textLines
+    );
+
+    topText.draw();
 
     CTX.restore();
 
@@ -110,8 +112,10 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       easeInOutSine
     );
     const slideUpTransition = transition(
-      144,
-      112,
+      topText.getHeight() +
+        topText.getYPos() +
+        verticalMarginBetweenSections * 2,
+      topText.getHeight() + topText.getYPos() + verticalMarginBetweenSections,
       clampedProgress(0, 240, Date.now() - scoreDisplayStart),
       easeOutCirc
     );

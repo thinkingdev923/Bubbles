@@ -19,7 +19,7 @@ import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
 import { makeContinueButtonManager } from "./continueButton.js";
 import { makeActivePointer } from "./activePointer.js";
-import { centerTextBlock } from "./centerTextBlock.js";
+import { makeTextBlock } from "./textBlock.js";
 import { makeScoreDisplay } from "./scoreDisplay.js";
 import { levels, makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
@@ -245,11 +245,27 @@ animate((deltaTime) => {
     // Draw text elements (level, life, interstitial) underneath bubbles
     levelManager.drawInterstitialMessage({
       previewInitialMessage: (msElapsed) => {
-        centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
+        makeTextBlock(
+          canvasManager,
+          {
+            xPos: canvasManager.getWidth() / 2,
+            yPos: canvasManager.getHeight() / 2,
+            textAlign: "center",
+          },
+          [`Preview of “${previewData.name}”`]
+        ).draw();
         continueButtonManager.draw(msElapsed, 600, "Play Preview");
       },
       initialMessage: (msElapsed) => {
-        centerTextBlock(canvasManager, [`Pop the bubble`]);
+        makeTextBlock(
+          canvasManager,
+          {
+            xPos: canvasManager.getWidth() / 2,
+            yPos: canvasManager.getHeight() / 2,
+            textAlign: "center",
+          },
+          [`Pop the bubble`]
+        ).draw();
         continueButtonManager.draw(msElapsed, 600, "Play");
       },
       firstMissMessage: (msElapsed) => {
@@ -280,12 +296,20 @@ animate((deltaTime) => {
     previousLevelBalls.forEach((b) => b.draw(deltaTime));
 
     if (Date.now() - levelStarted < 3000) {
-      const timeElapsed = Date.now() - levelStarted;
-      centerTextBlock(canvasManager, [
-        `Par of ${par}`,
-        "",
-        `${Math.ceil(3 - timeElapsed / 1000)}`,
-      ]);
+      makeTextBlock(
+        canvasManager,
+        {
+          xPos: canvasManager.getWidth() / 2,
+          yPos: canvasManager.getHeight() / 2,
+          textAlign: "center",
+          fontSize: 32,
+          lineHeight: 48,
+        },
+        [
+          `Par of ${par}`,
+          `${Math.ceil(3 - (Date.now() - levelStarted) / 1000)}`,
+        ]
+      ).draw();
     } else {
       balls.forEach((b) => b.draw(deltaTime));
     }
