@@ -302,6 +302,7 @@ animate((deltaTime) => {
           xPos: canvasManager.getWidth() / 2,
           yPos: canvasManager.getHeight() / 2,
           textAlign: "center",
+          verticalAlign: "center",
           fontSize: 32,
           lineHeight: 48,
         },
