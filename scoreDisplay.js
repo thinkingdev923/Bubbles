@@ -71,10 +71,12 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     if (specialState === "gameLost") textLines.push("You lost!");
 
     const score = scoreStore.levelScoreNumber(levelManager.getLevel());
+
+    // TODO expand this to include "Eagle" and "Albatross" etc.
     textLines.push(
-      `${score > 0 || score < 0 ? `${Math.abs(score)} ` : ""}${
-        score > 0 ? "over" : score < 0 ? "under" : "At"
-      } par`
+      `${score === 1 ? `Bogey: ` : score === -1 ? "Birdie: " : ""}${
+        score > 0 || score < 0 ? `${Math.abs(score)} ` : ""
+      }${score > 0 ? "over" : score < 0 ? "under" : "Even with"} par`
     );
 
     if (stats.totalMissed) {
