@@ -1,5 +1,5 @@
 import { white } from "./colors.js";
-import { FONT_WEIGHT_BOLD, FONT } from "./constants.js";
+import { FONT_WEIGHT_NORMAL, FONT } from "./constants.js";
 
 export const makeGrid = (
   canvasManager,
@@ -54,8 +54,15 @@ export const makeGrid = (
           spaceBetweenH * (itemsPerRow - 1),
         itemHeight * (maxRows - 1) + spaceBetweenV * (maxRows - 1)
       );
+
+      CTX.fillStyle = "rgba(255, 255, 255, .2)";
+      CTX.beginPath();
+      CTX.roundRect(0, 0, itemWidth, itemHeight, 8);
+      CTX.closePath();
+      CTX.fill();
+
       CTX.fillStyle = white;
-      CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
+      CTX.font = `${FONT_WEIGHT_NORMAL} 14px ${FONT}`;
       CTX.textAlign = "center";
       CTX.fillText(
         `+${items.length - truncatedIndex}`,
