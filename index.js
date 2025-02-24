@@ -247,6 +247,7 @@ animate((deltaTime) => {
             xPos: canvasManager.getWidth() / 2,
             yPos: canvasManager.getHeight() / 2,
             textAlign: "center",
+            verticalAlign: "center",
           },
           [`Preview of “${previewData.name}”`]
         ).draw();
@@ -259,6 +260,7 @@ animate((deltaTime) => {
             xPos: canvasManager.getWidth() / 2,
             yPos: canvasManager.getHeight() / 2,
             textAlign: "center",
+            verticalAlign: "center",
           },
           [`Pop the bubble`]
         ).draw();
