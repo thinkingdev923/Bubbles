@@ -527,6 +527,8 @@ export const makeLevelEmptyRow = () => [
 export const countLevelBalls = ({ balls }) =>
   balls.reduce((acc, row) => acc + row.reduce((acc, b) => acc + !!b, 0), 0);
 
+export const getLevelDataByNumber = (level) => levels[level - 1];
+
 export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
   const balls = [];
   level.balls.forEach((row, rowIndex) => {

@@ -1,7 +1,8 @@
 import { yellow } from "./colors.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
-import { levels as levelData } from "./levelData.js";
+import { levels as levelData, getLevelDataByNumber } from "./levelData.js";
 import { drawTextRotate } from "./textRotate.js";
+import { makeTextBlock } from "./textBlock.js";
 
 export const makeLevelManager = (
   canvasManager,
@@ -20,6 +21,7 @@ export const makeLevelManager = (
   let hasShownFirstMissMessage;
   let gameOver;
   let hasShownPreviewInitialMessage;
+  let levelStarted;
 
   const reset = () => {
     level = 1;
@@ -45,7 +47,7 @@ export const makeLevelManager = (
     // On the initial interstitial we want to show the "next" level, aka
     // "Level 1". However on subsequent  interstitials we want to show the
     // completed level aka the previous level, and only transition the level
-    // indicator once the player has advanced by hitting "continue"
+    // indicator once the player has advanced by hitting "Continue"
     if (hasCompletedInitialAdvance) {
       previousLevelValue = level;
       level++;
@@ -64,6 +66,7 @@ export const makeLevelManager = (
 
     interstitialShowing = false;
     interstitialStart = false;
+    levelStarted = Date.now();
     onAdvance();
   };
 
@@ -126,12 +129,35 @@ export const makeLevelManager = (
     CTX.restore();
   };
 
+  const showLevelCountdown = () => Date.now() - levelStarted < 3000;
+
+  const drawLevelCountdown = () => {
+    makeTextBlock(
+      canvasManager,
+      {
+        xPos: canvasManager.getWidth() / 2,
+        yPos: canvasManager.getHeight() / 2,
+        textAlign: "center",
+        verticalAlign: "center",
+        fontSize: 32,
+        lineHeight: 48,
+      },
+      [
+        `Par of ${getLevelDataByNumber(level).par}`,
+        `${Math.ceil(3 - (Date.now() - levelStarted) / 1000)}`,
+      ]
+    ).draw();
+  };
+
   return {
     reset,
     getLevel: () => level,
+    getLevelData: () => getLevelDataByNumber(level),
     drawInterstitialMessage,
     isInterstitialShowing: () => interstitialShowing,
     drawLevelNumber,
+    showLevelCountdown,
+    drawLevelCountdown,
     showLevelInterstitial,
     dismissInterstitialAndAdvanceLevel,
     setFirstMiss,

@@ -21,7 +21,7 @@ import { makeContinueButtonManager } from "./continueButton.js";
 import { makeActivePointer } from "./activePointer.js";
 import { makeTextBlock } from "./textBlock.js";
 import { makeScoreDisplay } from "./scoreDisplay.js";
-import { levels, makeLevelBalls } from "./levelData.js";
+import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
 import { easeOutElastic, easeOutQuint } from "./easings.js";
 
@@ -66,8 +66,6 @@ const CTX = canvasManager.getContext();
 // These are all reset on game restart
 let activePointers;
 let pointerTriggerOutput;
-let levelStarted;
-let par;
 let previousLevelBalls;
 let balls;
 let ripples;
@@ -75,8 +73,6 @@ let ripples;
 function resetGame() {
   activePointers = [];
   pointerTriggerOutput = [];
-  levelStarted = null;
-  par = null;
   previousLevelBalls = [];
   balls = [];
   ripples = [];
@@ -295,22 +291,8 @@ animate((deltaTime) => {
     ripples.forEach((r) => r.draw());
     previousLevelBalls.forEach((b) => b.draw(deltaTime));
 
-    if (Date.now() - levelStarted < 3000) {
-      makeTextBlock(
-        canvasManager,
-        {
-          xPos: canvasManager.getWidth() / 2,
-          yPos: canvasManager.getHeight() / 2,
-          textAlign: "center",
-          verticalAlign: "center",
-          fontSize: 32,
-          lineHeight: 48,
-        },
-        [
-          `Par of ${par}`,
-          `${Math.ceil(3 - (Date.now() - levelStarted) / 1000)}`,
-        ]
-      ).draw();
+    if (levelManager.showLevelCountdown()) {
+      levelManager.drawLevelCountdown();
     } else {
       balls.forEach((b) => b.draw(deltaTime));
     }
@@ -421,13 +403,14 @@ function onInterstitial() {
 function onLevelAdvance() {
   resetLevelData();
 
-  const levelData = levels[levelManager.getLevel() - 1];
-  levelStarted = Date.now();
-  par = levelData.par;
-
   // Allow popping animation to finish playing for previous level bubbles
   previousLevelBalls = balls.filter((b) => b.isPopping());
-  balls = makeLevelBalls(canvasManager, levelData, onPop, onMiss);
+  balls = makeLevelBalls(
+    canvasManager,
+    levelManager.getLevelData(),
+    onPop,
+    onMiss
+  );
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
