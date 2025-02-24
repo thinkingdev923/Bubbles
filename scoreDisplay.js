@@ -61,7 +61,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
     // Darken screen so it looks different from normal interstitial
     if (specialState) {
-      CTX.fillStyle = `rgba(0, 0, 0, 0.4)`;
+      CTX.fillStyle = "rgba(0, 0, 0, 0.4)";
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
     }
 
@@ -340,8 +340,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.strokeStyle = red;
       CTX.fillStyle = red;
     } else {
-      CTX.strokeStyle = `rgba(255, 255, 255, .3)`;
-      CTX.fillStyle = `rgba(255, 255, 255, .3)`;
+      CTX.strokeStyle = "rgba(255, 255, 255, .3)";
+      CTX.fillStyle = "rgba(255, 255, 255, .3)";
     }
 
     const arrowLength = 10;
@@ -411,8 +411,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       CTX.fillStyle = red;
       CTX.strokeStyle = red;
     } else {
-      CTX.fillStyle = `rgba(255, 255, 255, .3)`;
-      CTX.strokeStyle = `rgba(255, 255, 255, .5)`;
+      CTX.fillStyle = "rgba(255, 255, 255, .3)";
+      CTX.strokeStyle = "rgba(255, 255, 255, .5)";
     }
     CTX.globalAlpha = 0.2;
     CTX.translate(iconRadius, iconRadius);
