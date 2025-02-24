@@ -3,7 +3,8 @@ import { FONT, FONT_WEIGHT_BOLD, FONT_WEIGHT_NORMAL } from "./constants.js";
 import { levels as levelData, getLevelDataByNumber } from "./levelData.js";
 import { drawTextRotate } from "./textRotate.js";
 import { clampedProgress, transition } from "./helpers.js";
-import { easeOutCubic, easeOutQuart } from "./easings.js";
+import { easeOutCubic } from "./easings.js";
+import { makeSpring } from "./spring.js";
 
 export const makeLevelManager = (
   canvasManager,
@@ -24,6 +25,14 @@ export const makeLevelManager = (
   let hasShownPreviewInitialMessage;
   let levelStarted;
 
+  const slideDistance = 32;
+  const slideSpring = makeSpring(0, {
+    stiffness: 90,
+    damping: 12,
+    mass: 1.3,
+    precision: 200,
+  });
+
   const reset = () => {
     level = previewData ? previewData.name : 1;
     previousLevelValue = false;
@@ -42,6 +51,8 @@ export const makeLevelManager = (
     interstitialShowing = true;
     interstitialStart = Date.now();
     onInterstitial(interstitialStart);
+
+    slideSpring.resetValue(0);
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {
@@ -68,6 +79,8 @@ export const makeLevelManager = (
     interstitialShowing = false;
     interstitialStart = false;
     levelStarted = Date.now();
+    slideSpring.setEndValue(slideDistance);
+
     onAdvance();
   };
 
@@ -136,19 +149,15 @@ export const makeLevelManager = (
     previewData ? previewData : getLevelDataByNumber(level);
 
   const drawLevelCountdown = () => {
+    slideSpring.update();
+
     const countdownRadius = 32;
     const timeRemaining = 3000 - (Date.now() - levelStarted);
-    const slideDown = transition(
-      -32,
-      -16,
-      clampedProgress(3000, 1800, timeRemaining),
-      easeOutQuart
-    );
-    const slideUp = transition(
-      64,
-      48,
-      clampedProgress(3000, 1600, timeRemaining),
-      easeOutQuart
+    const blurIn = transition(
+      16,
+      0,
+      clampedProgress(3000, 2400, timeRemaining),
+      easeOutCubic
     );
     const fadeIn = transition(
       0,
@@ -156,17 +165,29 @@ export const makeLevelManager = (
       clampedProgress(3000, 2600, timeRemaining),
       easeOutCubic
     );
+    const scaleIn = transition(
+      0.8,
+      1,
+      clampedProgress(0, slideDistance, slideSpring.getCurrentValue())
+    );
 
     CTX.save();
 
     CTX.globalAlpha = fadeIn;
     CTX.translate(canvasManager.getWidth() / 2, canvasManager.getHeight() / 2);
+    CTX.scale(scaleIn, scaleIn);
     CTX.font = `${FONT_WEIGHT_BOLD} 32px ${FONT}`;
     CTX.fillStyle = white;
     CTX.textAlign = "center";
-    CTX.fillText(`Par of ${getLevelData().par}`, 0, slideDown);
+    CTX.filter = `blur(${blurIn}px)`;
 
-    CTX.translate(0, slideUp);
+    CTX.fillText(
+      `Par of ${getLevelData().par}`,
+      0,
+      -16 - slideDistance + slideSpring.getCurrentValue()
+    );
+
+    CTX.translate(0, 48 + slideDistance - slideSpring.getCurrentValue());
     CTX.font = `${FONT_WEIGHT_NORMAL} 32px ${FONT}`;
     CTX.fillText(Math.ceil(timeRemaining / 1000), 0, 10);
 
