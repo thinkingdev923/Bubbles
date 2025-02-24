@@ -8,7 +8,7 @@ export const makeLevelManager = (
   canvasManager,
   onInterstitial,
   onAdvance,
-  isPreview
+  previewData
 ) => {
   const CTX = canvasManager.getContext();
   let level;
@@ -24,7 +24,7 @@ export const makeLevelManager = (
   let levelStarted;
 
   const reset = () => {
-    level = 1;
+    level = previewData ? previewData.name : 1;
     previousLevelValue = false;
     hasCompletedInitialAdvance = false;
     interstitialShowing = false;
@@ -56,7 +56,7 @@ export const makeLevelManager = (
       hasCompletedInitialAdvance = true;
     }
 
-    if (isPreview) {
+    if (previewData) {
       hasShownPreviewInitialMessage = true;
     }
 
@@ -91,15 +91,15 @@ export const makeLevelManager = (
     if (interstitialShowing) {
       const msElapsed = Date.now() - interstitialStart;
 
-      if (isPreview && !hasShownPreviewInitialMessage) {
+      if (previewData && !hasShownPreviewInitialMessage) {
         previewInitialMessage(msElapsed);
       } else if (gameOver) {
         endGameMessage(msElapsed);
       } else if (isLastLevel()) {
         reachedEndOfGameMessage(msElapsed);
-      } else if (level === 1 && !hasCompletedInitialAdvance && !isPreview) {
+      } else if (level === 1 && !hasCompletedInitialAdvance && !previewData) {
         initialMessage(msElapsed);
-      } else if (firstMissLevel && !hasShownFirstMissMessage && !isPreview) {
+      } else if (firstMissLevel && !hasShownFirstMissMessage && !previewData) {
         firstMissMessage(msElapsed);
       } else {
         defaultMessage(msElapsed);
@@ -115,7 +115,7 @@ export const makeLevelManager = (
     CTX.textAlign = "center";
     CTX.translate(canvasManager.getWidth() / 2, 24);
 
-    if (!isPreview && previousLevelValue) {
+    if (!previewData && previousLevelValue) {
       drawTextRotate(
         canvasManager,
         levelChangeStart,
@@ -123,13 +123,16 @@ export const makeLevelManager = (
         `LEVEL ${level}`
       );
     } else {
-      CTX.fillText(isPreview ? "PREVIEW" : `LEVEL ${level}`, 0, 0);
+      CTX.fillText(previewData ? "PREVIEW" : `LEVEL ${level}`, 0, 0);
     }
 
     CTX.restore();
   };
 
   const showLevelCountdown = () => Date.now() - levelStarted < 3000;
+
+  const getLevelData = () =>
+    previewData ? previewData : getLevelDataByNumber(level);
 
   const drawLevelCountdown = () => {
     makeTextBlock(
@@ -143,7 +146,7 @@ export const makeLevelManager = (
         lineHeight: 48,
       },
       [
-        `Par of ${getLevelDataByNumber(level).par}`,
+        `Par of ${getLevelData().par}`,
         `${Math.ceil(3 - (Date.now() - levelStarted) / 1000)}`,
       ]
     ).draw();
@@ -152,7 +155,7 @@ export const makeLevelManager = (
   return {
     reset,
     getLevel: () => level,
-    getLevelData: () => getLevelDataByNumber(level),
+    getLevelData,
     drawInterstitialMessage,
     isInterstitialShowing: () => interstitialShowing,
     drawLevelNumber,

@@ -1,6 +1,3 @@
-import { levels, countLevelBalls } from "./levelData.js";
-import { progress } from "./helpers.js";
-
 export const makeScoreStore = (levelManager) => {
   // MAP STRUCTURE EXAMPLE
   // We store discrete actions that we can flexibly sum, score, etc. later
@@ -190,17 +187,14 @@ export const makeScoreStore = (levelManager) => {
     ];
   };
 
-  const levelScoreNumber = (passedLevel) => {
-    // Fetching ball count via level number doens't work for preview. Need to figure
-    // out a way to read level data directly
-    const levelData = levels[passedLevel - 1];
-    const par = levelData.par;
+  const levelScoreNumber = () => {
+    const level = levelManager.getLevel();
     const numMoves =
-      store.get("taps").filter((t) => t.level === passedLevel).length +
-      store.get("slingshots").filter((s) => s.level === passedLevel).length +
-      store.get("blasts").filter((b) => b.level === passedLevel).length;
+      store.get("taps").filter((t) => t.level === level).length +
+      store.get("slingshots").filter((s) => s.level === level).length +
+      store.get("blasts").filter((b) => b.level === level).length;
 
-    return numMoves - par;
+    return numMoves - levelManager.getLevelData().par;
   };
 
   const getTaps = (passedLevel = null) => [

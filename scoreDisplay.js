@@ -70,7 +70,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     if (specialState === "gameWon") textLines.push("You won!");
     if (specialState === "gameLost") textLines.push("You lost!");
 
-    const score = scoreStore.levelScoreNumber(levelManager.getLevel());
+    const score = scoreStore.levelScoreNumber();
 
     // TODO expand this to include "Eagle" and "Albatross" etc.
     textLines.push(

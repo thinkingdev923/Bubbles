@@ -56,7 +56,7 @@ const levelManager = makeLevelManager(
   canvasManager,
   onInterstitial,
   previewDataPresent ? onPreviewAdvance : onLevelAdvance,
-  previewDataPresent
+  previewData
 );
 const scoreStore = makeScoreStore(levelManager);
 const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
