@@ -2,6 +2,7 @@ import { easeInOutSine, easeOutQuart } from "./easings.js";
 import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { randomColor, background } from "./colors.js";
+import { makeSpring } from "./spring.js";
 
 export const makeContinueButtonManager = (canvasManager) => {
   const CTX = canvasManager.getContext();
@@ -10,10 +11,15 @@ export const makeContinueButtonManager = (canvasManager) => {
   const margin = 24;
   const buttonWidth = canvasManager.getWidth() - margin * 2;
   let isHovering;
-  let hoverStart;
-  let hoverEnd;
   let withinDelay;
   let buttonColor = randomColor();
+
+  const hoverSpring = makeSpring(0, {
+    stiffness: 90,
+    damping: 12,
+    mass: 1.2,
+    precision: 200,
+  });
 
   const applyButtonTransforms = () => {
     CTX.translate(
@@ -45,23 +51,20 @@ export const makeContinueButtonManager = (canvasManager) => {
 
   const handleHover = (coordinates) => {
     if (!isHovering && pointInButton(coordinates)) {
+      hoverSpring.setEndValue(100);
       isHovering = true;
-      hoverStart = Date.now();
-      hoverEnd = false;
       document.body.classList.add("buttonHover");
     } else if (isHovering && !pointInButton(coordinates)) {
+      hoverSpring.setEndValue(0);
       isHovering = false;
-      hoverStart = false;
-      hoverEnd = Date.now();
       document.body.classList.remove("buttonHover");
     }
   };
 
   const handleClick = (coordinates, callback) => {
     if (withinDelay && pointInButton(coordinates)) {
+      hoverSpring.setEndValue(0);
       isHovering = false;
-      hoverStart = false;
-      hoverEnd = Date.now();
       document.body.classList.remove("buttonHover");
       callback();
     } else {
@@ -72,6 +75,7 @@ export const makeContinueButtonManager = (canvasManager) => {
   };
 
   const draw = (msElapsed, delay, text = "Continue") => {
+    hoverSpring.update();
     withinDelay = msElapsed - delay > 0;
     const introProgress = clampedProgress(0, 1000, msElapsed - delay);
     const wipeProgress = clampedProgress(0, 450, msElapsed - delay);
@@ -85,33 +89,25 @@ export const makeContinueButtonManager = (canvasManager) => {
       wipeProgress
     );
 
-    const mouseOverProgress = clampedProgress(0, 200, Date.now() - hoverStart);
-    const mouseOutProgress = clampedProgress(0, 200, Date.now() - hoverEnd);
-    const hoverShapeGrow = transition(
+    const hoverShapeScale = transition(
       1,
       1.03,
-      mouseOverProgress,
-      easeInOutSine
+      hoverSpring.getCurrentValue() / 100
     );
-    const hoverShapeShrink = transition(
-      1.03,
+    const hoverTextScale = transition(
       1,
-      mouseOutProgress,
-      easeInOutSine
+      1.08,
+      hoverSpring.getCurrentValue() / 100
     );
-    const hoverTextGrow = transition(1, 1.06, mouseOverProgress, easeInOutSine);
-    const hoverTextMove = transition(0, -1, mouseOverProgress, easeInOutSine);
-    const hoverTextShrink = transition(
-      1.06,
-      1,
-      mouseOutProgress,
-      easeInOutSine
-    );
-    const hoverTextMoveBack = transition(
-      -1,
+    const hoverTextAngle = transition(
       0,
-      mouseOutProgress,
-      easeInOutSine
+      -Math.PI / 120,
+      hoverSpring.getCurrentValue() / 100
+    );
+    const hoverTextPosition = transition(
+      0,
+      -1,
+      hoverSpring.getCurrentValue() / 100
     );
 
     CTX.save();
@@ -122,11 +118,7 @@ export const makeContinueButtonManager = (canvasManager) => {
     CTX.translate(0, animateUp);
     CTX.rotate(rotateIn);
     CTX.scale(animateScale, animateScale);
-    if (isHovering) {
-      CTX.scale(hoverShapeGrow, hoverShapeGrow);
-    } else {
-      CTX.scale(hoverShapeShrink, hoverShapeShrink);
-    }
+    CTX.scale(hoverShapeScale, hoverShapeScale);
     CTX.stroke(buttonPath);
     CTX.clip(buttonPath);
 
@@ -141,13 +133,9 @@ export const makeContinueButtonManager = (canvasManager) => {
 
     // Rotate text in addition to button
     CTX.rotate(rotateIn);
-    if (isHovering) {
-      CTX.scale(hoverTextGrow, hoverTextGrow);
-      CTX.translate(0, hoverTextMove);
-    } else {
-      CTX.scale(hoverTextShrink, hoverTextShrink);
-      CTX.translate(0, hoverTextMoveBack);
-    }
+    CTX.rotate(hoverTextAngle);
+    CTX.scale(hoverTextScale, hoverTextScale);
+    CTX.translate(0, hoverTextPosition);
     CTX.font = `${FONT_WEIGHT_BOLD} 24px ${FONT}`;
     CTX.fillStyle = background;
     CTX.textAlign = "center";
