@@ -25,10 +25,10 @@ export const makeLevelManager = (
   let hasShownPreviewInitialMessage;
   let levelStarted;
 
-  const slideDistance = 32;
+  const slideDistance = 16;
   const slideSpring = makeSpring(0, {
     stiffness: 90,
-    damping: 12,
+    damping: 15,
     mass: 1.3,
     precision: 200,
   });
@@ -166,7 +166,7 @@ export const makeLevelManager = (
       easeOutCubic
     );
     const scaleIn = transition(
-      0.8,
+      0.9,
       1,
       clampedProgress(0, slideDistance, slideSpring.getCurrentValue())
     );
