@@ -380,6 +380,10 @@ animate((deltaTime) => {
 });
 
 function handleGameClick({ x, y }) {
+  // In case of an active tutorial, the ball pop may be the first interaction
+  // Subsequent calls are ignored.
+  audioManager.initialize();
+
   const collidingBall = findBallAtPoint(balls, { x, y });
 
   if (collidingBall) {
