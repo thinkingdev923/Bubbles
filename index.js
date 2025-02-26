@@ -1,5 +1,10 @@
 import { makeCanvasManager } from "./canvas.js";
-import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
+import {
+  BLAST_MAX_DURATION,
+  BUBBLE_RADIUS,
+  FONT,
+  FONT_WEIGHT_BOLD,
+} from "./constants.js";
 import {
   animate,
   clampedProgress,
@@ -13,6 +18,7 @@ import {
   adjustParticlePositions,
   resolveParticleCollision,
 } from "./particle.js";
+import { makeBall } from "./ball.js";
 import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
 import { makeLifeManager } from "./lives.js";
@@ -23,7 +29,9 @@ import { makeTextBlock } from "./textBlock.js";
 import { makeScoreDisplay } from "./scoreDisplay.js";
 import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
+import { makeTutorialManager } from "./tutorial.js";
 import { easeOutElastic, easeOutQuint } from "./easings.js";
+import { red } from "./colors.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -61,6 +69,12 @@ const levelManager = makeLevelManager(
 const scoreStore = makeScoreStore(levelManager);
 const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
+const tutorialManager = makeTutorialManager(
+  canvasManager,
+  levelManager,
+  onTutorialStart,
+  onTutorialComplete
+);
 const CTX = canvasManager.getContext();
 
 // These are all reset on game restart
@@ -78,7 +92,9 @@ function resetGame() {
   ripples = [];
   lifeManager.reset();
   levelManager.reset();
-  levelManager.showLevelInterstitial();
+  tutorialManager.shouldShowTutorial()
+    ? tutorialManager.showTutorial()
+    : levelManager.showLevelInterstitial();
   audioManager.resetPluckSequence();
   scoreStore.reset();
 }
@@ -193,50 +209,101 @@ const cameraWrapper = (drawFunc) => {
   }
 };
 
+const triggerTimedOutHoldBlasts = () => {
+  activePointers.forEach((p, pointerIndex) => {
+    if (p.isHoldBlast() && p.getDuration() >= BLAST_MAX_DURATION) {
+      activePointers.splice(pointerIndex, 1);
+      p.trigger();
+    }
+  });
+};
+
+const detectCollisionsForGameObjects = () => {
+  // Run collision detection on bubbles and bounce bubbles off eachother
+  // Run collision detection on blasts + slingshots and pop colliding bubbles
+  const ballsInPlay = balls.filter((b) => b.isRemaining() && b.shouldRender());
+  ballsInPlay.forEach((ballA) => {
+    ballsInPlay.forEach((ballB) => {
+      if (ballA !== ballB) {
+        const collision = checkParticleCollision(ballA, ballB);
+        if (collision[0]) {
+          adjustParticlePositions(ballA, ballB, collision[1]);
+          resolveParticleCollision(ballA, ballB);
+        }
+      }
+    });
+    pointerTriggerOutput
+      .filter((p) => !p.isGone())
+      .forEach((output) => {
+        const collision = checkParticleCollision(ballA, output);
+        if (collision[0]) {
+          output.isHoldBlast()
+            ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
+            : ballA.pop(output.getVelocity());
+
+          output.logCollision();
+
+          audioManager.playSequentialPluck();
+        }
+      });
+  });
+};
+
+const drawComboMessages = () => {
+  scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
+    const boundedPosition = getBoundedPosition(canvasManager, c.position, 100);
+    const text = `x${c.popped}!`;
+    const textHeight = 48;
+
+    const slideUp = transition(
+      boundedPosition.y + 60,
+      boundedPosition.y + textHeight / 2,
+      clampedProgress(0, 300, Date.now() - c.timestamp),
+      easeOutQuint
+    );
+    const rotateIn = transition(
+      -Math.PI / 2,
+      Math.PI / 80,
+      clampedProgress(0, 1600, Date.now() - c.timestamp),
+      easeOutElastic
+    );
+    const scaleIn = transition(
+      0.01,
+      1,
+      clampedProgress(0, 400, Date.now() - c.timestamp),
+      easeOutQuint
+    );
+
+    CTX.save();
+    CTX.translate(boundedPosition.x, slideUp);
+    CTX.rotate(rotateIn);
+    CTX.scale(scaleIn, scaleIn);
+    CTX.font = `${FONT_WEIGHT_BOLD} 64px ${FONT}`;
+
+    // Shadow
+    CTX.fillStyle = "#000";
+    CTX.textAlign = "center";
+    CTX.fillText(text, 0, 0);
+
+    // Text
+    CTX.translate(-2, -3);
+    CTX.fillStyle = "#fff";
+    CTX.fillText(text, 0, 0);
+
+    CTX.restore();
+  });
+};
+
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
   cameraWrapper(() => {
     // Trigger holdBlasts that have been held down past the max time
     if (!levelManager.isInterstitialShowing()) {
-      activePointers.forEach((p, pointerIndex) => {
-        if (p.isHoldBlast() && p.getDuration() >= BLAST_MAX_DURATION) {
-          activePointers.splice(pointerIndex, 1);
-          p.trigger();
-        }
-      });
+      triggerTimedOutHoldBlasts();
     }
 
-    // Run collision detection on bubbles and bounce bubbles off eachother
-    // Run collision detection on blasts + slingshots and pop colliding bubbles
-    const ballsInPlay = balls.filter(
-      (b) => b.isRemaining() && b.shouldRender()
-    );
-    ballsInPlay.forEach((ballA) => {
-      ballsInPlay.forEach((ballB) => {
-        if (ballA !== ballB) {
-          const collision = checkParticleCollision(ballA, ballB);
-          if (collision[0]) {
-            adjustParticlePositions(ballA, ballB, collision[1]);
-            resolveParticleCollision(ballA, ballB);
-          }
-        }
-      });
-      pointerTriggerOutput
-        .filter((p) => !p.isGone())
-        .forEach((output) => {
-          const collision = checkParticleCollision(ballA, output);
-          if (collision[0]) {
-            output.isHoldBlast()
-              ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
-              : ballA.pop(output.getVelocity());
-
-            output.logCollision();
-
-            audioManager.playSequentialPluck();
-          }
-        });
-    });
+    detectCollisionsForGameObjects();
 
     // Draw text elements (level, life, interstitial) underneath bubbles
     levelManager.drawInterstitialMessage({
@@ -284,10 +351,15 @@ animate((deltaTime) => {
       },
     });
 
-    levelManager.drawLevelNumber();
+    if (tutorialManager.isTutorialShowing()) {
+      tutorialManager.draw();
+    } else {
+      levelManager.drawLevelNumber();
 
-    if (!levelManager.isInterstitialShowing() && !levelManager.isGameOver())
-      lifeManager.draw();
+      if (!levelManager.isInterstitialShowing() && !levelManager.isGameOver()) {
+        lifeManager.draw();
+      }
+    }
 
     // Draw main game elements
     ripples.forEach((r) => r.draw());
@@ -303,53 +375,7 @@ animate((deltaTime) => {
     activePointers.forEach((p) => p.draw());
 
     // Draw combo messages over everything
-
-    scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
-      const boundedPosition = getBoundedPosition(
-        canvasManager,
-        c.position,
-        100
-      );
-      const text = `x${c.popped}!`;
-      const textHeight = 48;
-
-      const slideUp = transition(
-        boundedPosition.y + 60,
-        boundedPosition.y + textHeight / 2,
-        clampedProgress(0, 300, Date.now() - c.timestamp),
-        easeOutQuint
-      );
-      const rotateIn = transition(
-        -Math.PI / 2,
-        Math.PI / 80,
-        clampedProgress(0, 1600, Date.now() - c.timestamp),
-        easeOutElastic
-      );
-      const scaleIn = transition(
-        0.01,
-        1,
-        clampedProgress(0, 400, Date.now() - c.timestamp),
-        easeOutQuint
-      );
-
-      CTX.save();
-      CTX.translate(boundedPosition.x, slideUp);
-      CTX.rotate(rotateIn);
-      CTX.scale(scaleIn, scaleIn);
-      CTX.font = `${FONT_WEIGHT_BOLD} 64px ${FONT}`;
-
-      // Shadow
-      CTX.fillStyle = "#000";
-      CTX.textAlign = "center";
-      CTX.fillText(text, 0, 0);
-
-      // Text
-      CTX.translate(-2, -3);
-      CTX.fillStyle = "#fff";
-      CTX.fillText(text, 0, 0);
-
-      CTX.restore();
-    });
+    drawComboMessages();
   });
 });
 
@@ -373,8 +399,12 @@ function onPointerTrigger(output) {
 
 function onPop() {
   if (balls.filter((b) => b.isRemaining()) <= 0) {
-    // Pause before showing interstitial so user can see the final bubble pop
-    setTimeout(levelManager.showLevelInterstitial, 600);
+    if (tutorialManager.isTutorialShowing()) {
+      tutorialManager.advance();
+    } else {
+      // Pause before showing interstitial so user can see the final bubble pop
+      setTimeout(levelManager.showLevelInterstitial, 600);
+    }
   }
 }
 
@@ -430,4 +460,28 @@ function onPreviewAdvance() {
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
   audioManager.playRandomLevel();
+}
+
+function onTutorialStart() {
+  balls = [
+    makeBall(
+      canvasManager,
+      {
+        startPosition: {
+          x: canvasManager.getWidth() / 2,
+          y: canvasManager.getHeight() / 2,
+        },
+        startVelocity: { x: 0, y: 0 },
+        radius: BUBBLE_RADIUS,
+        fill: red,
+        gravity: 0,
+      },
+      onPop,
+      onMiss
+    ),
+  ];
+}
+
+function onTutorialComplete() {
+  levelManager.showLevelInterstitial();
 }
