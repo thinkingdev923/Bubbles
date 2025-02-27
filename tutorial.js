@@ -157,7 +157,15 @@ export const makeTutorialManager = (
 
   const draw = () => {
     CTX.save();
+    CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
+    CTX.fillStyle = yellow;
+    CTX.letterSpacing = "1px";
+    CTX.textAlign = "center";
+    CTX.translate(canvasManager.getWidth() / 2, 24);
+    CTX.fillText("TUTORIAL", 0, 0);
+    CTX.restore();
 
+    CTX.save();
     CTX.translate(canvasManager.getWidth() / 2, 0);
     CTX.fillStyle = white;
     CTX.strokeStyle = white;
