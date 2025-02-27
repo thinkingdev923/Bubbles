@@ -156,7 +156,11 @@ export const makeTutorialManager = (
         0,
         canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
       );
+      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+      CTX.lineTo(8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
       CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
+      CTX.lineTo(-8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
       CTX.closePath();
       CTX.stroke();
     } else if (tutorialStep === 2) {
@@ -171,7 +175,11 @@ export const makeTutorialManager = (
         0,
         canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
       );
+      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+      CTX.lineTo(8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
       CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
+      CTX.lineTo(-8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
       CTX.closePath();
       CTX.stroke();
 
@@ -200,7 +208,11 @@ export const makeTutorialManager = (
         0,
         canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 24
       );
+      CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+      CTX.lineTo(8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
       CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 16);
+      CTX.lineTo(-8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+      CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
       CTX.closePath();
       CTX.stroke();
 
