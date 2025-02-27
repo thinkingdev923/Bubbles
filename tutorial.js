@@ -154,7 +154,7 @@ export const makeTutorialManager = (
       CTX.beginPath();
       CTX.moveTo(
         0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 6 + 16
+        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
       );
       CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
       CTX.closePath();
