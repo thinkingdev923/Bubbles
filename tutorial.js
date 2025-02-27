@@ -72,21 +72,21 @@ export const makeTutorialManager = (
         {
           position: {
             x: canvasManager.getWidth() / 2,
-            y: BUBBLE_RADIUS * 2 * 3 + 8 * 3,
+            y: (BUBBLE_RADIUS + 8) * 5,
           },
           fill: yellow,
         },
         {
           position: {
             x: canvasManager.getWidth() / 2,
-            y: BUBBLE_RADIUS * 2 * 2 + 8 * 2,
+            y: (BUBBLE_RADIUS + 8) * 3,
           },
           fill: red,
         },
         {
           position: {
             x: canvasManager.getWidth() / 2,
-            y: BUBBLE_RADIUS * 2 + 8,
+            y: BUBBLE_RADIUS + 8,
           },
           fill: turquoise,
         },
@@ -148,7 +148,7 @@ export const makeTutorialManager = (
       CTX.fillText(
         "Pop this",
         0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 6
+        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4
       );
 
       CTX.beginPath();
@@ -163,32 +163,60 @@ export const makeTutorialManager = (
       CTX.fillText(
         "Hold down",
         0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 6
+        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4
       );
 
       CTX.beginPath();
       CTX.moveTo(
         0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 6 + 16
+        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
       );
       CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
       CTX.closePath();
       CTX.stroke();
+
+      CTX.fillStyle = "#000";
+      CTX.beginPath();
+      CTX.ellipse(
+        0,
+        canvasManager.getHeight() / 2,
+        BUBBLE_RADIUS,
+        BUBBLE_RADIUS * 1.1,
+        0,
+        0,
+        Math.PI * 2
+      );
+      CTX.closePath();
+      CTX.fill();
     } else if (tutorialStep === 3) {
       CTX.fillText(
         "Hold and drag",
         0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 6
+        canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4
       );
 
       CTX.beginPath();
       CTX.moveTo(
         0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 6 + 16
+        canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 24
       );
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
+      CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 16);
       CTX.closePath();
       CTX.stroke();
+
+      CTX.fillStyle = "#000";
+      CTX.beginPath();
+      CTX.ellipse(
+        0,
+        canvasManager.getHeight() / 2,
+        BUBBLE_RADIUS,
+        BUBBLE_RADIUS * 1.1,
+        0,
+        0,
+        Math.PI * 2
+      );
+      CTX.closePath();
+      CTX.fill();
     }
     CTX.restore();
   };
