@@ -246,6 +246,7 @@ const detectCollisionsForGameObjects = () => {
 
 const drawComboMessages = () => {
   scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
+    // TODO: use springs and animate out as well
     const boundedPosition = getBoundedPosition(canvasManager, c.position, 100);
     const text = `x${c.popped}!`;
     const textHeight = 48;
