@@ -245,7 +245,7 @@ export const makeBall = (
       baseParticle.update(deltaTime);
       CTX.save();
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
-      CTX.drawImage(preRenderImage, -radius, -radius);
+      CTX.drawImage(preRenderImage, -radius, -radius, radius * 6, radius * 6);
       CTX.restore();
     }
   };
