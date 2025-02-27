@@ -21,7 +21,10 @@ export const makeSpring = (
 
   const update = () => {
     const thisUpdateTime = performance.now();
-    const deltaTime = thisUpdateTime - lastUpdateTime;
+    // Prevent deltaTime from producing huge values when e.g. user switches
+    // tabs and then switches back. 20 represents the number of milliseconds
+    // between frames when game is running at 50fps.
+    const deltaTime = Math.min(20, thisUpdateTime - lastUpdateTime);
     const difference = endValue - currentValue;
     const acceleration = (stiffness * difference) / mass - damping * velocity;
     const newVelocity = velocity + acceleration * (deltaTime / 1000);
