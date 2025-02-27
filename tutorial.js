@@ -108,7 +108,7 @@ export const makeTutorialManager = (
     tutorialStep++;
 
     if (tutorialStep > tutorialSteps.length) {
-      localStorage.setItem("bubblesTutorialComplete", "true");
+      // localStorage.setItem("bubblesTutorialComplete", "true");
       tutorialCompletedThisSession = true;
       onCompletion();
     } else {
