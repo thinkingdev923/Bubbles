@@ -92,9 +92,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       {
         xPos: edgeMargin,
         yPos: verticalMarginBetweenSections,
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: FONT_WEIGHT_BOLD,
-        lineHeight: 32,
+        lineHeight: 38,
       },
       textLines
     );
