@@ -39,28 +39,28 @@ export const makeTutorialManager = (
         {
           position: {
             x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 2,
-            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 3,
+            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 2,
           },
           fill: yellow,
         },
         {
           position: {
-            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 3,
-            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 2,
+            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 2.5,
+            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 1.2,
           },
           fill: turquoise,
         },
         {
           position: {
-            x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 3,
+            x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 2.5,
             y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 2,
           },
           fill: red,
         },
         {
           position: {
-            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 2,
-            y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 4,
+            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 1.5,
+            y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 3,
           },
           fill: white,
         },
@@ -72,21 +72,21 @@ export const makeTutorialManager = (
         {
           position: {
             x: canvasManager.getWidth() / 2,
-            y: (BUBBLE_RADIUS + 8) * 5,
+            y: BUBBLE_RADIUS * 4 + 16,
           },
           fill: yellow,
         },
         {
           position: {
             x: canvasManager.getWidth() / 2,
-            y: (BUBBLE_RADIUS + 8) * 3,
+            y: BUBBLE_RADIUS * 2 + 8,
           },
           fill: red,
         },
         {
           position: {
             x: canvasManager.getWidth() / 2,
-            y: BUBBLE_RADIUS + 8,
+            y: 0,
           },
           fill: turquoise,
         },
@@ -212,7 +212,7 @@ export const makeTutorialManager = (
       CTX.closePath();
       CTX.stroke();
 
-      CTX.fillStyle = "#000";
+      CTX.fillStyle = "rgba(0, 0, 0, .6)";
       CTX.beginPath();
       CTX.ellipse(
         0,
@@ -245,7 +245,7 @@ export const makeTutorialManager = (
       CTX.closePath();
       CTX.stroke();
 
-      CTX.fillStyle = "#000";
+      CTX.fillStyle = "rgba(0, 0, 0, .6)";
       CTX.beginPath();
       CTX.ellipse(
         0,
