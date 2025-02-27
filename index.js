@@ -235,9 +235,7 @@ const detectCollisionsForGameObjects = () => {
             ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
             : ballA.pop(output.getVelocity());
 
-          if (!tutorialManager.isTutorialShowing()) {
-            output.logCollision();
-          }
+          output.logCollision();
 
           audioManager.playSequentialPluck();
         }
@@ -387,15 +385,11 @@ function handleGameClick({ x, y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
 
   if (collidingBall) {
-    if (!tutorialManager.isTutorialShowing()) {
-      scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
-    }
+    scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {
-    if (!tutorialManager.isTutorialShowing()) {
-      scoreStore.recordTap({ x, y }, 0);
-    }
+    scoreStore.recordTap({ x, y }, 0);
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playMiss();
   }
@@ -484,5 +478,6 @@ function onTutorialAdvance() {
 }
 
 function onTutorialComplete() {
+  scoreStore.reset();
   levelManager.showLevelInterstitial();
 }
