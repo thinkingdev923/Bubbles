@@ -1,10 +1,5 @@
 import { makeCanvasManager } from "./canvas.js";
-import {
-  BLAST_MAX_DURATION,
-  BUBBLE_RADIUS,
-  FONT,
-  FONT_WEIGHT_BOLD,
-} from "./constants.js";
+import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import {
   animate,
   clampedProgress,
@@ -18,7 +13,6 @@ import {
   adjustParticlePositions,
   resolveParticleCollision,
 } from "./particle.js";
-import { makeBall } from "./ball.js";
 import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
 import { makeLifeManager } from "./lives.js";
@@ -31,7 +25,6 @@ import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
 import { makeTutorialManager } from "./tutorial.js";
 import { easeOutElastic, easeOutQuint } from "./easings.js";
-import { red } from "./colors.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -73,6 +66,7 @@ const tutorialManager = makeTutorialManager(
   canvasManager,
   levelManager,
   onTutorialStart,
+  onTutorialAdvance,
   onTutorialComplete
 );
 const CTX = canvasManager.getContext();
@@ -241,7 +235,9 @@ const detectCollisionsForGameObjects = () => {
             ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
             : ballA.pop(output.getVelocity());
 
-          output.logCollision();
+          if (!tutorialManager.isTutorialShowing()) {
+            output.logCollision();
+          }
 
           audioManager.playSequentialPluck();
         }
@@ -329,7 +325,11 @@ animate((deltaTime) => {
             textAlign: "center",
             verticalAlign: "center",
           },
-          [`Pop the bubble`]
+          [
+            tutorialManager.isTutorialCompletedThisSession()
+              ? "You’re ready"
+              : "Pop the bubble",
+          ]
         ).draw();
         continueButtonManager.draw(msElapsed, 600, "Play");
       },
@@ -387,11 +387,15 @@ function handleGameClick({ x, y }) {
   const collidingBall = findBallAtPoint(balls, { x, y });
 
   if (collidingBall) {
-    scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
+    if (!tutorialManager.isTutorialShowing()) {
+      scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
+    }
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {
-    scoreStore.recordTap({ x, y }, 0);
+    if (!tutorialManager.isTutorialShowing()) {
+      scoreStore.recordTap({ x, y }, 0);
+    }
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playMiss();
   }
@@ -403,12 +407,8 @@ function onPointerTrigger(output) {
 
 function onPop() {
   if (balls.filter((b) => b.isRemaining()) <= 0) {
-    if (tutorialManager.isTutorialShowing()) {
-      tutorialManager.advance();
-    } else {
-      // Pause before showing interstitial so user can see the final bubble pop
-      setTimeout(levelManager.showLevelInterstitial, 600);
-    }
+    // Pause before showing interstitial so user can see the final bubble pop
+    setTimeout(levelManager.showLevelInterstitial, 600);
   }
 }
 
@@ -424,6 +424,14 @@ function onMiss() {
     } else if (balls.filter((b) => b.isRemaining()) <= 0) {
       levelManager.showLevelInterstitial();
     }
+  }
+}
+
+function onTutorialPop() {
+  if (balls.filter((b) => b.isRemaining()) <= 0) {
+    // Pause before showing next tutorial step so blasts don't pop bubbles in
+    // the next step
+    setTimeout(tutorialManager.advance, 600);
   }
 }
 
@@ -467,23 +475,12 @@ function onPreviewAdvance() {
 }
 
 function onTutorialStart() {
-  balls = [
-    makeBall(
-      canvasManager,
-      {
-        startPosition: {
-          x: canvasManager.getWidth() / 2,
-          y: canvasManager.getHeight() / 2,
-        },
-        startVelocity: { x: 0, y: 0 },
-        radius: BUBBLE_RADIUS,
-        fill: red,
-        gravity: 0,
-      },
-      onPop,
-      onMiss
-    ),
-  ];
+  balls = tutorialManager.generateBalls(onTutorialPop, () => {});
+}
+
+function onTutorialAdvance() {
+  previousLevelBalls = balls.filter((b) => b.isPopping());
+  balls = tutorialManager.generateBalls(onTutorialPop, () => {});
 }
 
 function onTutorialComplete() {
