@@ -15,7 +15,7 @@ export const makeTutorialManager = (
   onCompletion
 ) => {
   const CTX = canvasManager.getContext();
-  const hasSeenTutorial = !!localStorage.getItem("bubblesTutorialComplete");
+  const hasSeenTutorial = false; //!!localStorage.getItem("bubblesTutorialComplete");
   let tutorialShowing = false;
   let tutorialStep = 1;
   let tutorialCompletedThisSession = false;
