@@ -105,6 +105,9 @@ export const makeTutorialManager = (
   };
 
   const advance = () => {
+    // TODO: before updating the tutorial step,
+    // show confirmation text and then next step after a timer
+
     tutorialStep++;
 
     if (tutorialStep > tutorialSteps.length) {
@@ -114,6 +117,24 @@ export const makeTutorialManager = (
     } else {
       onAdvance();
     }
+  };
+
+  const logTap = ({ x, y }, popped) => {
+    // If currently showing step 1, and tap missed:
+    //     update text shown for step 1
+    //
+    // If currently showing > step 1, and any tap:
+    //     update text shown to hint about using slingshot or blast
+  };
+
+  const previewingSlingshot = () => {
+    // Update text to "Aim here"
+    //
+    // Figure out where user is currently aiming
+  };
+
+  const previewingBlast = () => {
+    // Update text to "Now let go" after a second
   };
 
   const generateBalls = (onPop, onMiss) =>
@@ -239,6 +260,9 @@ export const makeTutorialManager = (
     isTutorialCompletedThisSession: () => tutorialCompletedThisSession,
     showTutorial,
     advance,
+    logTap,
+    previewingSlingshot,
+    previewingBlast,
     generateBalls,
     draw,
   };

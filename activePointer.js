@@ -6,6 +6,7 @@ export const makeActivePointer = (
   canvasManager,
   audioManager,
   scoreStore,
+  tutorialManager,
   pointerId,
   startPosition,
   onTrigger,
@@ -62,8 +63,10 @@ export const makeActivePointer = (
   const draw = () => {
     if (isSlingshot()) {
       drawSlingshotPreview(canvasManager, startPosition, currentPosition);
+      tutorialManager.previewingSlingshot();
     } else if (isHoldBlast()) {
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);
+      tutorialManager.previewingBlast();
     }
   };
 

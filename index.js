@@ -120,6 +120,7 @@ canvasManager.getElement().addEventListener("pointerdown", (e) => {
         canvasManager,
         audioManager,
         scoreStore,
+        tutorialManager,
         pointerId,
         { x, y },
         onPointerTrigger,
@@ -386,10 +387,12 @@ function handleGameClick({ x, y }) {
 
   if (collidingBall) {
     scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
+    tutorialManager.logTap({ x, y }, 1);
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {
     scoreStore.recordTap({ x, y }, 0);
+    tutorialManager.logTap({ x, y }, 0);
     ripples.push(makeRipple(canvasManager, { x, y }));
     audioManager.playMiss();
   }
