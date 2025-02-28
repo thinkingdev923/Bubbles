@@ -20,6 +20,8 @@ export const makeTutorialManager = (
   let tutorialStep = 1;
   let tutorialCompletedThisSession = false;
   let stepStarted = Date.now();
+  let holdingSlingshot = false;
+  let holdingBlast = false;
 
   const tutorialSteps = [
     {
@@ -133,13 +135,20 @@ export const makeTutorialManager = (
     //     update text shown to hint about using slingshot or blast
   };
 
+  const logTriggerOutput = (output) => {
+    holdingSlingshot = false;
+    holdingBlast = false;
+  };
+
   const previewingSlingshot = () => {
+    holdingSlingshot = true;
     // Update text to "Aim here"
     //
     // Figure out where user is currently aiming
   };
 
   const previewingBlast = () => {
+    holdingBlast = true;
     // Update text to "Now let go" after a second
   };
 
@@ -161,7 +170,7 @@ export const makeTutorialManager = (
         )
       );
 
-  const draw = () => {
+  const drawTopLabel = () => {
     CTX.save();
     CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
     CTX.fillStyle = yellow;
@@ -170,6 +179,44 @@ export const makeTutorialManager = (
     CTX.translate(canvasManager.getWidth() / 2, 24);
     CTX.fillText("TUTORIAL", 0, 0);
     CTX.restore();
+  };
+
+  const drawDownwardsArrow = () => {
+    CTX.save();
+    CTX.beginPath();
+    CTX.moveTo(
+      0,
+      canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
+    );
+    CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+    CTX.lineTo(8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+    CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
+    CTX.lineTo(-8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+    CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+    CTX.closePath();
+    CTX.stroke();
+    CTX.restore();
+  };
+
+  const drawUpwardsArrow = () => {
+    CTX.save();
+    CTX.beginPath();
+    CTX.moveTo(
+      0,
+      canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 24
+    );
+    CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+    CTX.lineTo(8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+    CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 16);
+    CTX.lineTo(-8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+    CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+    CTX.closePath();
+    CTX.stroke();
+    CTX.restore();
+  };
+
+  const draw = () => {
+    drawTopLabel();
 
     CTX.save();
     CTX.translate(canvasManager.getWidth() / 2, 0);
@@ -186,94 +233,45 @@ export const makeTutorialManager = (
         canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4
       );
 
-      CTX.beginPath();
-      CTX.moveTo(
-        0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
-      );
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.lineTo(8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
-      CTX.lineTo(-8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.closePath();
-      CTX.stroke();
+      drawDownwardsArrow();
     } else if (tutorialStep === 2) {
-      if (Date.now() - stepStarted > 2400) {
+      if (Date.now() - stepStarted > 2100) {
         advance();
       } else {
         CTX.fillText("Nice!", 0, canvasManager.getHeight() / 2 + 10);
       }
     } else if (tutorialStep === 3) {
       CTX.fillText(
-        "Hold down",
+        holdingBlast ? "Now let go!" : "Hold down",
         0,
         canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4
       );
 
-      CTX.beginPath();
-      CTX.moveTo(
-        0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
-      );
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.lineTo(8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
-      CTX.lineTo(-8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-      CTX.closePath();
-      CTX.stroke();
+      drawDownwardsArrow();
 
       CTX.fillStyle = "rgba(0, 0, 0, .6)";
       CTX.beginPath();
-      CTX.ellipse(
-        0,
-        canvasManager.getHeight() / 2,
-        BUBBLE_RADIUS,
-        BUBBLE_RADIUS * 1.1,
-        0,
-        0,
-        Math.PI * 2
-      );
+      CTX.arc(0, canvasManager.getHeight() / 2, BUBBLE_RADIUS, 0, Math.PI * 2);
       CTX.closePath();
       CTX.fill();
     } else if (tutorialStep === 4) {
-      if (Date.now() - stepStarted > 2400) {
+      if (Date.now() - stepStarted > 2100) {
         advance();
       } else {
         CTX.fillText("Awesome blast!", 0, canvasManager.getHeight() / 2 + 10);
       }
     } else if (tutorialStep === 5) {
       CTX.fillText(
-        "Hold and drag",
+        holdingSlingshot ? "Let go!" : "Hold and drag",
         0,
         canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4
       );
 
-      CTX.beginPath();
-      CTX.moveTo(
-        0,
-        canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 24
-      );
-      CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-      CTX.lineTo(8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-      CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 16);
-      CTX.lineTo(-8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-      CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-      CTX.closePath();
-      CTX.stroke();
+      drawUpwardsArrow();
 
       CTX.fillStyle = "rgba(0, 0, 0, .6)";
       CTX.beginPath();
-      CTX.ellipse(
-        0,
-        canvasManager.getHeight() / 2,
-        BUBBLE_RADIUS,
-        BUBBLE_RADIUS * 1.1,
-        0,
-        0,
-        Math.PI * 2
-      );
+      CTX.arc(0, canvasManager.getHeight() / 2, BUBBLE_RADIUS, 0, Math.PI * 2);
       CTX.closePath();
       CTX.fill();
     }
@@ -287,6 +285,7 @@ export const makeTutorialManager = (
     showTutorial,
     advance,
     logTap,
+    logTriggerOutput,
     previewingSlingshot,
     previewingBlast,
     generateBalls,
