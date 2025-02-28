@@ -18,8 +18,7 @@ export const makeTutorialManager = (
   const CTX = canvasManager.getContext();
   const tutorialSteps = getTutorialBallData(canvasManager);
   const successMessageDuration = 2000;
-  let tutorialComplete =
-    false || !!localStorage.getItem("bubblesTutorialComplete");
+  let tutorialComplete = !!localStorage.getItem("bubblesTutorialComplete");
   let tutorialCompletedThisSession = false;
   let tutorialStep = 1;
   let stepStarted = Date.now();
