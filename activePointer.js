@@ -62,7 +62,12 @@ export const makeActivePointer = (
 
   const draw = () => {
     if (isSlingshot()) {
-      drawSlingshotPreview(canvasManager, startPosition, currentPosition);
+      drawSlingshotPreview(
+        canvasManager,
+        startPosition,
+        currentPosition,
+        !tutorialManager.isTutorialComplete()
+      );
       tutorialManager.previewingSlingshot();
     } else if (isHoldBlast()) {
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);

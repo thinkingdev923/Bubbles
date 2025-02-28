@@ -7,6 +7,7 @@ import {
   transition,
 } from "./helpers.js";
 import { makeParticle } from "./particle.js";
+import { drawTrajectory } from "./trajectory.js";
 
 const slingshotRadius = (distance) =>
   transition(32, 12, clampedProgress(0, 600, distance));
@@ -14,7 +15,8 @@ const slingshotRadius = (distance) =>
 export const drawSlingshotPreview = (
   canvasManager,
   startPosition,
-  currentPosition
+  currentPosition,
+  drawPreviewTrajectory = false
 ) => {
   const CTX = canvasManager.getContext();
   const distance = Math.hypot(
@@ -22,6 +24,14 @@ export const drawSlingshotPreview = (
     startPosition.y - currentPosition.y
   );
   const radius = slingshotRadius(distance);
+  const previewVelocity = getVelocityFromSpeedAndHeading(
+    distance / 10,
+    getHeadingInRadsFromTwoPoints(startPosition, currentPosition)
+  );
+
+  if (drawPreviewTrajectory) {
+    drawTrajectory(canvasManager, currentPosition, previewVelocity, GRAVITY);
+  }
 
   CTX.save();
   CTX.fillStyle = red;
