@@ -15,7 +15,7 @@ export const makeTutorialManager = (
   onCompletion
 ) => {
   const CTX = canvasManager.getContext();
-  const successMessageDuration = 2400;
+  const successMessageDuration = 2000;
   let hasSeenTutorial = !!localStorage.getItem("bubblesTutorialComplete");
   let tutorialShowing = false;
   let tutorialStep = 1;
@@ -260,7 +260,7 @@ export const makeTutorialManager = (
       if (Date.now() - stepStarted > successMessageDuration) {
         advance();
       } else {
-        CTX.fillText("Awesome blast!", 0, canvasManager.getHeight() / 2 + 10);
+        CTX.fillText("Awesome!", 0, canvasManager.getHeight() / 2 + 10);
       }
     } else if (tutorialStep === 5) {
       CTX.fillText(
