@@ -15,10 +15,11 @@ export const makeTutorialManager = (
   onCompletion
 ) => {
   const CTX = canvasManager.getContext();
-  const hasSeenTutorial = false; //!!localStorage.getItem("bubblesTutorialComplete");
+  let hasSeenTutorial = false; //!!localStorage.getItem("bubblesTutorialComplete");
   let tutorialShowing = false;
   let tutorialStep = 1;
   let tutorialCompletedThisSession = false;
+  let stepStarted = Date.now();
 
   const tutorialSteps = [
     {
@@ -33,8 +34,9 @@ export const makeTutorialManager = (
         },
       ],
     },
+    { step: 2, balls: [] },
     {
-      step: 2,
+      step: 3,
       balls: [
         {
           position: {
@@ -66,8 +68,9 @@ export const makeTutorialManager = (
         },
       ],
     },
+    { step: 4, balls: [] },
     {
-      step: 3,
+      step: 5,
       balls: [
         {
           position: {
@@ -101,6 +104,7 @@ export const makeTutorialManager = (
 
   const showTutorial = () => {
     tutorialShowing = true;
+    stepStarted = Date.now();
     onTutorialStart();
   };
 
@@ -111,10 +115,12 @@ export const makeTutorialManager = (
     tutorialStep++;
 
     if (tutorialStep > tutorialSteps.length) {
-      // localStorage.setItem("bubblesTutorialComplete", "true");
       tutorialCompletedThisSession = true;
+      hasSeenTutorial = true;
+      // localStorage.setItem("bubblesTutorialComplete", true);
       onCompletion();
     } else {
+      stepStarted = Date.now();
       onAdvance();
     }
   };
@@ -193,6 +199,12 @@ export const makeTutorialManager = (
       CTX.closePath();
       CTX.stroke();
     } else if (tutorialStep === 2) {
+      if (Date.now() - stepStarted > 2400) {
+        advance();
+      } else {
+        CTX.fillText("Nice!", 0, canvasManager.getHeight() / 2 + 10);
+      }
+    } else if (tutorialStep === 3) {
       CTX.fillText(
         "Hold down",
         0,
@@ -225,7 +237,13 @@ export const makeTutorialManager = (
       );
       CTX.closePath();
       CTX.fill();
-    } else if (tutorialStep === 3) {
+    } else if (tutorialStep === 4) {
+      if (Date.now() - stepStarted > 2400) {
+        advance();
+      } else {
+        CTX.fillText("Awesome blast!", 0, canvasManager.getHeight() / 2 + 10);
+      }
+    } else if (tutorialStep === 5) {
       CTX.fillText(
         "Hold and drag",
         0,

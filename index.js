@@ -375,7 +375,9 @@ animate((deltaTime) => {
     activePointers.forEach((p) => p.draw());
 
     // Draw combo messages over everything
-    drawComboMessages();
+    if (!tutorialManager.isTutorialShowing()) {
+      drawComboMessages();
+    }
   });
 });
 
@@ -427,9 +429,8 @@ function onMiss() {
 
 function onTutorialPop() {
   if (balls.filter((b) => b.isRemaining()) <= 0) {
-    // Pause before showing next tutorial step so blasts don't pop bubbles in
-    // the next step
-    setTimeout(tutorialManager.advance, 600);
+    // Pause before showing next state so user can see slingshot bubbles pop
+    setTimeout(tutorialManager.advance, 300);
   }
 }
 
@@ -482,6 +483,5 @@ function onTutorialAdvance() {
 }
 
 function onTutorialComplete() {
-  scoreStore.reset();
-  levelManager.showLevelInterstitial();
+  resetGame();
 }
