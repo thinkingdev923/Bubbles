@@ -75,6 +75,12 @@ export const makeSlingshot = (
     startPosition.x - endPosition.x,
     startPosition.y - endPosition.y
   );
+
+  // TODO something wrong here:
+  // * Point slingshot down and left
+  // * Pull back far
+  // * Release
+  // * Slingshot has the wrong angle
   const startVelocity = getVelocityFromSpeedAndHeading(
     distance / 10,
     getHeadingInRadsFromTwoPoints(startPosition, endPosition)

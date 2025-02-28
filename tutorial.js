@@ -31,9 +31,6 @@ export const makeTutorialManager = (
   };
 
   const advance = () => {
-    // TODO: before updating the tutorial step,
-    // show confirmation text and then next step after a timer
-
     tutorialStep++;
 
     if (tutorialStep > tutorialSteps.length) {
@@ -47,25 +44,25 @@ export const makeTutorialManager = (
     }
   };
 
-  const logTap = ({ x, y }, popped) => {
-    // If currently showing step 1, and tap missed:
-    //     update text shown for step 1
-    //
-    // If currently showing > step 1, and any tap:
-    //     update text shown to hint about using slingshot or blast
-  };
+  const canMakeTap = () => true;
+
+  const canMakeBlast = () => true;
+
+  const canMakeSlingshot = () => true;
 
   const logTriggerOutput = (_) => {
     holdingSlingshot = false;
     holdingBlast = false;
   };
 
-  const previewingSlingshot = () => {
-    holdingSlingshot = true;
+  const previewingBlast = (startPosition, pointerStart) => {
+    // TODO get power and determine if it'll pop all bubbles
+    holdingBlast = true;
   };
 
-  const previewingBlast = () => {
-    holdingBlast = true;
+  const previewingSlingshot = (startPosition, currentPosition) => {
+    // TODO get angle and determine if it'll strike all bubbles
+    holdingSlingshot = true;
   };
 
   const generateBalls = (onPop, onMiss) =>
@@ -212,10 +209,12 @@ export const makeTutorialManager = (
     isTutorialCompletedThisSession: () => tutorialCompletedThisSession,
     showTutorial,
     advance,
-    logTap,
+    canMakeTap,
+    canMakeBlast,
+    canMakeSlingshot,
     logTriggerOutput,
-    previewingSlingshot,
     previewingBlast,
+    previewingSlingshot,
     generateBalls,
     draw,
   };
