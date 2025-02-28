@@ -191,7 +191,7 @@ export const makeTutorialManager = (
       }
     } else if (tutorialStep === 5) {
       CTX.fillText(
-        holdingSlingshot ? "Let go!" : "Hold and drag",
+        holdingSlingshot ? "Let go!" : "Drag down",
         0,
         canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4
       );
