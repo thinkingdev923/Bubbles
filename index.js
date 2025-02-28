@@ -64,7 +64,6 @@ const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
 const tutorialManager = makeTutorialManager(
   canvasManager,
-  levelManager,
   onTutorialStart,
   onTutorialAdvance,
   onTutorialComplete
@@ -86,9 +85,9 @@ function resetGame() {
   ripples = [];
   lifeManager.reset();
   levelManager.reset();
-  tutorialManager.shouldShowTutorial()
-    ? tutorialManager.showTutorial()
-    : levelManager.showLevelInterstitial();
+  tutorialManager.isTutorialComplete()
+    ? levelManager.showLevelInterstitial()
+    : tutorialManager.showTutorial();
   audioManager.resetPluckSequence();
   scoreStore.reset();
 }
@@ -351,14 +350,14 @@ animate((deltaTime) => {
       },
     });
 
-    if (tutorialManager.isTutorialShowing()) {
-      tutorialManager.draw();
-    } else {
+    if (tutorialManager.isTutorialComplete()) {
       levelManager.drawLevelNumber();
 
       if (!levelManager.isInterstitialShowing() && !levelManager.isGameOver()) {
         lifeManager.draw();
       }
+    } else {
+      tutorialManager.draw();
     }
 
     // Draw main game elements
@@ -375,7 +374,7 @@ animate((deltaTime) => {
     activePointers.forEach((p) => p.draw());
 
     // Draw combo messages over everything
-    if (!tutorialManager.isTutorialShowing()) {
+    if (tutorialManager.isTutorialComplete()) {
       drawComboMessages();
     }
   });

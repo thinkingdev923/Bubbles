@@ -11,104 +11,22 @@ import { easeOutQuart } from "./easings.js";
 
 export const makeTutorialManager = (
   canvasManager,
-  levelManager,
   onTutorialStart,
   onAdvance,
   onCompletion
 ) => {
   const CTX = canvasManager.getContext();
+  const tutorialSteps = getTutorialBallData(canvasManager);
   const successMessageDuration = 2000;
-  let hasSeenTutorial = !!localStorage.getItem("bubblesTutorialComplete");
-  let tutorialShowing = false;
-  let tutorialStep = 1;
+  let tutorialComplete =
+    false || !!localStorage.getItem("bubblesTutorialComplete");
   let tutorialCompletedThisSession = false;
+  let tutorialStep = 1;
   let stepStarted = Date.now();
   let holdingSlingshot = false;
   let holdingBlast = false;
 
-  const tutorialSteps = [
-    {
-      step: 1,
-      balls: [
-        {
-          position: {
-            x: canvasManager.getWidth() / 2,
-            y: canvasManager.getHeight() / 2,
-          },
-          fill: red,
-        },
-      ],
-    },
-    { step: 2, balls: [] },
-    {
-      step: 3,
-      balls: [
-        {
-          position: {
-            x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 2,
-            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 2,
-          },
-          fill: yellow,
-        },
-        {
-          position: {
-            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 2.5,
-            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 1.2,
-          },
-          fill: turquoise,
-        },
-        {
-          position: {
-            x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 2.5,
-            y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 2,
-          },
-          fill: red,
-        },
-        {
-          position: {
-            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 1.5,
-            y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 3,
-          },
-          fill: white,
-        },
-      ],
-    },
-    { step: 4, balls: [] },
-    {
-      step: 5,
-      balls: [
-        {
-          position: {
-            x: canvasManager.getWidth() / 2,
-            y: BUBBLE_RADIUS * 4 + 16,
-          },
-          fill: yellow,
-        },
-        {
-          position: {
-            x: canvasManager.getWidth() / 2,
-            y: BUBBLE_RADIUS * 2 + 8,
-          },
-          fill: red,
-        },
-        {
-          position: {
-            x: canvasManager.getWidth() / 2,
-            y: 0,
-          },
-          fill: turquoise,
-        },
-      ],
-    },
-  ];
-
-  const shouldShowTutorial = () =>
-    !hasSeenTutorial && levelManager.getLevel() === 1;
-
-  const isTutorialShowing = () => tutorialShowing;
-
   const showTutorial = () => {
-    tutorialShowing = true;
     stepStarted = Date.now();
     onTutorialStart();
   };
@@ -120,9 +38,8 @@ export const makeTutorialManager = (
     tutorialStep++;
 
     if (tutorialStep > tutorialSteps.length) {
+      tutorialComplete = true;
       tutorialCompletedThisSession = true;
-      hasSeenTutorial = true;
-      tutorialShowing = false;
       localStorage.setItem("bubblesTutorialComplete", true);
       onCompletion();
     } else {
@@ -292,8 +209,7 @@ export const makeTutorialManager = (
   };
 
   return {
-    shouldShowTutorial,
-    isTutorialShowing,
+    isTutorialComplete: () => tutorialComplete,
     isTutorialCompletedThisSession: () => tutorialCompletedThisSession,
     showTutorial,
     advance,
@@ -305,3 +221,81 @@ export const makeTutorialManager = (
     draw,
   };
 };
+
+function getTutorialBallData(canvasManager) {
+  return [
+    {
+      step: 1,
+      balls: [
+        {
+          position: {
+            x: canvasManager.getWidth() / 2,
+            y: canvasManager.getHeight() / 2,
+          },
+          fill: red,
+        },
+      ],
+    },
+    { step: 2, balls: [] },
+    {
+      step: 3,
+      balls: [
+        {
+          position: {
+            x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 2,
+            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 2,
+          },
+          fill: yellow,
+        },
+        {
+          position: {
+            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 2.5,
+            y: canvasManager.getHeight() / 2 - BUBBLE_RADIUS * 1.2,
+          },
+          fill: turquoise,
+        },
+        {
+          position: {
+            x: canvasManager.getWidth() / 2 - BUBBLE_RADIUS * 2.5,
+            y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 2,
+          },
+          fill: red,
+        },
+        {
+          position: {
+            x: canvasManager.getWidth() / 2 + BUBBLE_RADIUS * 1.5,
+            y: canvasManager.getHeight() / 2 + BUBBLE_RADIUS * 3,
+          },
+          fill: white,
+        },
+      ],
+    },
+    { step: 4, balls: [] },
+    {
+      step: 5,
+      balls: [
+        {
+          position: {
+            x: canvasManager.getWidth() / 2,
+            y: BUBBLE_RADIUS * 4 + 16,
+          },
+          fill: yellow,
+        },
+        {
+          position: {
+            x: canvasManager.getWidth() / 2,
+            y: BUBBLE_RADIUS * 2 + 8,
+          },
+          fill: red,
+        },
+        {
+          position: {
+            x: canvasManager.getWidth() / 2,
+            y: 0,
+          },
+          fill: turquoise,
+        },
+      ],
+    },
+  ];
+}
