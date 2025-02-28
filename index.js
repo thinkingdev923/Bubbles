@@ -430,8 +430,7 @@ function onMiss() {
 
 function onTutorialPop() {
   if (balls.filter((b) => b.isRemaining()) <= 0) {
-    // Pause before showing next state so user can see slingshot bubbles pop
-    setTimeout(tutorialManager.advance, 300);
+    tutorialManager.advance();
   }
 }
 
@@ -484,5 +483,6 @@ function onTutorialAdvance() {
 }
 
 function onTutorialComplete() {
-  resetGame();
+  // Pause before transitioning to the first level
+  setTimeout(resetGame, 1400);
 }

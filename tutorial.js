@@ -15,7 +15,8 @@ export const makeTutorialManager = (
   onCompletion
 ) => {
   const CTX = canvasManager.getContext();
-  let hasSeenTutorial = false; //!!localStorage.getItem("bubblesTutorialComplete");
+  const successMessageDuration = 2400;
+  let hasSeenTutorial = !!localStorage.getItem("bubblesTutorialComplete");
   let tutorialShowing = false;
   let tutorialStep = 1;
   let tutorialCompletedThisSession = false;
@@ -119,7 +120,8 @@ export const makeTutorialManager = (
     if (tutorialStep > tutorialSteps.length) {
       tutorialCompletedThisSession = true;
       hasSeenTutorial = true;
-      // localStorage.setItem("bubblesTutorialComplete", true);
+      tutorialShowing = false;
+      localStorage.setItem("bubblesTutorialComplete", true);
       onCompletion();
     } else {
       stepStarted = Date.now();
@@ -235,7 +237,7 @@ export const makeTutorialManager = (
 
       drawDownwardsArrow();
     } else if (tutorialStep === 2) {
-      if (Date.now() - stepStarted > 2100) {
+      if (Date.now() - stepStarted > successMessageDuration) {
         advance();
       } else {
         CTX.fillText("Nice!", 0, canvasManager.getHeight() / 2 + 10);
@@ -255,7 +257,7 @@ export const makeTutorialManager = (
       CTX.closePath();
       CTX.fill();
     } else if (tutorialStep === 4) {
-      if (Date.now() - stepStarted > 2100) {
+      if (Date.now() - stepStarted > successMessageDuration) {
         advance();
       } else {
         CTX.fillText("Awesome blast!", 0, canvasManager.getHeight() / 2 + 10);
