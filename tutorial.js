@@ -6,6 +6,8 @@ import {
 } from "./constants.js";
 import { red, white, turquoise, yellow } from "./colors.js";
 import { makeBall } from "./ball.js";
+import { clampedProgress, transition } from "./helpers.js";
+import { easeOutQuart } from "./easings.js";
 
 export const makeTutorialManager = (
   canvasManager,
@@ -137,21 +139,17 @@ export const makeTutorialManager = (
     //     update text shown to hint about using slingshot or blast
   };
 
-  const logTriggerOutput = (output) => {
+  const logTriggerOutput = (_) => {
     holdingSlingshot = false;
     holdingBlast = false;
   };
 
   const previewingSlingshot = () => {
     holdingSlingshot = true;
-    // Update text to "Aim here"
-    //
-    // Figure out where user is currently aiming
   };
 
   const previewingBlast = () => {
     holdingBlast = true;
-    // Update text to "Now let go" after a second
   };
 
   const generateBalls = (onPop, onMiss) =>
@@ -184,34 +182,47 @@ export const makeTutorialManager = (
   };
 
   const drawDownwardsArrow = () => {
+    const endPointTransition = transition(
+      canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16,
+      canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28,
+      clampedProgress(0, 1600, Date.now() - stepStarted),
+      easeOutQuart
+    );
     CTX.save();
     CTX.beginPath();
     CTX.moveTo(
       0,
       canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
     );
-    CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-    CTX.lineTo(8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-    CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 16);
-    CTX.lineTo(-8, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
-    CTX.lineTo(0, canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28);
+    CTX.lineTo(0, endPointTransition);
+    CTX.lineTo(8, endPointTransition);
+    CTX.lineTo(0, endPointTransition + 12);
+    CTX.lineTo(-8, endPointTransition);
+    CTX.lineTo(0, endPointTransition);
     CTX.closePath();
     CTX.stroke();
     CTX.restore();
   };
 
   const drawUpwardsArrow = () => {
+    const endPointTransition = transition(
+      canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 28,
+      canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28,
+      clampedProgress(0, 1600, Date.now() - stepStarted),
+      easeOutQuart
+    );
+
     CTX.save();
     CTX.beginPath();
     CTX.moveTo(
       0,
-      canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 24
+      canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 28
     );
-    CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-    CTX.lineTo(8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-    CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 16);
-    CTX.lineTo(-8, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
-    CTX.lineTo(0, canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28);
+    CTX.lineTo(0, endPointTransition);
+    CTX.lineTo(8, endPointTransition);
+    CTX.lineTo(0, endPointTransition - 12);
+    CTX.lineTo(-8, endPointTransition);
+    CTX.lineTo(0, endPointTransition);
     CTX.closePath();
     CTX.stroke();
     CTX.restore();
@@ -269,7 +280,7 @@ export const makeTutorialManager = (
         canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4
       );
 
-      drawUpwardsArrow();
+      if (!holdingSlingshot) drawUpwardsArrow();
 
       CTX.fillStyle = "rgba(0, 0, 0, .6)";
       CTX.beginPath();
