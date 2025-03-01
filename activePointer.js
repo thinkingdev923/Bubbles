@@ -39,13 +39,26 @@ export const makeActivePointer = (
     Date.now() - pointerStart > BLAST_HOLD_THRESHOLD &&
     !hitSlingshotDistanceThresholdInTime;
 
+  const slingshotAllowed = () =>
+    tutorialManager.isTutorialComplete() ||
+    (!tutorialManager.isTutorialComplete() &&
+      tutorialManager.canMakeSlingshot());
+
+  const blastAllowed = () =>
+    tutorialManager.isTutorialComplete() ||
+    (!tutorialManager.isTutorialComplete() && tutorialManager.canMakeBlast());
+
+  const tapAllowed = () =>
+    tutorialManager.isTutorialComplete() ||
+    (!tutorialManager.isTutorialComplete() && tutorialManager.canMakeTap());
+
   const trigger = () => {
-    if (isSlingshot()) {
+    if (isSlingshot() && slingshotAllowed()) {
       onTrigger(
         makeSlingshot(canvasManager, scoreStore, startPosition, currentPosition)
       );
       audioManager.playMiss();
-    } else if (isHoldBlast()) {
+    } else if (isHoldBlast() && blastAllowed()) {
       onTrigger(
         makeHoldBlast(
           canvasManager,
@@ -55,13 +68,13 @@ export const makeActivePointer = (
         )
       );
       audioManager.playImpact();
-    } else {
+    } else if (tapAllowed()) {
       defaultPointerAction(startPosition);
     }
   };
 
   const draw = () => {
-    if (isSlingshot()) {
+    if (isSlingshot() && slingshotAllowed()) {
       drawSlingshotPreview(
         canvasManager,
         startPosition,
@@ -69,7 +82,7 @@ export const makeActivePointer = (
         !tutorialManager.isTutorialComplete()
       );
       tutorialManager.previewingSlingshot(startPosition, currentPosition);
-    } else if (isHoldBlast()) {
+    } else if (isHoldBlast() && blastAllowed()) {
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);
       tutorialManager.previewingBlast(startPosition, pointerStart);
     }

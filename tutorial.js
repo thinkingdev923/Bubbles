@@ -44,11 +44,11 @@ export const makeTutorialManager = (
     }
   };
 
-  const canMakeTap = () => true;
+  const canMakeTap = () => tutorialStep === 1;
 
-  const canMakeBlast = () => true;
+  const canMakeBlast = () => tutorialStep === 3;
 
-  const canMakeSlingshot = () => true;
+  const canMakeSlingshot = () => tutorialStep === 5;
 
   const logTriggerOutput = (_) => {
     holdingSlingshot = false;
