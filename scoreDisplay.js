@@ -110,15 +110,15 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     const opacityTransition = transition(
       0,
       1,
-      clampedProgress(0, 120, Date.now() - scoreDisplayStart),
+      clampedProgress(0, 100, Date.now() - scoreDisplayStart),
       easeInOutSine
     );
     const slideUpTransition = transition(
       topText.getHeight() +
         topText.getYPos() +
-        verticalMarginBetweenSections * 2,
+        verticalMarginBetweenSections * 1.4,
       topText.getHeight() + topText.getYPos() + verticalMarginBetweenSections,
-      clampedProgress(0, 240, Date.now() - scoreDisplayStart),
+      clampedProgress(0, 200, Date.now() - scoreDisplayStart),
       easeOutCirc
     );
 
