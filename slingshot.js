@@ -19,9 +19,10 @@ export const drawSlingshotPreview = (
   drawPreviewTrajectory = false
 ) => {
   const CTX = canvasManager.getContext();
-  const distance = Math.hypot(
-    startPosition.x - currentPosition.x,
-    startPosition.y - currentPosition.y
+
+  const distance = Math.sqrt(
+    (startPosition.x - currentPosition.x) ** 2 +
+      (startPosition.y - currentPosition.y) ** 2
   );
   const radius = slingshotRadius(distance);
   const previewVelocity = getVelocityFromSpeedAndHeading(
@@ -71,9 +72,9 @@ export const makeSlingshot = (
   endPosition
 ) => {
   const CTX = canvasManager.getContext();
-  const distance = Math.hypot(
-    startPosition.x - endPosition.x,
-    startPosition.y - endPosition.y
+  const distance = Math.sqrt(
+    (startPosition.x - endPosition.x) ** 2 +
+      (startPosition.y - endPosition.y) ** 2
   );
 
   // TODO something wrong here:

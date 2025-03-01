@@ -16,6 +16,12 @@ export const makeActivePointer = (
   let currentPosition = { ...startPosition };
   let hitSlingshotDistanceThresholdInTime = false;
 
+  const getDistance = () =>
+    Math.sqrt(
+      (startPosition.x - currentPosition.x) ** 2 +
+        (startPosition.y - currentPosition.y) ** 2
+    );
+
   const setPosition = ({ x, y }) => {
     currentPosition = { x, y };
 
@@ -26,12 +32,6 @@ export const makeActivePointer = (
       hitSlingshotDistanceThresholdInTime = true;
     }
   };
-
-  const getDistance = () =>
-    Math.hypot(
-      startPosition.x - currentPosition.x,
-      startPosition.y - currentPosition.y
-    );
 
   const isSlingshot = () => hitSlingshotDistanceThresholdInTime;
 
