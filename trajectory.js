@@ -15,6 +15,7 @@ export const drawTrajectory = (
 
     while (
       projectedYPosition <= canvasManager.getHeight() + 100 &&
+      projectedYPosition >= -100 &&
       projectedXPosition <= canvasManager.getWidth() + 100 &&
       projectedXPosition >= -100
     ) {
