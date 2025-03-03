@@ -81,10 +81,16 @@ export const makeActivePointer = (
         currentPosition,
         !tutorialManager.isTutorialComplete()
       );
-      tutorialManager.previewingSlingshot(startPosition, currentPosition);
+
+      if (!tutorialManager.isTutorialComplete()) {
+        tutorialManager.previewingSlingshot(startPosition, currentPosition);
+      }
     } else if (isHoldBlast() && blastAllowed()) {
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);
-      tutorialManager.previewingBlast(startPosition, pointerStart);
+
+      if (!tutorialManager.isTutorialComplete()) {
+        tutorialManager.previewingBlast(startPosition, pointerStart);
+      }
     }
   };
 

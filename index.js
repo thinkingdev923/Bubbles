@@ -399,8 +399,11 @@ function handleGameClick({ x, y }) {
 }
 
 function onPointerTrigger(output) {
-  tutorialManager.logTriggerOutput(output);
   pointerTriggerOutput.push(output);
+
+  if (!tutorialManager.isTutorialComplete()) {
+    tutorialManager.logTriggerOutput(output);
+  }
 }
 
 function onPop() {
