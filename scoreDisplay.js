@@ -45,57 +45,76 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     const currentLevel = levelManager.getLevel();
     const textLines = [];
     scoreDisplayStart = Date.now();
-    stats = {
-      score: scoreStore.levelScoreNumber(),
-      taps: scoreStore.getTaps(currentLevel),
-      tapsPopped: scoreStore.sumCategoryLevelEvents("taps", currentLevel)
-        .numPopped,
-      slingshots: scoreStore.getSlingshots(currentLevel),
-      blasts: scoreStore.getBlasts(currentLevel),
-      totalPopped: scoreStore.sumPopped(currentLevel),
-      totalMissed: scoreStore.sumCategoryLevelEvents(
-        "missedBubbles",
-        currentLevel
-      ).num,
-    };
 
-    if (levelManager.isGameWon()) textLines.push("You won!");
+    if (levelManager.isGameOver()) {
+      stats = {
+        score: scoreStore.overallScoreNumber(),
+        taps: scoreStore.getTaps(),
+        tapsPopped: scoreStore.sumCategoryLevelEvents("taps").numPopped,
+        slingshots: scoreStore.getSlingshots(),
+        blasts: scoreStore.getBlasts(),
+        totalPopped: scoreStore.sumPopped(),
+        totalMissed: scoreStore.sumCategoryLevelEvents("missedBubbles").num,
+      };
 
-    if (levelManager.isGameLost()) {
-      textLines.push("You lost!");
+      textLines.push(
+        levelManager.isGameWon() ? "You beat all levels!" : "No more lives!"
+      );
+
+      textLines.push(
+        `${
+          stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""
+        }${
+          stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
+        } par overall:`
+      );
     } else {
+      stats = {
+        score: scoreStore.levelScoreNumber(),
+        taps: scoreStore.getTaps(currentLevel),
+        tapsPopped: scoreStore.sumCategoryLevelEvents("taps", currentLevel)
+          .numPopped,
+        slingshots: scoreStore.getSlingshots(currentLevel),
+        blasts: scoreStore.getBlasts(currentLevel),
+        totalPopped: scoreStore.sumPopped(currentLevel),
+        totalMissed: scoreStore.sumCategoryLevelEvents(
+          "missedBubbles",
+          currentLevel
+        ).num,
+      };
+
+      if (stats.totalMissed) {
+        textLines.push(
+          `Lost ${stats.totalMissed} ${
+            stats.totalMissed === 1 ? "life" : "lives"
+          }`
+        );
+      }
+
       textLines.push(
         `${
           stats.score <= -4
-            ? "Condor: "
+            ? "Condor, "
             : stats.score === -3
-            ? "Albatross: "
+            ? "Albatross, "
             : stats.score === -2
-            ? "Eagle: "
+            ? "Eagle, "
             : stats.score === -1
-            ? "Birdie: "
+            ? "Birdie, "
             : stats.score === 1
-            ? "Bogey: "
+            ? "Bogey, "
             : stats.score === 2
-            ? "Double Bogey: "
+            ? "Double bogey, "
             : stats.score === 3
-            ? "Triple Bogey: "
+            ? "Triple Bogey, "
             : stats.score >= 4
-            ? "Disaster: "
+            ? "Disaster, "
             : ""
         }${
           stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""
         }${
           stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
-        } par`
-      );
-    }
-
-    if (stats.totalMissed) {
-      textLines.push(
-        `Lost ${stats.totalMissed} ${
-          stats.totalMissed === 1 ? "life" : "lives"
-        }`
+        } par:`
       );
     }
 
@@ -105,7 +124,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   const draw = () => {
     CTX.save();
     // Darken screen so it looks different from normal interstitial
-    if (levelManager.isGameLost() || levelManager.isGameWon()) {
+    if (levelManager.isGameOver()) {
       CTX.fillStyle = "rgba(0, 0, 0, 0.4)";
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
     }
@@ -144,6 +163,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const tapsGrid = makeGrid(canvasManager, stats.taps, {
         itemWidth: iconSize,
         itemHeight: iconSize,
+        maxRows: 2,
       });
 
       tapsGrid.drawItems(drawTapItem);
@@ -177,6 +197,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const blastsGrid = makeGrid(canvasManager, stats.blasts, {
         itemWidth: iconSize + 8 + numPoppedTextWidth,
         itemHeight: iconSize,
+        maxRows: 2,
       });
 
       blastsGrid.drawItems(drawBlastItem);
