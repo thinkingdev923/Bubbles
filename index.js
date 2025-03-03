@@ -97,6 +97,12 @@ function resetLevelData() {
   audioManager.resetPluckSequence();
 }
 
+function resetPreviewData() {
+  audioManager.resetPluckSequence();
+  lifeManager.reset();
+  scoreStore.reset();
+}
+
 function resetOngoingVisuals() {
   activePointers = [];
   pointerTriggerOutput = pointerTriggerOutput.filter((b) => !b.isGone());
@@ -461,7 +467,7 @@ function onLevelAdvance() {
 }
 
 function onPreviewAdvance() {
-  resetLevelData();
+  resetPreviewData();
 
   // Allow popping animation to finish playing for previous level bubbles
   previousLevelBalls = balls.filter((b) => b.isPopping());
