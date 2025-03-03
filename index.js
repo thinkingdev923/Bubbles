@@ -1,10 +1,12 @@
 import { makeCanvasManager } from "./canvas.js";
-import { BLAST_MAX_DURATION } from "./constants.js";
+import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import {
   animate,
+  clampedProgress,
   findBallAtPoint,
   randomBetween,
   transition,
+  getBoundedPosition,
 } from "./helpers.js";
 import {
   checkParticleCollision,
@@ -17,11 +19,12 @@ import { makeLifeManager } from "./lives.js";
 import { makeLevelManager } from "./level.js";
 import { makeContinueButtonManager } from "./continueButton.js";
 import { makeActivePointer } from "./activePointer.js";
-import { centerTextBlock } from "./centerTextBlock.js";
-import { drawScore } from "./score.js";
-import { levels, makeLevelBalls } from "./levelData.js";
-import { red } from "./colors.js";
+import { makeTextBlock } from "./textBlock.js";
+import { makeScoreDisplay } from "./scoreDisplay.js";
+import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
+import { makeTutorialManager } from "./tutorial.js";
+import { easeOutElastic, easeOutQuint } from "./easings.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -45,6 +48,7 @@ if (previewDataPresent) {
 const canvasManager = makeCanvasManager({
   initialWidth: window.innerWidth,
   initialHeight: window.innerHeight,
+  maxWidth: 800,
   attachNode: "#canvas",
 });
 const audioManager = makeAudioManager();
@@ -53,28 +57,37 @@ const levelManager = makeLevelManager(
   canvasManager,
   onInterstitial,
   previewDataPresent ? onPreviewAdvance : onLevelAdvance,
-  previewDataPresent
+  previewData
 );
 const scoreStore = makeScoreStore(levelManager);
+const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
 const continueButtonManager = makeContinueButtonManager(canvasManager);
+const tutorialManager = makeTutorialManager(
+  canvasManager,
+  onTutorialStart,
+  onTutorialAdvance,
+  onTutorialComplete
+);
 const CTX = canvasManager.getContext();
 
 // These are all reset on game restart
 let activePointers;
 let pointerTriggerOutput;
-let pointerPosition;
+let previousLevelBalls;
 let balls;
 let ripples;
 
 function resetGame() {
   activePointers = [];
   pointerTriggerOutput = [];
-  pointerPosition = null;
+  previousLevelBalls = [];
   balls = [];
   ripples = [];
   lifeManager.reset();
   levelManager.reset();
-  levelManager.showLevelInterstitial();
+  tutorialManager.isTutorialComplete()
+    ? levelManager.showLevelInterstitial()
+    : tutorialManager.showTutorial();
   audioManager.resetPluckSequence();
   scoreStore.reset();
 }
@@ -90,8 +103,8 @@ function resetOngoingVisuals() {
   ripples = [];
 }
 
-document.addEventListener("pointerdown", (e) => {
-  const { pointerId, clientX: x, clientY: y } = e;
+canvasManager.getElement().addEventListener("pointerdown", (e) => {
+  const { pointerId, offsetX: x, offsetY: y } = e;
 
   if (levelManager.isInterstitialShowing()) {
     continueButtonManager.handleClick(
@@ -105,19 +118,21 @@ document.addEventListener("pointerdown", (e) => {
       makeActivePointer(
         canvasManager,
         audioManager,
+        scoreStore,
+        tutorialManager,
         pointerId,
         { x, y },
-        onPointerTrigger
+        onPointerTrigger,
+        handleGameClick
       )
     );
-    handleGameClick({ x, y });
   }
 
   e.preventDefault();
 });
 
-document.addEventListener("pointerup", (e) => {
-  const { pointerId, clientX: x, clientY: y } = e;
+canvasManager.getElement().addEventListener("pointerup", (e) => {
+  const { pointerId, offsetX: x, offsetY: y } = e;
 
   activePointers.forEach((pointer, pointerIndex) => {
     if (pointerId === pointer.getId()) {
@@ -130,10 +145,8 @@ document.addEventListener("pointerup", (e) => {
   e.preventDefault();
 });
 
-document.addEventListener("pointermove", (e) => {
-  const { pointerId, clientX: x, clientY: y } = e;
-
-  pointerPosition = { x, y };
+canvasManager.getElement().addEventListener("pointermove", (e) => {
+  const { pointerId, offsetX: x, offsetY: y } = e;
 
   activePointers.forEach((pointer) => {
     if (pointerId === pointer.getId()) pointer.setPosition({ x, y });
@@ -190,114 +203,192 @@ const cameraWrapper = (drawFunc) => {
   }
 };
 
+const triggerTimedOutHoldBlasts = () => {
+  activePointers.forEach((p, pointerIndex) => {
+    if (p.isHoldBlast() && p.getDuration() >= BLAST_MAX_DURATION) {
+      activePointers.splice(pointerIndex, 1);
+      p.trigger();
+    }
+  });
+};
+
+const detectCollisionsForGameObjects = () => {
+  // Run collision detection on bubbles and bounce bubbles off eachother
+  // Run collision detection on blasts + slingshots and pop colliding bubbles
+  const ballsInPlay = balls.filter((b) => b.isRemaining() && b.shouldRender());
+  ballsInPlay.forEach((ballA) => {
+    ballsInPlay.forEach((ballB) => {
+      if (ballA !== ballB) {
+        const collision = checkParticleCollision(ballA, ballB);
+        if (collision[0]) {
+          adjustParticlePositions(ballA, ballB, collision[1]);
+          resolveParticleCollision(ballA, ballB);
+        }
+      }
+    });
+    pointerTriggerOutput
+      .filter((p) => !p.isGone())
+      .forEach((output) => {
+        const collision = checkParticleCollision(ballA, output);
+        if (collision[0]) {
+          output.isHoldBlast()
+            ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
+            : ballA.pop(output.getVelocity());
+
+          output.logCollision();
+
+          audioManager.playSequentialPluck();
+        }
+      });
+  });
+};
+
+const drawComboMessages = () => {
+  scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
+    // TODO: use springs and animate out as well
+    const boundedPosition = getBoundedPosition(canvasManager, c.position, 100);
+    const text = `x${c.popped}!`;
+    const textHeight = 48;
+
+    const slideUp = transition(
+      boundedPosition.y + 60,
+      boundedPosition.y + textHeight / 2,
+      clampedProgress(0, 300, Date.now() - c.timestamp),
+      easeOutQuint
+    );
+    const rotateIn = transition(
+      -Math.PI / 2,
+      Math.PI / 80,
+      clampedProgress(0, 1600, Date.now() - c.timestamp),
+      easeOutElastic
+    );
+    const scaleIn = transition(
+      0.01,
+      1,
+      clampedProgress(0, 400, Date.now() - c.timestamp),
+      easeOutQuint
+    );
+
+    CTX.save();
+    CTX.translate(boundedPosition.x, slideUp);
+    CTX.rotate(rotateIn);
+    CTX.scale(scaleIn, scaleIn);
+    CTX.font = `${FONT_WEIGHT_BOLD} 64px ${FONT}`;
+
+    // Shadow
+    CTX.fillStyle = "#000";
+    CTX.textAlign = "center";
+    CTX.fillText(text, 0, 0);
+
+    // Text
+    CTX.translate(-2, -3);
+    CTX.fillStyle = "#fff";
+    CTX.fillText(text, 0, 0);
+
+    CTX.restore();
+  });
+};
+
 animate((deltaTime) => {
   CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
   cameraWrapper(() => {
     // Trigger holdBlasts that have been held down past the max time
     if (!levelManager.isInterstitialShowing()) {
-      activePointers.forEach((p, pointerIndex) => {
-        if (p.isHoldBlast() && p.getDuration() >= BLAST_MAX_DURATION) {
-          activePointers.splice(pointerIndex, 1);
-          p.trigger();
-        }
-      });
+      triggerTimedOutHoldBlasts();
     }
 
-    // Run collision detection on bubbles and bounce bubbles off eachother
-    // Run collision detection on blasts + slingshots and pop colliding bubbles
-    const ballsInPlay = balls.filter(
-      (b) => b.isRemaining() && b.shouldRender()
-    );
-    ballsInPlay.forEach((ballA) => {
-      ballsInPlay.forEach((ballB) => {
-        if (ballA !== ballB) {
-          const collision = checkParticleCollision(ballA, ballB);
-          if (collision[0]) {
-            adjustParticlePositions(ballA, ballB, collision[1]);
-            resolveParticleCollision(ballA, ballB);
-          }
-        }
-      });
-      pointerTriggerOutput
-        .filter((p) => !p.isGone())
-        .forEach((output) => {
-          const collision = checkParticleCollision(ballA, output);
-          if (collision[0]) {
-            output.isHoldBlast()
-              ? ballA.pop(output.getRelativeVelocity(ballA.getPosition()))
-              : ballA.pop(output.getVelocity());
+    detectCollisionsForGameObjects();
 
-            audioManager.playSequentialPluck();
-          }
-        });
+    // Draw text elements (level, life, interstitial) underneath bubbles
+    levelManager.drawInterstitialMessage({
+      previewInitialMessage: (msElapsed) => {
+        makeTextBlock(
+          canvasManager,
+          {
+            xPos: canvasManager.getWidth() / 2,
+            yPos: canvasManager.getHeight() / 2,
+            textAlign: "center",
+            verticalAlign: "center",
+          },
+          [`Preview of “${previewData.name}”`]
+        ).draw(msElapsed);
+        continueButtonManager.draw(deltaTime, msElapsed, 600, "Play Preview");
+      },
+      initialMessage: (msElapsed) => {
+        makeTextBlock(
+          canvasManager,
+          {
+            xPos: canvasManager.getWidth() / 2,
+            yPos: canvasManager.getHeight() / 2,
+            textAlign: "center",
+            verticalAlign: "center",
+          },
+          [
+            tutorialManager.isTutorialCompletedThisSession()
+              ? "You’re ready"
+              : "Pop the bubble",
+          ]
+        ).draw(msElapsed);
+        continueButtonManager.draw(deltaTime, msElapsed, 600, "Play");
+      },
+      firstMissMessage: (msElapsed) => {
+        scoreDisplay.draw();
+        continueButtonManager.draw(deltaTime, msElapsed, 960);
+      },
+      defaultMessage: (msElapsed) => {
+        scoreDisplay.draw();
+        continueButtonManager.draw(deltaTime, msElapsed, 960);
+      },
+      endGameMessage: (msElapsed) => {
+        scoreDisplay.draw();
+        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Try Again");
+      },
+      reachedEndOfGameMessage: (msElapsed) => {
+        scoreDisplay.draw();
+        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Play Again");
+      },
     });
 
-    // Draw level + life text underneath balls
-    levelManager.drawLevelNumber();
+    if (tutorialManager.isTutorialComplete()) {
+      levelManager.drawLevelNumber();
 
-    if (!levelManager.isGameOver()) lifeManager.draw();
+      if (!levelManager.isInterstitialShowing() && !levelManager.isGameOver()) {
+        lifeManager.draw();
+      }
+    } else {
+      tutorialManager.draw();
+    }
 
     // Draw main game elements
     ripples.forEach((r) => r.draw());
+    previousLevelBalls.forEach((b) => b.draw(deltaTime));
+
+    if (levelManager.showLevelCountdown()) {
+      levelManager.drawLevelCountdown(deltaTime);
+    } else {
+      balls.forEach((b) => b.draw(deltaTime));
+    }
+
     pointerTriggerOutput.forEach((b) => b.draw(deltaTime));
-    balls.forEach((b) => b.draw(deltaTime));
     activePointers.forEach((p) => p.draw());
 
-    levelManager.drawInterstitialMessage({
-      previewInitialMessage: (msElapsed) => {
-        centerTextBlock(canvasManager, [`Preview of “${previewData.name}”`]);
-        continueButtonManager.draw(msElapsed, 0, "Play Preview");
-      },
-      initialMessage: (msElapsed) => {
-        centerTextBlock(canvasManager, [`Pop the bubble`]);
-        continueButtonManager.draw(msElapsed, 0, "Play");
-      },
-      firstMissMessage: (msElapsed) => {
-        centerTextBlock(canvasManager, [`Miss a bubble, lose a life`]);
-        continueButtonManager.draw(msElapsed, 1000);
-      },
-      defaultMessage: (msElapsed) => {
-        drawScore(
-          canvasManager,
-          scoreStore.sumCurrentLevel("taps").num,
-          scoreStore.sumCurrentLevel("taps").numPopped,
-          scoreStore.sumCurrentLevel("missedBubbles").num,
-          msElapsed
-        );
-        continueButtonManager.draw(msElapsed, 2000);
-      },
-      endGameMessage: (msElapsed) => {
-        drawScore(
-          canvasManager,
-          scoreStore.sumAll("taps").num,
-          scoreStore.sumAll("taps").numPopped,
-          scoreStore.sumAll("missedBubbles").num,
-          msElapsed,
-          "Game over"
-        );
-        continueButtonManager.draw(msElapsed, 2000, "Try Again");
-      },
-      reachedEndOfGameMessage: (msElapsed) => {
-        drawScore(
-          canvasManager,
-          scoreStore.sumAll("taps").num,
-          scoreStore.sumAll("taps").numPopped,
-          scoreStore.sumAll("missedBubbles").num,
-          msElapsed,
-          "You beat all levels!"
-        );
-        continueButtonManager.draw(msElapsed, 2000, "Play Again");
-      },
-    });
+    // Draw combo messages over everything
+    if (tutorialManager.isTutorialComplete()) {
+      drawComboMessages();
+    }
   });
 });
 
 function handleGameClick({ x, y }) {
+  // In case of an active tutorial, the ball pop may be the first interaction
+  // Subsequent calls are ignored.
+  audioManager.initialize();
+
   const collidingBall = findBallAtPoint(balls, { x, y });
 
   if (collidingBall) {
-    scoreStore.recordTap({ x, y }, 1);
+    scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {
@@ -308,12 +399,14 @@ function handleGameClick({ x, y }) {
 }
 
 function onPointerTrigger(output) {
+  tutorialManager.logTriggerOutput(output);
   pointerTriggerOutput.push(output);
 }
 
 function onPop() {
   if (balls.filter((b) => b.isRemaining()) <= 0) {
-    levelManager.showLevelInterstitial();
+    // Pause before showing interstitial so user can see the final bubble pop
+    setTimeout(levelManager.showLevelInterstitial, 600);
   }
 }
 
@@ -332,6 +425,12 @@ function onMiss() {
   }
 }
 
+function onTutorialPop() {
+  if (balls.filter((b) => b.isRemaining()) <= 0) {
+    tutorialManager.advance();
+  }
+}
+
 function onGameEnd() {
   audioManager.playLose();
   levelManager.onGameOver();
@@ -344,11 +443,14 @@ function onInterstitial() {
 function onLevelAdvance() {
   resetLevelData();
 
-  const levelData = levels[levelManager.getLevel() - 1];
-  // Allow popping animation to finish playing for previous level balls
-  balls = balls
-    .filter((b) => b.isPopping())
-    .concat(makeLevelBalls(canvasManager, levelData, onPop, onMiss));
+  // Allow popping animation to finish playing for previous level bubbles
+  previousLevelBalls = balls.filter((b) => b.isPopping());
+  balls = makeLevelBalls(
+    canvasManager,
+    levelManager.getLevelData(),
+    onPop,
+    onMiss
+  );
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
@@ -358,7 +460,7 @@ function onLevelAdvance() {
 function onPreviewAdvance() {
   resetLevelData();
 
-  // Allow popping animation to finish playing for previous level balls
+  // Allow popping animation to finish playing for previous level bubbles
   balls = balls
     .filter((b) => b.isPopping())
     .concat(makeLevelBalls(canvasManager, previewData, onPop, onMiss));
@@ -366,4 +468,18 @@ function onPreviewAdvance() {
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
   audioManager.playRandomLevel();
+}
+
+function onTutorialStart() {
+  balls = tutorialManager.generateBalls(onTutorialPop, () => {});
+}
+
+function onTutorialAdvance() {
+  previousLevelBalls = balls.filter((b) => b.isPopping());
+  balls = tutorialManager.generateBalls(onTutorialPop, () => {});
+}
+
+function onTutorialComplete() {
+  // Pause before transitioning to the first level
+  setTimeout(resetGame, 1400);
 }

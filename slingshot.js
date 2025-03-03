@@ -7,6 +7,7 @@ import {
   transition,
 } from "./helpers.js";
 import { makeParticle } from "./particle.js";
+import { drawTrajectory } from "./trajectory.js";
 
 const slingshotRadius = (distance) =>
   transition(32, 12, clampedProgress(0, 600, distance));
@@ -14,14 +15,24 @@ const slingshotRadius = (distance) =>
 export const drawSlingshotPreview = (
   canvasManager,
   startPosition,
-  currentPosition
+  currentPosition,
+  drawPreviewTrajectory = false
 ) => {
   const CTX = canvasManager.getContext();
-  const distance = Math.hypot(
-    startPosition.x - currentPosition.x,
-    startPosition.y - currentPosition.y
+
+  const distance = Math.sqrt(
+    (startPosition.x - currentPosition.x) ** 2 +
+      (startPosition.y - currentPosition.y) ** 2
   );
   const radius = slingshotRadius(distance);
+  const previewVelocity = getVelocityFromSpeedAndHeading(
+    distance / 10,
+    getHeadingInRadsFromTwoPoints(startPosition, currentPosition)
+  );
+
+  if (drawPreviewTrajectory) {
+    drawTrajectory(canvasManager, currentPosition, previewVelocity, GRAVITY);
+  }
 
   CTX.save();
   CTX.fillStyle = red;
@@ -54,21 +65,36 @@ export const drawSlingshotPreview = (
   CTX.restore();
 };
 
-export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
+export const makeSlingshot = (
+  canvasManager,
+  scoreStore,
+  startPosition,
+  endPosition
+) => {
   const CTX = canvasManager.getContext();
-  const distance = Math.hypot(
-    startPosition.x - endPosition.x,
-    startPosition.y - endPosition.y
+  const distance = Math.sqrt(
+    (startPosition.x - endPosition.x) ** 2 +
+      (startPosition.y - endPosition.y) ** 2
   );
-  let gone = false;
+
+  // TODO something wrong here:
+  // * Point slingshot down and left
+  // * Pull back far
+  // * Release
+  // * Slingshot has the wrong angle
+  const startVelocity = getVelocityFromSpeedAndHeading(
+    distance / 10,
+    getHeadingInRadsFromTwoPoints(startPosition, endPosition)
+  );
+  let particleGone = false;
+  let numCollisions = 0;
+  let positionHistory = [startPosition];
+  const positionHistoryLength = 40;
 
   const baseParticle = makeParticle(canvasManager, {
     radius: slingshotRadius(distance),
     startPosition: { ...endPosition },
-    startVelocity: getVelocityFromSpeedAndHeading(
-      distance / 10,
-      getHeadingInRadsFromTwoPoints(startPosition, endPosition)
-    ),
+    startVelocity,
     gravity: GRAVITY,
     onRightPassed: onLeaveScreen,
     onBottomPassed: onLeaveScreen,
@@ -76,16 +102,51 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     onTopPassed: onLeaveScreen,
   });
 
+  let comboTrackerTimestamp = scoreStore.recordSlingshot(
+    baseParticle.getPosition(),
+    startVelocity,
+    numCollisions
+  );
+
   function onLeaveScreen() {
-    gone = true;
+    particleGone = true;
   }
 
+  const logCollision = () => {
+    numCollisions++;
+    scoreStore.updateSlingshot(comboTrackerTimestamp, numCollisions);
+  };
+
   const draw = (deltaTime) => {
-    if (!gone) {
-      baseParticle.update(deltaTime);
+    if (!particleGone) baseParticle.update(deltaTime);
+
+    if (positionHistory.length > 0) {
+      if (!particleGone) {
+        positionHistory.push({ ...baseParticle.getPosition() });
+        if (positionHistory.length > positionHistoryLength)
+          positionHistory.shift();
+      } else {
+        positionHistory.shift();
+      }
+
       CTX.save();
-      CTX.shadowColor = red;
-      CTX.shadowBlur = 15;
+      positionHistory.forEach(({ x, y }, index) => {
+        if (positionHistory.length > index + 1) {
+          const nextPosition = positionHistory[index + 1];
+          CTX.lineWidth = baseParticle.getRadius() * 2;
+          CTX.strokeStyle = red;
+          CTX.globalAlpha = index / positionHistory.length;
+          CTX.beginPath();
+          CTX.moveTo(x, y);
+          CTX.lineTo(nextPosition.x, nextPosition.y);
+          CTX.stroke();
+        }
+      });
+      CTX.restore();
+    }
+
+    if (!particleGone) {
+      CTX.save();
       CTX.fillStyle = red;
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
       CTX.beginPath();
@@ -103,7 +164,8 @@ export const makeSlingshot = (canvasManager, startPosition, endPosition) => {
     setPosition: baseParticle.setPosition,
     setVelocity: baseParticle.setVelocity,
     draw,
-    isGone: () => gone,
+    logCollision,
+    isGone: () => particleGone,
     causesShake: () => false,
     isSlingshot: () => true,
     isHoldBlast: () => false,

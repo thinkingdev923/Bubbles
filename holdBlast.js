@@ -7,7 +7,11 @@ import {
 } from "./helpers.js";
 import { easeOutCubic, easeOutSine } from "./easings.js";
 import { red } from "./colors.js";
-import { BLAST_HOLD_THRESHOLD, BLAST_MAX_DURATION } from "./constants.js";
+import {
+  BLAST_HOLD_THRESHOLD,
+  BLAST_MAX_DURATION,
+  BLAST_MAX_SIZE,
+} from "./constants.js";
 
 export const drawHoldBlastPreview = (
   canvasManager,
@@ -50,17 +54,33 @@ export const drawHoldBlastPreview = (
   CTX.restore();
 };
 
-export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
+export const makeHoldBlast = (
+  canvasManager,
+  scoreStore,
+  { x, y },
+  holdDuration
+) => {
   const CTX = canvasManager.getContext();
   const blastStart = Date.now();
   const blastDuration = 400;
   const startSize = transition(
     0,
-    140,
+    BLAST_MAX_SIZE,
     clampedProgress(BLAST_HOLD_THRESHOLD, BLAST_MAX_DURATION, holdDuration),
     easeOutSine
   );
   let gone = false;
+  let numCollisions = 0;
+  let comboTrackerTimestamp = scoreStore.recordBlast(
+    { x, y },
+    startSize,
+    numCollisions
+  );
+
+  const logCollision = () => {
+    numCollisions++;
+    scoreStore.updateBlast(comboTrackerTimestamp, numCollisions);
+  };
 
   const getBlastProgress = () =>
     clampedProgress(0, blastDuration, Date.now() - blastStart);
@@ -107,6 +127,7 @@ export const makeHoldBlast = (canvasManager, { x, y }, holdDuration) => {
     getRelativeVelocity,
     getRadius,
     draw,
+    logCollision,
     isGone: () => gone,
     causesShake: () => true,
     isSlingshot: () => false,

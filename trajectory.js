@@ -15,6 +15,7 @@ export const drawTrajectory = (
 
     while (
       projectedYPosition <= canvasManager.getHeight() + 100 &&
+      projectedYPosition >= -100 &&
       projectedXPosition <= canvasManager.getWidth() + 100 &&
       projectedXPosition >= -100
     ) {
@@ -34,25 +35,10 @@ export const drawTrajectory = (
     const gradientLength = Math.floor(segments.length / 4);
 
     CTX.save();
-    CTX.globalAlpha = 0.1;
     segments.forEach(({ x, y }, index) => {
       if (segments.length > index + 1) {
         const nextSegment = segments[index + 1];
-        CTX.beginPath();
-        CTX.moveTo(x, y);
-        CTX.lineTo(nextSegment.x, nextSegment.y);
-        CTX.lineWidth = 88;
-        CTX.strokeStyle = `rgba(255, 255, 255, ${index / gradientLength})`;
-        CTX.stroke();
-      }
-    });
-    CTX.restore();
-
-    CTX.save();
-    CTX.globalAlpha = 0.6;
-    segments.forEach(({ x, y }, index) => {
-      if (segments.length > index + 1) {
-        const nextSegment = segments[index + 1];
+        CTX.globalAlpha = index % 2 ? 0 : 0.6;
         CTX.beginPath();
         CTX.moveTo(x, y);
         CTX.lineTo(nextSegment.x, nextSegment.y);

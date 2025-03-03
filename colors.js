@@ -56,17 +56,35 @@ const whiteGradient = (canvasManager, radius) =>
 // Rendered Bitmaps
 
 const makeBitmap = (gradientFunc) => {
+  const bubbleRadius2x = BUBBLE_RADIUS * 2;
   const preRenderCanvas = makeOffscreenCanvas({
-    width: BUBBLE_RADIUS * 2,
-    height: BUBBLE_RADIUS * 2,
+    width: bubbleRadius2x * 2,
+    height: bubbleRadius2x * 2,
   });
   const preRenderContext = preRenderCanvas.getContext();
-  preRenderContext.fillStyle = gradientFunc(preRenderCanvas, BUBBLE_RADIUS);
+  preRenderContext.fillStyle = gradientFunc(preRenderCanvas, bubbleRadius2x);
   preRenderContext.beginPath();
-  preRenderContext.translate(BUBBLE_RADIUS, BUBBLE_RADIUS);
-  preRenderContext.arc(0, 0, BUBBLE_RADIUS, 0, 2 * Math.PI);
+  preRenderContext.translate(bubbleRadius2x, bubbleRadius2x);
+  preRenderContext.arc(0, 0, bubbleRadius2x, 0, 2 * Math.PI);
   preRenderContext.closePath();
   preRenderContext.fill();
+
+  const strokeGradient = preRenderContext.createLinearGradient(
+    bubbleRadius2x * 4,
+    bubbleRadius2x * 4,
+    -bubbleRadius2x,
+    -bubbleRadius2x
+  );
+  strokeGradient.addColorStop(0, "rgba(255, 255, 255, .4)");
+  strokeGradient.addColorStop(1, "rgba(255, 255, 255, 0");
+
+  preRenderContext.strokeStyle = strokeGradient;
+  preRenderContext.lineWidth = 2;
+  preRenderContext.beginPath();
+  preRenderContext.arc(0, 0, bubbleRadius2x - 2, 0, 2 * Math.PI);
+  preRenderContext.closePath();
+  preRenderContext.stroke();
+
   return preRenderCanvas.getBitmap();
 };
 

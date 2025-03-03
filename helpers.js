@@ -2,9 +2,15 @@ export const animate = (drawFunc) => {
   let previousTimestamp = false;
 
   const drawFuncContainer = (timestamp) => {
-    const deltaTime = previousTimestamp
-      ? timestamp - previousTimestamp
-      : performance.now() - timestamp;
+    // Prevent deltaTime from producing huge values when e.g. user switches
+    // tabs and then switches back. 20 represents the number of milliseconds
+    // between frames when game is running at 50fps.
+    const deltaTime = Math.min(
+      20,
+      previousTimestamp
+        ? timestamp - previousTimestamp
+        : performance.now() - timestamp
+    );
     drawFunc(deltaTime);
     window.requestAnimationFrame(drawFuncContainer);
     previousTimestamp = timestamp;
@@ -38,6 +44,8 @@ export const getVelocityFromSpeedAndHeading = (speed, headingInRads) => ({
   y: speed * Math.sin(headingInRads),
 });
 
+export const getSpeedFromVelocity = ({ x, y }) => Math.sqrt(x * x + y * y);
+
 export const findBallAtPoint = (balls, { x, y }) => {
   return balls.find((ball) => {
     if (ball.isRemaining() && ball.shouldRender()) {
@@ -47,4 +55,16 @@ export const findBallAtPoint = (balls, { x, y }) => {
       return distance < ball.getRadius();
     }
   });
+};
+
+export const getBoundedPosition = (canvasManager, { x, y }, padding = 16) => {
+  const paddedBoundedX = Math.min(
+    canvasManager.getWidth() - padding,
+    Math.max(padding, x)
+  );
+  const paddedBoundedY = Math.min(
+    canvasManager.getHeight() - padding,
+    Math.max(padding, y)
+  );
+  return { x: paddedBoundedX, y: paddedBoundedY };
 };

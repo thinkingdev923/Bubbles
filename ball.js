@@ -4,6 +4,7 @@ import {
   progress,
   transition,
   randomBetween,
+  getHeadingInRadsFromTwoPoints,
   clampedProgress,
 } from "./helpers.js";
 import { easeOutCubic } from "./easings.js";
@@ -30,6 +31,7 @@ export const makeBall = (
   let popped = false;
   let poppedTime = false;
   let poppedParticles = [];
+  let sparks = [];
   let missed = false;
 
   const baseParticle = makeParticle(canvasManager, {
@@ -149,6 +151,30 @@ export const makeBall = (
 
     poppedParticles = outerParticles.concat(innerParticles);
 
+    sparks = new Array(16).fill().map(() => {
+      const randomAngle = Math.random() * Math.PI * 2;
+      const randomLength = randomBetween(20, 50);
+      const randomSpeedMultiplier = randomBetween(8, 16);
+
+      return makeParticle(canvasManager, {
+        radius: randomLength,
+        startPosition: {
+          x: baseParticle.getPosition().x + Math.cos(randomAngle) * radius,
+          y: baseParticle.getPosition().y + Math.sin(randomAngle) * radius,
+        },
+        startVelocity: {
+          x:
+            transferringVelocity.x / 3 +
+            Math.cos(randomAngle) * randomSpeedMultiplier,
+          y:
+            transferringVelocity.y / 3 +
+            Math.sin(randomAngle) * randomSpeedMultiplier,
+        },
+        gravity: 0.02,
+        terminalVelocity: 110,
+      });
+    });
+
     onPop();
   };
 
@@ -157,15 +183,26 @@ export const makeBall = (
       const timeSincePopped = Date.now() - poppedTime;
       if (timeSincePopped > popAnimationDurationMax) {
         poppedParticles = [];
+        sparks = [];
       } else {
         poppedParticles.forEach((p) => {
           p.update(deltaTime);
-          const scale = transition(
-            1,
-            0,
-            clampedProgress(0, popAnimationDuration, timeSincePopped),
-            easeOutCubic
-          );
+
+          // Some particles should fly towards the player, but most should fly away
+          const scale =
+            p.getRadius() > 4
+              ? transition(
+                  1,
+                  0,
+                  clampedProgress(0, popAnimationDuration, timeSincePopped),
+                  easeOutCubic
+                )
+              : transition(
+                  0.5,
+                  1.5,
+                  clampedProgress(0, popAnimationDuration, timeSincePopped),
+                  easeOutCubic
+                );
 
           CTX.save();
           CTX.translate(p.getPosition().x, p.getPosition().y);
@@ -179,12 +216,42 @@ export const makeBall = (
           );
           CTX.restore();
         });
+
+        sparks.forEach((s) => {
+          s.update(deltaTime);
+
+          // Using radius to define the spark length instead
+          const length = transition(
+            s.getRadius(),
+            0,
+            clampedProgress(0, popAnimationDuration, timeSincePopped),
+            easeOutCubic
+          );
+
+          CTX.save();
+          CTX.translate(s.getPosition().x, s.getPosition().y);
+          CTX.rotate(
+            getHeadingInRadsFromTwoPoints(
+              baseParticle.getPosition(),
+              s.getPosition()
+            )
+          );
+          CTX.fillStyle = "oklch(74.2% 0.2146 50.82)";
+          CTX.fillRect(0, 0, length, 1);
+          CTX.restore();
+        });
       }
     } else if (shouldRender()) {
       baseParticle.update(deltaTime);
       CTX.save();
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
-      CTX.drawImage(preRenderImage, -radius, -radius);
+      CTX.drawImage(
+        preRenderImage,
+        -radius,
+        -radius,
+        radius * 2 * canvasManager.getScaleFactor(),
+        radius * 2 * canvasManager.getScaleFactor()
+      );
       CTX.restore();
     }
   };
@@ -195,6 +262,7 @@ export const makeBall = (
     getRadius: baseParticle.getRadius,
     setPosition: baseParticle.setPosition,
     setVelocity: baseParticle.setVelocity,
+    getFill: () => fill,
     draw,
     pop,
     isPopped: () => popped,
