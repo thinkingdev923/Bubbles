@@ -59,20 +59,21 @@ export const makeLevelManager = (
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {
+    if (previewData) {
+      hasShownPreviewInitialMessage = true;
+      level = previewData.name;
+    }
+
     // On the initial interstitial we want to show the "next" level, aka
     // "Level 1". However on subsequent  interstitials we want to show the
     // completed level aka the previous level, and only transition the level
     // indicator once the player has advanced by hitting "Continue"
-    if (hasCompletedInitialAdvance) {
+    else if (hasCompletedInitialAdvance) {
       previousLevelValue = level;
       level++;
       levelChangeStart = Date.now();
     } else {
       hasCompletedInitialAdvance = true;
-    }
-
-    if (previewData) {
-      hasShownPreviewInitialMessage = true;
     }
 
     if (firstMissLevel && !hasShownFirstMissMessage) {
