@@ -1,5 +1,7 @@
 import { FONT, FONT_WEIGHT_NORMAL } from "./constants.js";
 import { white } from "./colors.js";
+import { clampedProgress, transition } from "./helpers.js";
+import { easeOutExpo } from "./easings.js";
 
 export const makeTextBlock = (
   canvasManager,
@@ -19,20 +21,46 @@ export const makeTextBlock = (
   const verticalOffset =
     verticalAlign === "center" ? (linesArray.length / 2) * lineHeight : 0;
   let yPos = initialYPos;
+  let textStart = Date.now();
 
-  const updateLines = (newLines) => (linesArray = [...newLines]);
+  const updateLines = (newLines) => {
+    textStart = Date.now();
+    linesArray = [...newLines];
+  };
 
   const updateYPos = (newYPos) => (yPos = newYPos);
 
-  const draw = () => {
+  const draw = (passedMSElapsed = false) => {
     CTX.save();
     CTX.font = `${fontWeight} ${fontSize}px ${FONT}`;
     CTX.fillStyle = white;
     CTX.textAlign = textAlign;
     CTX.translate(xPos, yPos - verticalOffset);
-    linesArray.forEach((line, index) =>
-      CTX.fillText(line, 0, (index + 1) * lineHeight)
-    );
+    linesArray.forEach((line, index) => {
+      const lineYPos = (index + 1) * lineHeight;
+      const textSlideUpPosition = transition(
+        lineYPos + lineHeight,
+        lineYPos,
+        clampedProgress(0, 800, passedMSElapsed || Date.now() - textStart),
+        easeOutExpo
+      );
+
+      CTX.save();
+
+      // Draw clipping mask
+      CTX.beginPath();
+      CTX.rect(
+        -xPos,
+        lineYPos - fontSize,
+        canvasManager.getWidth(),
+        lineHeight
+      );
+      CTX.clip();
+
+      // Move text up into non clipped area
+      CTX.fillText(line, 0, textSlideUpPosition);
+      CTX.restore();
+    });
     CTX.restore();
   };
 
@@ -40,6 +68,7 @@ export const makeTextBlock = (
     draw,
     getHeight: () => linesArray.length * lineHeight,
     getYPos: () => yPos,
+    getLines: () => linesArray,
     updateLines,
     updateYPos,
   };

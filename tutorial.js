@@ -69,14 +69,18 @@ export const makeTutorialManager = (
 
   const previewingBlast = (startPosition, pointerStart) => {
     // TODO get power and determine if it'll pop all bubbles
-    textManager.updateLines([getCurrentStepData().confirmationText]);
-    holdingBlast = true;
+    if (textManager.getLines()[0] !== getCurrentStepData().confirmationText) {
+      textManager.updateLines([getCurrentStepData().confirmationText]);
+      holdingBlast = true;
+    }
   };
 
   const previewingSlingshot = (startPosition, currentPosition) => {
     // TODO get angle and determine if it'll strike all bubbles
-    textManager.updateLines([getCurrentStepData().confirmationText]);
-    holdingSlingshot = true;
+    if (textManager.getLines()[0] !== getCurrentStepData().confirmationText) {
+      textManager.updateLines([getCurrentStepData().confirmationText]);
+      holdingSlingshot = true;
+    }
   };
 
   const generateBalls = (onPop, onMiss) =>

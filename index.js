@@ -312,7 +312,7 @@ animate((deltaTime) => {
             verticalAlign: "center",
           },
           [`Preview of “${previewData.name}”`]
-        ).draw();
+        ).draw(msElapsed);
         continueButtonManager.draw(msElapsed, 600, "Play Preview");
       },
       initialMessage: (msElapsed) => {
@@ -329,11 +329,11 @@ animate((deltaTime) => {
               ? "You’re ready"
               : "Pop the bubble",
           ]
-        ).draw();
+        ).draw(msElapsed);
         continueButtonManager.draw(msElapsed, 600, "Play");
       },
       firstMissMessage: (msElapsed) => {
-        scoreDisplay.draw("firstMiss");
+        scoreDisplay.draw();
         continueButtonManager.draw(msElapsed, 960);
       },
       defaultMessage: (msElapsed) => {
@@ -341,11 +341,11 @@ animate((deltaTime) => {
         continueButtonManager.draw(msElapsed, 960);
       },
       endGameMessage: (msElapsed) => {
-        scoreDisplay.draw("gameLost");
+        scoreDisplay.draw();
         continueButtonManager.draw(msElapsed, 1920, "Try Again");
       },
       reachedEndOfGameMessage: (msElapsed) => {
-        scoreDisplay.draw("gameWon");
+        scoreDisplay.draw();
         continueButtonManager.draw(msElapsed, 1920, "Play Again");
       },
     });

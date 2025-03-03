@@ -30,11 +30,24 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   let mostRecentLevelDrawn = null;
   let stats = null;
 
+  const topText = makeTextBlock(
+    canvasManager,
+    {
+      xPos: edgeMargin,
+      yPos: verticalMarginBetweenSections,
+      fontSize: 28,
+      fontWeight: FONT_WEIGHT_BOLD,
+      lineHeight: 38,
+    },
+    []
+  );
+
   const updateStats = () => {
     const currentLevel = levelManager.getLevel();
 
     if (mostRecentLevelDrawn !== currentLevel) {
       stats = {
+        score: scoreStore.levelScoreNumber(),
         taps: scoreStore.getTaps(currentLevel),
         tapsPopped: scoreStore.sumCategoryLevelEvents("taps", currentLevel)
           .numPopped,
@@ -49,10 +62,36 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
 
       mostRecentLevelDrawn = currentLevel;
       scoreDisplayStart = Date.now();
+
+      const textLines = [];
+
+      if (levelManager.isGameWon()) textLines.push("You won!");
+      if (levelManager.isGameLost()) textLines.push("You lost!");
+
+      // TODO expand this to include "Eagle" and "Albatross" etc.
+      textLines.push(
+        `${
+          stats.score === 1 ? `Bogey: ` : stats.score === -1 ? "Birdie: " : ""
+        }${
+          stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""
+        }${
+          stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
+        } par`
+      );
+
+      if (stats.totalMissed) {
+        textLines.push(
+          `Lost ${stats.totalMissed} ${
+            stats.totalMissed === 1 ? "life" : "lives"
+          }`
+        );
+      }
+
+      topText.updateLines(textLines);
     }
   };
 
-  const draw = (specialState = false) => {
+  const draw = () => {
     updateStats();
 
     // Draw top text section
@@ -60,44 +99,10 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     CTX.save();
 
     // Darken screen so it looks different from normal interstitial
-    if (specialState) {
+    if (levelManager.isGameLost() || levelManager.isGameWon()) {
       CTX.fillStyle = "rgba(0, 0, 0, 0.4)";
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
     }
-
-    const textLines = [];
-
-    if (specialState === "gameWon") textLines.push("You won!");
-    if (specialState === "gameLost") textLines.push("You lost!");
-
-    const score = scoreStore.levelScoreNumber();
-
-    // TODO expand this to include "Eagle" and "Albatross" etc.
-    textLines.push(
-      `${score === 1 ? `Bogey: ` : score === -1 ? "Birdie: " : ""}${
-        score > 0 || score < 0 ? `${Math.abs(score)} ` : ""
-      }${score > 0 ? "over" : score < 0 ? "under" : "Even with"} par`
-    );
-
-    if (stats.totalMissed) {
-      textLines.push(
-        `Lost ${stats.totalMissed} ${
-          stats.totalMissed === 1 ? "life" : "lives"
-        }`
-      );
-    }
-
-    const topText = makeTextBlock(
-      canvasManager,
-      {
-        xPos: edgeMargin,
-        yPos: verticalMarginBetweenSections,
-        fontSize: 28,
-        fontWeight: FONT_WEIGHT_BOLD,
-        lineHeight: 38,
-      },
-      textLines
-    );
 
     topText.draw();
 
