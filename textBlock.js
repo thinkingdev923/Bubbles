@@ -5,18 +5,24 @@ export const makeTextBlock = (
   canvasManager,
   {
     xPos,
-    yPos,
+    yPos: initialYPos,
     textAlign,
     verticalAlign = "top",
     fontSize = 24,
     fontWeight = FONT_WEIGHT_NORMAL,
     lineHeight = 32,
   },
-  linesArray
+  initialLinesArray
 ) => {
   const CTX = canvasManager.getContext();
+  let linesArray = [...initialLinesArray];
   const verticalOffset =
     verticalAlign === "center" ? (linesArray.length / 2) * lineHeight : 0;
+  let yPos = initialYPos;
+
+  const updateLines = (newLines) => (linesArray = [...newLines]);
+
+  const updateYPos = (newYPos) => (yPos = newYPos);
 
   const draw = () => {
     CTX.save();
@@ -34,5 +40,7 @@ export const makeTextBlock = (
     draw,
     getHeight: () => linesArray.length * lineHeight,
     getYPos: () => yPos,
+    updateLines,
+    updateYPos,
   };
 };

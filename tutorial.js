@@ -1,13 +1,9 @@
-import {
-  BUBBLE_RADIUS,
-  FONT_WEIGHT_BOLD,
-  FONT,
-  FONT_WEIGHT_NORMAL,
-} from "./constants.js";
+import { BUBBLE_RADIUS, FONT_WEIGHT_BOLD, FONT } from "./constants.js";
 import { red, white, turquoise, yellow } from "./colors.js";
 import { makeBall } from "./ball.js";
 import { clampedProgress, transition } from "./helpers.js";
 import { easeOutQuart } from "./easings.js";
+import { makeTextBlock } from "./textBlock.js";
 
 export const makeTutorialManager = (
   canvasManager,
@@ -16,14 +12,28 @@ export const makeTutorialManager = (
   onCompletion
 ) => {
   const CTX = canvasManager.getContext();
-  const tutorialSteps = getTutorialBallData(canvasManager);
+  const tutorialData = getTutorialData(canvasManager);
   const successMessageDuration = 2000;
   let tutorialComplete = !!localStorage.getItem("bubblesTutorialComplete");
   let tutorialCompletedThisSession = false;
-  let tutorialStep = 1;
+  let currentTutorialStep = 1;
   let stepStarted = Date.now();
-  let holdingSlingshot = false;
   let holdingBlast = false;
+  let holdingSlingshot = false;
+
+  const textManager = makeTextBlock(
+    canvasManager,
+    {
+      xPos: canvasManager.getWidth() / 2,
+      yPos: canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4,
+      textAlign: "center",
+      verticalAlign: "center",
+    },
+    [tutorialData[0].initialText]
+  );
+
+  const getCurrentStepData = () =>
+    tutorialData.find(({ step }) => step === currentTutorialStep);
 
   const showTutorial = () => {
     stepStarted = Date.now();
@@ -31,24 +41,26 @@ export const makeTutorialManager = (
   };
 
   const advance = () => {
-    tutorialStep++;
+    currentTutorialStep++;
 
-    if (tutorialStep > tutorialSteps.length) {
+    if (currentTutorialStep > tutorialData.length) {
       tutorialComplete = true;
       tutorialCompletedThisSession = true;
       localStorage.setItem("bubblesTutorialComplete", true);
       onCompletion();
     } else {
+      textManager.updateYPos(getCurrentStepData().textYPos);
+      textManager.updateLines([getCurrentStepData().initialText]);
       stepStarted = Date.now();
       onAdvance();
     }
   };
 
-  const canMakeTap = () => tutorialStep === 1;
+  const canMakeTap = () => currentTutorialStep === 1;
 
-  const canMakeBlast = () => tutorialStep === 3;
+  const canMakeBlast = () => currentTutorialStep === 3;
 
-  const canMakeSlingshot = () => tutorialStep === 5;
+  const canMakeSlingshot = () => currentTutorialStep === 5;
 
   const logTriggerOutput = (_) => {
     holdingSlingshot = false;
@@ -57,31 +69,31 @@ export const makeTutorialManager = (
 
   const previewingBlast = (startPosition, pointerStart) => {
     // TODO get power and determine if it'll pop all bubbles
+    textManager.updateLines([getCurrentStepData().confirmationText]);
     holdingBlast = true;
   };
 
   const previewingSlingshot = (startPosition, currentPosition) => {
     // TODO get angle and determine if it'll strike all bubbles
+    textManager.updateLines([getCurrentStepData().confirmationText]);
     holdingSlingshot = true;
   };
 
   const generateBalls = (onPop, onMiss) =>
-    tutorialSteps
-      .find((t) => t.step === tutorialStep)
-      .balls.map(({ position: { x, y }, fill }) =>
-        makeBall(
-          canvasManager,
-          {
-            startPosition: { x, y },
-            startVelocity: { x: 0, y: 0 },
-            radius: BUBBLE_RADIUS,
-            fill,
-            gravity: 0,
-          },
-          onPop,
-          onMiss
-        )
-      );
+    getCurrentStepData().balls.map(({ position: { x, y }, fill }) =>
+      makeBall(
+        canvasManager,
+        {
+          startPosition: { x, y },
+          startVelocity: { x: 0, y: 0 },
+          radius: BUBBLE_RADIUS,
+          fill,
+          gravity: 0,
+        },
+        onPop,
+        onMiss
+      )
+    );
 
   const drawTopLabel = () => {
     CTX.save();
@@ -96,17 +108,14 @@ export const makeTutorialManager = (
 
   const drawDownwardsArrow = () => {
     const endPointTransition = transition(
-      canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16,
+      textManager.getYPos() + 32,
       canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28,
       clampedProgress(0, 1600, Date.now() - stepStarted),
       easeOutQuart
     );
     CTX.save();
     CTX.beginPath();
-    CTX.moveTo(
-      0,
-      canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4 + 16
-    );
+    CTX.moveTo(0, textManager.getYPos() + 32);
     CTX.lineTo(0, endPointTransition);
     CTX.lineTo(8, endPointTransition);
     CTX.lineTo(0, endPointTransition + 12);
@@ -119,7 +128,7 @@ export const makeTutorialManager = (
 
   const drawUpwardsArrow = () => {
     const endPointTransition = transition(
-      canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 28,
+      textManager.getYPos() - 16,
       canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28,
       clampedProgress(0, 1600, Date.now() - stepStarted),
       easeOutQuart
@@ -127,10 +136,7 @@ export const makeTutorialManager = (
 
     CTX.save();
     CTX.beginPath();
-    CTX.moveTo(
-      0,
-      canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4 - 28
-    );
+    CTX.moveTo(0, textManager.getYPos() - 16);
     CTX.lineTo(0, endPointTransition);
     CTX.lineTo(8, endPointTransition);
     CTX.lineTo(0, endPointTransition - 12);
@@ -141,65 +147,43 @@ export const makeTutorialManager = (
     CTX.restore();
   };
 
+  const drawThumbPlaceholder = () => {
+    CTX.fillStyle = "rgba(0, 0, 0, .6)";
+    CTX.beginPath();
+    CTX.arc(0, canvasManager.getHeight() / 2, BUBBLE_RADIUS, 0, Math.PI * 2);
+    CTX.closePath();
+    CTX.fill();
+  };
+
   const draw = () => {
     drawTopLabel();
+
+    textManager.draw();
 
     CTX.save();
     CTX.translate(canvasManager.getWidth() / 2, 0);
     CTX.fillStyle = white;
     CTX.strokeStyle = white;
     CTX.lineWidth = 2;
-    CTX.font = `${FONT_WEIGHT_NORMAL} 24px ${FONT}`;
-    CTX.textAlign = "center";
 
-    if (tutorialStep === 1) {
-      CTX.fillText(
-        "Pop this",
-        0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4
-      );
-
+    if (currentTutorialStep === 1) {
       drawDownwardsArrow();
-    } else if (tutorialStep === 2) {
-      if (Date.now() - stepStarted > successMessageDuration) {
-        advance();
-      } else {
-        CTX.fillText("Nice!", 0, canvasManager.getHeight() / 2 + 10);
-      }
-    } else if (tutorialStep === 3) {
-      CTX.fillText(
-        holdingBlast ? "Now let go!" : "Hold down",
-        0,
-        canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4
-      );
-
+    } else if (
+      currentTutorialStep === 2 &&
+      Date.now() - stepStarted > successMessageDuration
+    ) {
+      advance();
+    } else if (currentTutorialStep === 3) {
       drawDownwardsArrow();
-
-      CTX.fillStyle = "rgba(0, 0, 0, .6)";
-      CTX.beginPath();
-      CTX.arc(0, canvasManager.getHeight() / 2, BUBBLE_RADIUS, 0, Math.PI * 2);
-      CTX.closePath();
-      CTX.fill();
-    } else if (tutorialStep === 4) {
-      if (Date.now() - stepStarted > successMessageDuration) {
-        advance();
-      } else {
-        CTX.fillText("Awesome!", 0, canvasManager.getHeight() / 2 + 10);
-      }
-    } else if (tutorialStep === 5) {
-      CTX.fillText(
-        holdingSlingshot ? "Let go!" : "Drag down",
-        0,
-        canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4
-      );
-
+      drawThumbPlaceholder();
+    } else if (
+      currentTutorialStep === 4 &&
+      Date.now() - stepStarted > successMessageDuration
+    ) {
+      advance();
+    } else if (currentTutorialStep === 5) {
       if (!holdingSlingshot) drawUpwardsArrow();
-
-      CTX.fillStyle = "rgba(0, 0, 0, .6)";
-      CTX.beginPath();
-      CTX.arc(0, canvasManager.getHeight() / 2, BUBBLE_RADIUS, 0, Math.PI * 2);
-      CTX.closePath();
-      CTX.fill();
+      drawThumbPlaceholder();
     }
     CTX.restore();
   };
@@ -220,10 +204,12 @@ export const makeTutorialManager = (
   };
 };
 
-function getTutorialBallData(canvasManager) {
+function getTutorialData(canvasManager) {
   return [
     {
       step: 1,
+      initialText: "Pop this",
+      textYPos: canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4,
       balls: [
         {
           position: {
@@ -234,9 +220,17 @@ function getTutorialBallData(canvasManager) {
         },
       ],
     },
-    { step: 2, balls: [] },
+    {
+      step: 2,
+      initialText: "Nice!",
+      textYPos: canvasManager.getHeight() / 2,
+      balls: [],
+    },
     {
       step: 3,
+      initialText: "Hold down",
+      confirmationText: "Now let go!",
+      textYPos: canvasManager.getHeight() / 2 - canvasManager.getHeight() / 4,
       balls: [
         {
           position: {
@@ -268,9 +262,17 @@ function getTutorialBallData(canvasManager) {
         },
       ],
     },
-    { step: 4, balls: [] },
+    {
+      step: 4,
+      initialText: "Awesome",
+      textYPos: canvasManager.getHeight() / 2,
+      balls: [],
+    },
     {
       step: 5,
+      initialText: "Drag down",
+      confirmationText: "Let go!",
+      textYPos: canvasManager.getHeight() / 2 + canvasManager.getHeight() / 4,
       balls: [
         {
           position: {
