@@ -148,8 +148,8 @@ export const makeLevelManager = (
   const getLevelData = () =>
     previewData ? previewData : getLevelDataByNumber(level);
 
-  const drawLevelCountdown = () => {
-    slideSpring.update();
+  const drawLevelCountdown = (deltaTime) => {
+    slideSpring.update(deltaTime);
 
     const countdownRadius = 32;
     const timeRemaining = 3000 - (Date.now() - levelStarted);

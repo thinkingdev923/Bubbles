@@ -17,14 +17,8 @@ export const makeSpring = (
   let endValue = initialValue; // initialize spring at rest
   let velocity = 0;
   let atRest = true;
-  let lastUpdateTime = performance.now();
 
-  const update = () => {
-    const thisUpdateTime = performance.now();
-    // Prevent deltaTime from producing huge values when e.g. user switches
-    // tabs and then switches back. 20 represents the number of milliseconds
-    // between frames when game is running at 50fps.
-    const deltaTime = Math.min(20, thisUpdateTime - lastUpdateTime);
+  const update = (deltaTime) => {
     const difference = endValue - currentValue;
     const acceleration = (stiffness * difference) / mass - damping * velocity;
     const newVelocity = velocity + acceleration * (deltaTime / 1000);
@@ -36,7 +30,6 @@ export const makeSpring = (
 
     currentValue = atRest ? endValue : newValue;
     velocity = atRest ? 0 : newVelocity;
-    lastUpdateTime = thisUpdateTime;
   };
 
   const updateProps = ({
@@ -53,7 +46,6 @@ export const makeSpring = (
 
   const setEndValue = (v) => {
     endValue = v;
-    lastUpdateTime = performance.now();
   };
 
   const resetValue = (v) => {
@@ -61,7 +53,6 @@ export const makeSpring = (
     endValue = v;
     velocity = 0;
     atRest = true;
-    lastUpdateTime = performance.now();
   };
 
   return {

@@ -2,9 +2,15 @@ export const animate = (drawFunc) => {
   let previousTimestamp = false;
 
   const drawFuncContainer = (timestamp) => {
-    const deltaTime = previousTimestamp
-      ? timestamp - previousTimestamp
-      : performance.now() - timestamp;
+    // Prevent deltaTime from producing huge values when e.g. user switches
+    // tabs and then switches back. 20 represents the number of milliseconds
+    // between frames when game is running at 50fps.
+    const deltaTime = Math.min(
+      20,
+      previousTimestamp
+        ? timestamp - previousTimestamp
+        : performance.now() - timestamp
+    );
     drawFunc(deltaTime);
     window.requestAnimationFrame(drawFuncContainer);
     previousTimestamp = timestamp;

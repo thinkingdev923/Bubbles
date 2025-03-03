@@ -74,8 +74,8 @@ export const makeContinueButtonManager = (canvasManager) => {
     }
   };
 
-  const draw = (msElapsed, delay, text = "Continue") => {
-    hoverSpring.update();
+  const draw = (deltaTime, msElapsed, delay, text = "Continue") => {
+    hoverSpring.update(deltaTime);
     withinDelay = msElapsed - delay > 0;
     const introProgress = clampedProgress(0, 1000, msElapsed - delay);
     const wipeProgress = clampedProgress(0, 450, msElapsed - delay);

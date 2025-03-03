@@ -313,7 +313,7 @@ animate((deltaTime) => {
           },
           [`Preview of “${previewData.name}”`]
         ).draw(msElapsed);
-        continueButtonManager.draw(msElapsed, 600, "Play Preview");
+        continueButtonManager.draw(deltaTime, msElapsed, 600, "Play Preview");
       },
       initialMessage: (msElapsed) => {
         makeTextBlock(
@@ -330,23 +330,23 @@ animate((deltaTime) => {
               : "Pop the bubble",
           ]
         ).draw(msElapsed);
-        continueButtonManager.draw(msElapsed, 600, "Play");
+        continueButtonManager.draw(deltaTime, msElapsed, 600, "Play");
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(msElapsed, 960);
+        continueButtonManager.draw(deltaTime, msElapsed, 960);
       },
       defaultMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(msElapsed, 960);
+        continueButtonManager.draw(deltaTime, msElapsed, 960);
       },
       endGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(msElapsed, 1920, "Try Again");
+        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Try Again");
       },
       reachedEndOfGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(msElapsed, 1920, "Play Again");
+        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Play Again");
       },
     });
 
@@ -365,7 +365,7 @@ animate((deltaTime) => {
     previousLevelBalls.forEach((b) => b.draw(deltaTime));
 
     if (levelManager.showLevelCountdown()) {
-      levelManager.drawLevelCountdown();
+      levelManager.drawLevelCountdown(deltaTime);
     } else {
       balls.forEach((b) => b.draw(deltaTime));
     }
