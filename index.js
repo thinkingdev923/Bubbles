@@ -365,7 +365,7 @@ animate((deltaTime) => {
     previousLevelBalls.forEach((b) => b.draw(deltaTime));
 
     if (levelManager.showLevelCountdown()) {
-      levelManager.drawLevelCountdown(deltaTime);
+      levelManager.drawLevelCountdown();
     } else {
       balls.forEach((b) => b.draw(deltaTime));
     }

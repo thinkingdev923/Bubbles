@@ -7,12 +7,12 @@ import {
 import { getGradientBitmap, red, white } from "./colors.js";
 import { clampedProgress, transition, randomBetween } from "./helpers.js";
 import {
-  easeOutCirc,
   easeInOutSine,
   easeOutQuad,
   easeOutCubic,
   easeOutBack,
   easeOutQuart,
+  easeOutExpo,
 } from "./easings.js";
 import { makeGrid } from "./grid.js";
 import { makeTextBlock } from "./textBlock.js";
@@ -138,8 +138,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
         topText.getYPos() +
         verticalMarginBetweenSections * 1.4,
       topText.getHeight() + topText.getYPos() + verticalMarginBetweenSections,
-      clampedProgress(0, 200, Date.now() - scoreDisplayStart),
-      easeOutCirc
+      clampedProgress(0, 816, Date.now() - scoreDisplayStart),
+      easeOutExpo
     );
 
     CTX.globalAlpha = opacityTransition;

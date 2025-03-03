@@ -1,10 +1,10 @@
 import { yellow, white } from "./colors.js";
-import { FONT, FONT_WEIGHT_BOLD, FONT_WEIGHT_NORMAL } from "./constants.js";
+import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { levels as levelData, getLevelDataByNumber } from "./levelData.js";
 import { drawTextRotate } from "./textRotate.js";
 import { clampedProgress, transition } from "./helpers.js";
-import { easeOutCubic } from "./easings.js";
-import { makeSpring } from "./spring.js";
+
+import { makeTextBlock } from "./textBlock.js";
 
 export const makeLevelManager = (
   canvasManager,
@@ -13,6 +13,7 @@ export const makeLevelManager = (
   previewData
 ) => {
   const CTX = canvasManager.getContext();
+  const countdownDuration = 2000;
   let level;
   let previousLevelValue;
   let levelChangeStart;
@@ -25,13 +26,17 @@ export const makeLevelManager = (
   let hasShownPreviewInitialMessage;
   let levelStarted;
 
-  const slideDistance = 16;
-  const slideSpring = makeSpring(0, {
-    stiffness: 90,
-    damping: 15,
-    mass: 1.3,
-    precision: 200,
-  });
+  const levelCountdownText = makeTextBlock(
+    canvasManager,
+    {
+      xPos: canvasManager.getWidth() / 2,
+      yPos: canvasManager.getHeight() / 2,
+      textAlign: "center",
+      verticalAlign: "center",
+      fontSize: 32,
+    },
+    [""]
+  );
 
   const reset = () => {
     level = previewData ? previewData.name : 1;
@@ -51,8 +56,6 @@ export const makeLevelManager = (
     interstitialShowing = true;
     interstitialStart = Date.now();
     onInterstitial(interstitialStart);
-
-    slideSpring.resetValue(0);
   };
 
   const dismissInterstitialAndAdvanceLevel = () => {
@@ -76,10 +79,10 @@ export const makeLevelManager = (
       hasShownFirstMissMessage = true;
     }
 
+    levelCountdownText.updateLines([`Par of ${getLevelData().par}`]);
     interstitialShowing = false;
     interstitialStart = false;
     levelStarted = Date.now();
-    slideSpring.setEndValue(slideDistance);
 
     onAdvance();
   };
@@ -143,61 +146,22 @@ export const makeLevelManager = (
     CTX.restore();
   };
 
-  const showLevelCountdown = () => Date.now() - levelStarted < 3000;
+  const showLevelCountdown = () =>
+    Date.now() - levelStarted < countdownDuration;
 
   const getLevelData = () =>
     previewData ? previewData : getLevelDataByNumber(level);
 
-  const drawLevelCountdown = (deltaTime) => {
-    slideSpring.update(deltaTime);
+  const drawLevelCountdown = () => {
+    const countdownRadius = 120;
+    const timeRemaining = countdownDuration - (Date.now() - levelStarted);
 
-    const countdownRadius = 32;
-    const timeRemaining = 3000 - (Date.now() - levelStarted);
-    const blurIn = transition(
-      16,
-      0,
-      clampedProgress(3000, 2400, timeRemaining),
-      easeOutCubic
-    );
-    const fadeIn = transition(
-      0,
-      1,
-      clampedProgress(3000, 2600, timeRemaining),
-      easeOutCubic
-    );
-    const scaleIn = transition(
-      0.9,
-      1,
-      clampedProgress(0, slideDistance, slideSpring.getCurrentValue())
-    );
+    levelCountdownText.draw();
 
     CTX.save();
-
-    CTX.globalAlpha = fadeIn;
     CTX.translate(canvasManager.getWidth() / 2, canvasManager.getHeight() / 2);
-    CTX.scale(scaleIn, scaleIn);
-    CTX.font = `${FONT_WEIGHT_BOLD} 32px ${FONT}`;
-    CTX.fillStyle = white;
-    CTX.textAlign = "center";
-    CTX.filter = `blur(${blurIn}px)`;
-
-    CTX.fillText(
-      `Par of ${getLevelData().par}`,
-      0,
-      -16 - slideDistance + slideSpring.getCurrentValue()
-    );
-
-    CTX.translate(0, 48 + slideDistance - slideSpring.getCurrentValue());
-    CTX.font = `${FONT_WEIGHT_NORMAL} 32px ${FONT}`;
-    CTX.fillText(Math.ceil(timeRemaining / 1000), 0, 10);
-
-    CTX.fillStyle = "rgba(255, 255, 255, .12)";
-    CTX.beginPath();
-    CTX.arc(0, 0, countdownRadius, 0, 2 * Math.PI, true);
-    CTX.fill();
-
-    CTX.lineWidth = 3;
-    CTX.strokeStyle = "#fff";
+    CTX.lineWidth = timeRemaining / 400;
+    CTX.strokeStyle = white;
     CTX.rotate(-Math.PI / 2);
     CTX.beginPath();
     CTX.arc(
@@ -209,7 +173,6 @@ export const makeLevelManager = (
       true
     );
     CTX.stroke();
-
     CTX.restore();
   };
 
