@@ -13,7 +13,7 @@ export const makeLevelManager = (
   previewData
 ) => {
   const CTX = canvasManager.getContext();
-  const countdownDuration = 2000;
+  const countdownDuration = 2400;
   let level;
   let previousLevelValue;
   let levelChangeStart;
@@ -153,7 +153,6 @@ export const makeLevelManager = (
     previewData ? previewData : getLevelDataByNumber(level);
 
   const drawLevelCountdown = () => {
-    const countdownRadius = 120;
     const timeRemaining = countdownDuration - (Date.now() - levelStarted);
 
     levelCountdownText.draw();
@@ -167,9 +166,13 @@ export const makeLevelManager = (
     CTX.arc(
       0,
       0,
-      countdownRadius,
+      120,
       0,
-      transition(0, 2 * Math.PI, clampedProgress(3000, 0, timeRemaining)),
+      transition(
+        0,
+        2 * Math.PI,
+        clampedProgress(countdownDuration, 0, timeRemaining)
+      ),
       true
     );
     CTX.stroke();
