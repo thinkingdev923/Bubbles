@@ -22,7 +22,11 @@ export const makeAudioManager = () => {
   let allPlucks;
 
   async function _loadFile(context, filePath) {
-    const response = await fetch(filePath);
+    const response = await fetch(filePath, {
+      method: "GET",
+      credentials: "include",
+      mode: "no-cors",
+    });
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await context.decodeAudioData(arrayBuffer);
     return audioBuffer;
