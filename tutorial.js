@@ -111,12 +111,18 @@ export const makeTutorialManager = (
   };
 
   const drawDownwardsArrow = () => {
+    const endPoint =
+      canvasManager.getHeight() / 2 -
+      BUBBLE_RADIUS -
+      32 +
+      Math.sin((Date.now() - stepStarted) / 600) * 5;
     const endPointTransition = transition(
       textManager.getYPos() + 32,
-      canvasManager.getHeight() / 2 - BUBBLE_RADIUS - 28,
+      endPoint,
       clampedProgress(0, 1600, Date.now() - stepStarted),
       easeOutQuart
     );
+
     CTX.save();
     CTX.beginPath();
     CTX.moveTo(0, textManager.getYPos() + 32);
@@ -131,9 +137,14 @@ export const makeTutorialManager = (
   };
 
   const drawUpwardsArrow = () => {
+    const endPoint =
+      canvasManager.getHeight() / 2 +
+      BUBBLE_RADIUS +
+      32 -
+      Math.sin((Date.now() - stepStarted) / 600) * 5;
     const endPointTransition = transition(
       textManager.getYPos() - 16,
-      canvasManager.getHeight() / 2 + BUBBLE_RADIUS + 28,
+      endPoint,
       clampedProgress(0, 1600, Date.now() - stepStarted),
       easeOutQuart
     );
@@ -152,9 +163,13 @@ export const makeTutorialManager = (
   };
 
   const drawThumbPlaceholder = () => {
+    const yPos =
+      canvasManager.getHeight() / 2 +
+      Math.sin((Date.now() - stepStarted) / 600) * 5;
+
     CTX.fillStyle = "rgba(0, 0, 0, .6)";
     CTX.beginPath();
-    CTX.arc(0, canvasManager.getHeight() / 2, BUBBLE_RADIUS, 0, Math.PI * 2);
+    CTX.arc(0, yPos, BUBBLE_RADIUS, 0, Math.PI * 2);
     CTX.closePath();
     CTX.fill();
   };
@@ -178,16 +193,20 @@ export const makeTutorialManager = (
     ) {
       advance();
     } else if (currentTutorialStep === 3) {
-      drawDownwardsArrow();
-      drawThumbPlaceholder();
+      if (!holdingBlast) {
+        drawDownwardsArrow();
+        drawThumbPlaceholder();
+      }
     } else if (
       currentTutorialStep === 4 &&
       Date.now() - stepStarted > successMessageDuration
     ) {
       advance();
     } else if (currentTutorialStep === 5) {
-      if (!holdingSlingshot) drawUpwardsArrow();
-      drawThumbPlaceholder();
+      if (!holdingSlingshot) {
+        drawUpwardsArrow();
+        drawThumbPlaceholder();
+      }
     }
     CTX.restore();
   };
