@@ -27,7 +27,6 @@ const numPoppedTextWidth = 40;
 export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   const CTX = canvasManager.getContext();
   let scoreDisplayStart = Date.now();
-  let mostRecentLevelDrawn = null;
   let stats = null;
 
   const topText = makeTextBlock(
@@ -42,96 +41,78 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     []
   );
 
-  const updateStats = () => {
+  const update = () => {
     const currentLevel = levelManager.getLevel();
+    const textLines = [];
+    scoreDisplayStart = Date.now();
+    stats = {
+      score: scoreStore.levelScoreNumber(),
+      taps: scoreStore.getTaps(currentLevel),
+      tapsPopped: scoreStore.sumCategoryLevelEvents("taps", currentLevel)
+        .numPopped,
+      slingshots: scoreStore.getSlingshots(currentLevel),
+      blasts: scoreStore.getBlasts(currentLevel),
+      totalPopped: scoreStore.sumPopped(currentLevel),
+      totalMissed: scoreStore.sumCategoryLevelEvents(
+        "missedBubbles",
+        currentLevel
+      ).num,
+    };
 
-    if (mostRecentLevelDrawn !== currentLevel) {
-      stats = {
-        score: scoreStore.levelScoreNumber(),
-        taps: scoreStore.getTaps(currentLevel),
-        tapsPopped: scoreStore.sumCategoryLevelEvents("taps", currentLevel)
-          .numPopped,
-        slingshots: scoreStore.getSlingshots(currentLevel),
-        blasts: scoreStore.getBlasts(currentLevel),
-        totalPopped: scoreStore.sumPopped(currentLevel),
-        totalMissed: scoreStore.sumCategoryLevelEvents(
-          "missedBubbles",
-          currentLevel
-        ).num,
-      };
+    if (levelManager.isGameWon()) textLines.push("You won!");
 
-      mostRecentLevelDrawn = currentLevel;
-      scoreDisplayStart = Date.now();
-
-      const textLines = [];
-
-      if (levelManager.isGameWon()) textLines.push("You won!");
-
-      if (levelManager.isGameLost()) {
-        textLines.push("You lost!");
-      } else {
-        textLines.push(
-          `${
-            stats.score <= -4
-              ? "Condor: "
-              : stats.score === -3
-              ? "Albatross: "
-              : stats.score === -2
-              ? "Eagle: "
-              : stats.score === -1
-              ? "Birdie: "
-              : stats.score === 1
-              ? "Bogey: "
-              : stats.score === 2
-              ? "Double Bogey: "
-              : stats.score === 3
-              ? "Triple Bogey: "
-              : stats.score >= 4
-              ? "Disaster: "
-              : ""
-          }${
-            stats.score > 0 || stats.score < 0
-              ? `${Math.abs(stats.score)} `
-              : ""
-          }${
-            stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
-          } par`
-        );
-      }
-
-      if (stats.totalMissed) {
-        textLines.push(
-          `Lost ${stats.totalMissed} ${
-            stats.totalMissed === 1 ? "life" : "lives"
-          }`
-        );
-      }
-
-      topText.updateLines(textLines);
+    if (levelManager.isGameLost()) {
+      textLines.push("You lost!");
+    } else {
+      textLines.push(
+        `${
+          stats.score <= -4
+            ? "Condor: "
+            : stats.score === -3
+            ? "Albatross: "
+            : stats.score === -2
+            ? "Eagle: "
+            : stats.score === -1
+            ? "Birdie: "
+            : stats.score === 1
+            ? "Bogey: "
+            : stats.score === 2
+            ? "Double Bogey: "
+            : stats.score === 3
+            ? "Triple Bogey: "
+            : stats.score >= 4
+            ? "Disaster: "
+            : ""
+        }${
+          stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""
+        }${
+          stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
+        } par`
+      );
     }
+
+    if (stats.totalMissed) {
+      textLines.push(
+        `Lost ${stats.totalMissed} ${
+          stats.totalMissed === 1 ? "life" : "lives"
+        }`
+      );
+    }
+
+    topText.updateLines(textLines);
   };
 
   const draw = () => {
-    updateStats();
-
-    // Draw top text section
-
     CTX.save();
-
     // Darken screen so it looks different from normal interstitial
     if (levelManager.isGameLost() || levelManager.isGameWon()) {
       CTX.fillStyle = "rgba(0, 0, 0, 0.4)";
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
     }
-
     topText.draw();
-
     CTX.restore();
 
-    // Draw stats sections
-
     CTX.save();
-
     const opacityTransition = transition(
       0,
       1,
@@ -456,7 +437,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     CTX.fillText(`x${popped}`, 32, iconRadius + textHeight / 2);
   }
 
-  return { draw };
+  return { draw, update };
 };
 
 function applyTextStyle1(CTX) {

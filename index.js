@@ -448,6 +448,7 @@ function onGameEnd() {
 }
 
 function onInterstitial() {
+  scoreDisplay.update();
   resetOngoingVisuals();
 }
 
