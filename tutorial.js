@@ -246,7 +246,7 @@ function getTutorialData(canvasManager) {
     {
       step: 2,
       initialText: "Nice!",
-      textYPos: canvasManager.getHeight() / 2,
+      textYPos: canvasManager.getHeight() / 2 - 8,
       balls: [],
     },
     {
@@ -288,7 +288,7 @@ function getTutorialData(canvasManager) {
     {
       step: 4,
       initialText: "Awesome",
-      textYPos: canvasManager.getHeight() / 2,
+      textYPos: canvasManager.getHeight() / 2 - 8,
       balls: [],
     },
     {
