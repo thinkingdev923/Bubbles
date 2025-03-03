@@ -92,6 +92,7 @@ export const makeLevelManager = (
     interstitialShowing = true;
     interstitialStart = Date.now();
     gameOver = true;
+    onInterstitial(interstitialStart);
   };
 
   const setFirstMiss = () => {
