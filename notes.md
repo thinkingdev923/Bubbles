@@ -11,6 +11,7 @@
   - Streaks: when popping bubbles in multiple consecutive gestures, show a message on-screen
   - Add a score feature: combos + streaks = multiplier
   - Some bubbles give a special bonus
+  - After beating all levels, have the option (saved to localstorage) to play randomly generated levels to keep things interesting
 
 - Better end-level and end-game screens
   - Some kind of replay or map?
