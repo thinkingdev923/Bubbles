@@ -1,3 +1,5 @@
+import { levels as levelData } from "./levelData.js";
+
 export const makeScoreStore = (levelManager) => {
   // MAP STRUCTURE EXAMPLE
   // We store discrete actions that we can flexibly sum, score, etc. later
@@ -197,6 +199,21 @@ export const makeScoreStore = (levelManager) => {
     return numMoves - levelManager.getLevelData().par;
   };
 
+  const overallScoreNumber = () => {
+    const maxLevelReached = levelManager.getLevel();
+    const numMoves =
+      store.get("taps").filter((t) => t.level <= maxLevelReached).length +
+      store.get("slingshots").filter((s) => s.level <= maxLevelReached).length +
+      store.get("blasts").filter((b) => b.level <= maxLevelReached).length;
+
+    const summedPar = levelData.reduce(
+      (acc, level, index) => (index < maxLevelReached ? acc + level.par : acc),
+      0
+    );
+
+    return numMoves - summedPar;
+  };
+
   const getTaps = (passedLevel = null) => [
     ...store
       .get("taps")
@@ -226,6 +243,7 @@ export const makeScoreStore = (levelManager) => {
     sumPopped,
     recentCombos,
     levelScoreNumber,
+    overallScoreNumber,
     getTaps,
     getSlingshots,
     getBlasts,
