@@ -464,9 +464,8 @@ function onPreviewAdvance() {
   resetLevelData();
 
   // Allow popping animation to finish playing for previous level bubbles
-  balls = balls
-    .filter((b) => b.isPopping())
-    .concat(makeLevelBalls(canvasManager, previewData, onPop, onMiss));
+  previousLevelBalls = balls.filter((b) => b.isPopping());
+  balls = makeLevelBalls(canvasManager, previewData, onPop, onMiss);
 
   // Call on first interaction. Subsequent calls are ignored.
   audioManager.initialize();
