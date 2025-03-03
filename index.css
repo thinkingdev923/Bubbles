@@ -28,7 +28,7 @@ canvas {
   background: var(--blue);
   display: block;
   margin: auto;
-  animation: introAnimation 400ms 150ms ease-in-out both;
+  animation: introAnimation 280ms 64ms ease-in-out both;
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
