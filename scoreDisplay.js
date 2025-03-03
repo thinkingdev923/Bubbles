@@ -66,33 +66,38 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const textLines = [];
 
       if (levelManager.isGameWon()) textLines.push("You won!");
-      if (levelManager.isGameLost()) textLines.push("You lost!");
 
-      textLines.push(
-        `${
-          stats.score <= -4
-            ? "Condor: "
-            : stats.score === -3
-            ? "Albatross: "
-            : stats.score === -2
-            ? "Eagle: "
-            : stats.score === -1
-            ? "Birdie: "
-            : stats.score === 1
-            ? "Bogey: "
-            : stats.score === 2
-            ? "Double Bogey: "
-            : stats.score === 3
-            ? "Triple Bogey: "
-            : stats.score >= 4
-            ? "Disaster: "
-            : ""
-        }${
-          stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""
-        }${
-          stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
-        } par`
-      );
+      if (levelManager.isGameLost()) {
+        textLines.push("You lost!");
+      } else {
+        textLines.push(
+          `${
+            stats.score <= -4
+              ? "Condor: "
+              : stats.score === -3
+              ? "Albatross: "
+              : stats.score === -2
+              ? "Eagle: "
+              : stats.score === -1
+              ? "Birdie: "
+              : stats.score === 1
+              ? "Bogey: "
+              : stats.score === 2
+              ? "Double Bogey: "
+              : stats.score === 3
+              ? "Triple Bogey: "
+              : stats.score >= 4
+              ? "Disaster: "
+              : ""
+          }${
+            stats.score > 0 || stats.score < 0
+              ? `${Math.abs(stats.score)} `
+              : ""
+          }${
+            stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
+          } par`
+        );
+      }
 
       if (stats.totalMissed) {
         textLines.push(
