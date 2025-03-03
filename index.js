@@ -313,7 +313,7 @@ animate((deltaTime) => {
           },
           [`Preview of “${previewData.name}”`]
         ).draw(msElapsed);
-        continueButtonManager.draw(deltaTime, msElapsed, 600, "Play Preview");
+        continueButtonManager.draw(deltaTime, msElapsed, 80, "Play Preview");
       },
       initialMessage: (msElapsed) => {
         makeTextBlock(
@@ -330,7 +330,7 @@ animate((deltaTime) => {
               : "Pop the bubble",
           ]
         ).draw(msElapsed);
-        continueButtonManager.draw(deltaTime, msElapsed, 600, "Play");
+        continueButtonManager.draw(deltaTime, msElapsed, 80, "Play");
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw();

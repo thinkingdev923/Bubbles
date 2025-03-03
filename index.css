@@ -15,20 +15,10 @@ body {
   cursor: pointer;
 }
 
-@keyframes introAnimation {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 canvas {
   background: var(--blue);
   display: block;
   margin: auto;
-  animation: introAnimation 280ms 64ms ease-in-out both;
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
