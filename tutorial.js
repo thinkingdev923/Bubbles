@@ -2,7 +2,7 @@ import { BUBBLE_RADIUS, FONT_WEIGHT_BOLD, FONT } from "./constants.js";
 import { red, white, turquoise, yellow } from "./colors.js";
 import { makeBall } from "./ball.js";
 import { clampedProgress, transition } from "./helpers.js";
-import { easeOutQuart } from "./easings.js";
+import { easeOutExpo } from "./easings.js";
 import { makeTextBlock } from "./textBlock.js";
 
 export const makeTutorialManager = (
@@ -115,15 +115,17 @@ export const makeTutorialManager = (
       canvasManager.getHeight() / 2 -
       BUBBLE_RADIUS -
       32 +
-      Math.sin((Date.now() - stepStarted) / 600) * 5;
+      Math.sin((Date.now() - stepStarted) / 400) * 6;
     const endPointTransition = transition(
       textManager.getYPos() + 32,
       endPoint,
-      clampedProgress(0, 1600, Date.now() - stepStarted),
-      easeOutQuart
+      clampedProgress(0, 928, Date.now() - stepStarted),
+      easeOutExpo
     );
 
     CTX.save();
+    CTX.strokeStyle = white;
+    CTX.fillStyle = white;
     CTX.beginPath();
     CTX.moveTo(0, textManager.getYPos() + 32);
     CTX.lineTo(0, endPointTransition);
@@ -133,6 +135,7 @@ export const makeTutorialManager = (
     CTX.lineTo(0, endPointTransition);
     CTX.closePath();
     CTX.stroke();
+    CTX.fill();
     CTX.restore();
   };
 
@@ -141,15 +144,17 @@ export const makeTutorialManager = (
       canvasManager.getHeight() / 2 +
       BUBBLE_RADIUS +
       32 -
-      Math.sin((Date.now() - stepStarted) / 600) * 5;
+      Math.sin((Date.now() - stepStarted) / 400) * 6;
     const endPointTransition = transition(
       textManager.getYPos() - 16,
       endPoint,
-      clampedProgress(0, 1600, Date.now() - stepStarted),
-      easeOutQuart
+      clampedProgress(0, 928, Date.now() - stepStarted),
+      easeOutExpo
     );
 
     CTX.save();
+    CTX.strokeStyle = white;
+    CTX.fillStyle = white;
     CTX.beginPath();
     CTX.moveTo(0, textManager.getYPos() - 16);
     CTX.lineTo(0, endPointTransition);
@@ -159,13 +164,14 @@ export const makeTutorialManager = (
     CTX.lineTo(0, endPointTransition);
     CTX.closePath();
     CTX.stroke();
+    CTX.fill();
     CTX.restore();
   };
 
   const drawThumbPlaceholder = () => {
     const yPos =
       canvasManager.getHeight() / 2 +
-      Math.sin((Date.now() - stepStarted) / 600) * 5;
+      Math.sin((Date.now() - stepStarted) / 800) * 4;
 
     CTX.fillStyle = "rgba(0, 0, 0, .6)";
     CTX.beginPath();

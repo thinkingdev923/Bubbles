@@ -41,7 +41,7 @@ export const makeTextBlock = (
       const textSlideUpPosition = transition(
         lineYPos + lineHeight,
         lineYPos,
-        clampedProgress(0, 800, passedMSElapsed || Date.now() - textStart),
+        clampedProgress(0, 816, passedMSElapsed || Date.now() - textStart),
         easeOutExpo
       );
 
