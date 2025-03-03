@@ -13,7 +13,6 @@
   - Some bubbles give a special bonus
 
 - Better end-level and end-game screens
-  - Show level scores and cumulative end-game score
   - Some kind of replay or map?
   - Generate combo screencap that's sharable?
     - Could capture game state and save canvas to data url, put into image src attr
