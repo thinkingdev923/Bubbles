@@ -548,8 +548,6 @@ export const makeLevelBalls = (canvasManager, level, onPop, onMiss) => {
 
     row.forEach((cell, cellIndex) => {
       if (!!cell) {
-        // TODO how to adjust number of cells given very wide displays where 6 across
-        // is not dense enough to have fun
         const {
           v: { x, y },
           c: fill,

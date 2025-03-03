@@ -98,8 +98,6 @@ function resetLevelData() {
 }
 
 function resetPreviewData() {
-  // TODO: lives lost etc. is being tracked incorrectly when playing preview
-  // multiple times in a row
   audioManager.resetPluckSequence();
   lifeManager.reset();
   scoreStore.reset();

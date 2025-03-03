@@ -68,7 +68,6 @@ export const makeTutorialManager = (
   };
 
   const previewingBlast = (startPosition, pointerStart) => {
-    // TODO get power and determine if it'll pop all bubbles
     if (textManager.getLines()[0] !== getCurrentStepData().confirmationText) {
       textManager.updateLines([getCurrentStepData().confirmationText]);
       holdingBlast = true;
