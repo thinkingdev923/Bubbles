@@ -15,7 +15,7 @@ import {
 } from "./particle.js";
 import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
-import { makeLifeManager } from "./lives.js";
+import { makeLifeManager } from "./lifeManager.js";
 import { makeLevelManager } from "./level.js";
 import { makeContinueButtonManager } from "./continueButton.js";
 import { makeActivePointer } from "./activePointer.js";
