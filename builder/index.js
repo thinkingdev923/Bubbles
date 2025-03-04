@@ -10,6 +10,7 @@ import {
 
 let currentlyDisplayedData = {
   name: "LEVEL NAME",
+  par: 1,
   gravity: GRAVITY,
   balls: [[0, 0, 0, 0, 0, 0]],
 };
