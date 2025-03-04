@@ -67,7 +67,7 @@ export const makeTutorialManager = (
     holdingBlast = false;
   };
 
-  const previewingBlast = (startPosition, pointerStart) => {
+  const previewingBlast = () => {
     if (textManager.getLines()[0] !== getCurrentStepData().confirmationText) {
       textManager.updateLines([getCurrentStepData().confirmationText]);
       holdingBlast = true;
