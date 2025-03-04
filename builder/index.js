@@ -104,20 +104,22 @@ const addRow = () => {
 const copyJSON = () =>
   navigator.clipboard.writeText(`${JSON.stringify(currentlyDisplayedData)},`);
 
-// TODO this is not updating the preview data correctly
 layoutNameEl.addEventListener("input", (e) => {
   updateName(e.target.value);
+  updateLevelHref();
   e.preventDefault();
 });
 
-layoutParEl.addEventListener("change", (e) => {
+layoutParEl.addEventListener("input", (e) => {
   updatePar(e.target.value);
+  updateLevelHref();
   e.preventDefault();
 });
 
 // This is triggering an error at L206 for some reason
-layoutGravityEl.addEventListener("input", (e) => {
+layoutGravityEl.addEventListener("change", (e) => {
   updateGravity(e.target.value);
+  updateLevelHref();
   e.preventDefault();
 });
 
