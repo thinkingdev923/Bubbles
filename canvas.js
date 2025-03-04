@@ -7,7 +7,9 @@ export const makeCanvasManager = ({
   let width = Math.min(initialWidth, maxWidth);
   let height = initialHeight;
   const element = document.createElement("canvas");
-  const context = element.getContext("2d");
+  const context = element.getContext("2d", {
+    colorSpace: "display-p3",
+  });
   const scale = window.devicePixelRatio;
 
   const setCanvasSize = () => {
@@ -51,7 +53,8 @@ export const makeOffscreenCanvas = ({ width, height }) => {
   return {
     getContext: () => context,
     getBitmap: () => offscreenElement.transferToImageBitmap(),
-    getBlob: () => offscreenElement.convertToBlob(),
+    getBlob: () =>
+      offscreenElement.convertToBlob({ type: "image/jpeg", quality: 0.8 }),
     getWidth: () => width,
     getHeight: () => height,
     getScaleFactor: () => scale,

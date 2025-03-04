@@ -529,9 +529,20 @@ function shareImageDraw() {
 
 function captureShareImage() {
   setTimeout(() => {
-    shareImageCanvasManager.getBlob().then((b) => {
-      const url = URL.createObjectURL(b);
-      window.open(url);
+    shareImageCanvasManager.getBlob().then((blob) => {
+      const data = {
+        files: [
+          new File([blob], "share.jpeg", {
+            type: "image/jpeg",
+          }),
+        ],
+        title: "My title",
+        text: "Some text",
+      };
+
+      if (navigator.canShare && navigator.canShare(data)) {
+        navigator.share(data);
+      }
     });
   }, 800);
 }
