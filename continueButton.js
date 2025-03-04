@@ -120,16 +120,29 @@ export const makeContinueButtonManager = (canvasManager) => {
     CTX.scale(animateScale, animateScale);
     CTX.scale(hoverShapeScale, hoverShapeScale);
     CTX.stroke(buttonPath);
-    CTX.clip(buttonPath);
 
     // Draw fill as a circular wipe
     CTX.save();
+    CTX.clip(buttonPath);
     CTX.fillStyle = buttonColor;
     CTX.rotate(-Math.PI / 2);
     CTX.beginPath();
     CTX.arc(0, 0, buttonWidth / 2 + 12, 0, buttonBackgroundWipe);
     CTX.fill();
     CTX.restore();
+
+    // Draw a perimeter highlight stroke
+    CTX.strokeStyle = "rgba(255, 255, 255, .2)";
+    CTX.lineWidth = 1.5;
+    CTX.beginPath();
+    CTX.roundRect(
+      -buttonWidth / 2,
+      -buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      16
+    );
+    CTX.stroke();
 
     // Rotate text in addition to button
     CTX.rotate(rotateIn);
