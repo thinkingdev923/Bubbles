@@ -46,6 +46,7 @@ export const makeOffscreenCanvas = ({ width, height }) => {
 
   offscreenElement.width = Math.floor(width * scale);
   offscreenElement.height = Math.floor(height * scale);
+  context.scale(scale, scale);
 
   return {
     getContext: () => context,

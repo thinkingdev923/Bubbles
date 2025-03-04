@@ -211,8 +211,8 @@ export const makeBall = (
             preRenderImage,
             -p.getRadius(),
             -p.getRadius(),
-            p.getRadius() * 4,
-            p.getRadius() * 4
+            p.getRadius() * 2,
+            p.getRadius() * 2
           );
           CTX.restore();
         });
@@ -245,13 +245,7 @@ export const makeBall = (
       baseParticle.update(deltaTime);
       CTX.save();
       CTX.translate(baseParticle.getPosition().x, baseParticle.getPosition().y);
-      CTX.drawImage(
-        preRenderImage,
-        -radius,
-        -radius,
-        radius * 2 * canvasManager.getScaleFactor(),
-        radius * 2 * canvasManager.getScaleFactor()
-      );
+      CTX.drawImage(preRenderImage, -radius, -radius, radius * 2, radius * 2);
       CTX.restore();
     }
   };

@@ -269,13 +269,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const preRenderImage = getGradientBitmap(fill);
       CTX.translate(iconRadius, slideUp);
       CTX.scale(scaleUp, scaleUp);
-      CTX.drawImage(
-        preRenderImage,
-        -iconRadius,
-        0,
-        iconSize * canvasManager.getScaleFactor(),
-        iconSize * canvasManager.getScaleFactor()
-      );
+      CTX.drawImage(preRenderImage, -iconRadius, 0, iconSize, iconSize);
     } else {
       const rippleProgress = clampedProgress(
         animationDelay,
