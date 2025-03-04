@@ -8,6 +8,7 @@ import {
   transition,
   getBoundedPosition,
 } from "./helpers.js";
+import { background } from "./colors.js";
 import {
   checkParticleCollision,
   adjustParticlePositions,
@@ -296,7 +297,10 @@ const drawComboMessages = () => {
 };
 
 animate((deltaTime) => {
-  CTX.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
+  CTX.save();
+  CTX.fillStyle = background;
+  CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
+  CTX.restore();
 
   cameraWrapper(() => {
     // Trigger holdBlasts that have been held down past the max time
