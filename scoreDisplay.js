@@ -36,7 +36,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       yPos: verticalMarginBetweenSections,
       fontSize: 28,
       fontWeight: FONT_WEIGHT_BOLD,
-      lineHeight: 38,
+      lineHeight: 36,
     },
     []
   );
