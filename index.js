@@ -1,4 +1,4 @@
-import { makeCanvasManager } from "./canvas.js";
+import { makeCanvasManager, makeOffscreenCanvas } from "./canvas.js";
 import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import {
   animate,
@@ -68,6 +68,15 @@ const tutorialManager = makeTutorialManager(
   onTutorialStart,
   onTutorialAdvance,
   onTutorialComplete
+);
+const shareImageCanvasManager = makeOffscreenCanvas({
+  width: 420,
+  height: 420,
+});
+const shareImageScoreDisplay = makeScoreDisplay(
+  shareImageCanvasManager,
+  scoreStore,
+  levelManager
 );
 const CTX = canvasManager.getContext();
 
@@ -344,18 +353,22 @@ animate((deltaTime) => {
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw();
+        shareImageDraw();
         continueButtonManager.draw(deltaTime, msElapsed, 960);
       },
       defaultMessage: (msElapsed) => {
         scoreDisplay.draw();
+        shareImageDraw();
         continueButtonManager.draw(deltaTime, msElapsed, 960);
       },
       endGameMessage: (msElapsed) => {
         scoreDisplay.draw();
+        shareImageDraw();
         continueButtonManager.draw(deltaTime, msElapsed, 1920, "Try Again");
       },
       reachedEndOfGameMessage: (msElapsed) => {
         scoreDisplay.draw();
+        shareImageDraw();
         continueButtonManager.draw(deltaTime, msElapsed, 1920, "Play Again");
       },
     });
@@ -451,6 +464,8 @@ function onGameEnd() {
 
 function onInterstitial() {
   scoreDisplay.update();
+  shareImageScoreDisplay.update();
+  captureShareImage();
   resetOngoingVisuals();
 }
 
@@ -495,4 +510,28 @@ function onTutorialAdvance() {
 function onTutorialComplete() {
   // Pause before transitioning to the first level
   setTimeout(resetGame, 1400);
+}
+
+function shareImageDraw() {
+  const shareCTX = shareImageCanvasManager.getContext();
+  shareCTX.save();
+  shareCTX.fillStyle = background;
+  shareCTX.fillRect(
+    0,
+    0,
+    shareImageCanvasManager.getWidth(),
+    shareImageCanvasManager.getHeight()
+  );
+  shareCTX.restore();
+
+  shareImageScoreDisplay.draw();
+}
+
+function captureShareImage() {
+  setTimeout(() => {
+    shareImageCanvasManager.getBlob().then((b) => {
+      const url = URL.createObjectURL(b);
+      window.open(url);
+    });
+  }, 800);
 }
