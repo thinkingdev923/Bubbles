@@ -206,10 +206,12 @@ document.addEventListener("keyup", ({ key }) => {
 
 document.addEventListener("pointerdown", ({ target }) => {
   const clickedEl = target.closest("div");
-  const elIsEmptyCell = clickedEl.classList.contains("preview-cell--empty");
-  const elIsBall = clickedEl.classList.contains("preview-cell-ball");
-  const elIsDelete = clickedEl.classList.contains("preview-row-actions-delete");
-  const elIsLevel = clickedEl.hasAttribute("data-level-index");
+  const elIsEmptyCell = clickedEl?.classList.contains("preview-cell--empty");
+  const elIsBall = clickedEl?.classList.contains("preview-cell-ball");
+  const elIsDelete = clickedEl?.classList.contains(
+    "preview-row-actions-delete"
+  );
+  const elIsLevel = clickedEl?.hasAttribute("data-level-index");
 
   if (elIsEmptyCell) {
     fillCell(
