@@ -196,7 +196,5 @@ export const makeLevelManager = (
     isLastLevel,
     onGameOver,
     isGameOver: () => gameOver,
-    isGameLost: () => gameOver && !isLastLevel(),
-    isGameWon: () => gameOver && isLastLevel(),
   };
 };

@@ -46,7 +46,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
     const textLines = [];
     scoreDisplayStart = Date.now();
 
-    if (levelManager.isGameOver()) {
+    if (levelManager.isGameOver() || levelManager.isLastLevel()) {
       stats = {
         score: scoreStore.overallScoreNumber(),
         taps: scoreStore.getTaps(),
@@ -58,7 +58,9 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       };
 
       textLines.push(
-        levelManager.isGameWon() ? "You beat all levels!" : "No more lives!"
+        levelManager.isGameOver()
+          ? `Reached level ${currentLevel}`
+          : "You beat all levels!"
       );
 
       textLines.push(
@@ -124,8 +126,8 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
   const draw = () => {
     CTX.save();
     // Darken screen so it looks different from normal interstitial
-    if (levelManager.isGameOver()) {
-      CTX.fillStyle = "rgba(0, 0, 0, 0.4)";
+    if (levelManager.isGameOver() || levelManager.isLastLevel()) {
+      CTX.fillStyle = "rgba(0, 0, 0, 0.6)";
       CTX.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
     }
     topText.draw();
