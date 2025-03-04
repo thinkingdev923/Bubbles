@@ -19,7 +19,7 @@ import { makeTextBlock } from "./textBlock.js";
 
 const edgeMargin = 32;
 const verticalMargin = 32;
-const verticalMarginBetweenSections = 56;
+const verticalMarginBetweenSections = 48;
 const iconSize = 24;
 const iconRadius = iconSize / 2;
 const numPoppedTextWidth = 40;
@@ -36,7 +36,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       yPos: verticalMarginBetweenSections,
       fontSize: 28,
       fontWeight: FONT_WEIGHT_BOLD,
-      lineHeight: 36,
+      lineHeight: 34,
     },
     []
   );
