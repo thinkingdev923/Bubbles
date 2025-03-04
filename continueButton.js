@@ -132,8 +132,8 @@ export const makeContinueButtonManager = (canvasManager) => {
     CTX.restore();
 
     // Draw a perimeter highlight stroke
-    CTX.strokeStyle = "rgba(255, 255, 255, .2)";
-    CTX.lineWidth = 1.5;
+    CTX.strokeStyle = "rgba(255, 255, 255, .3)";
+    CTX.lineWidth = 1.2;
     CTX.beginPath();
     CTX.roundRect(
       -buttonWidth / 2,
