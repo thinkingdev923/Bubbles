@@ -18,7 +18,7 @@ import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
 import { makeLifeManager } from "./lifeManager.js";
 import { makeLevelManager } from "./level.js";
-import { makeContinueButtonManager } from "./continueButton.js";
+import { makeInterstitialButtonManager } from "./interstitialButton.js";
 import { makeActivePointer } from "./activePointer.js";
 import { makeTextBlock } from "./textBlock.js";
 import { makeScoreDisplay } from "./scoreDisplay.js";
@@ -62,7 +62,7 @@ const levelManager = makeLevelManager(
 );
 const scoreStore = makeScoreStore(levelManager);
 const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
-const continueButtonManager = makeContinueButtonManager(canvasManager);
+const interstitialButtonManager = makeInterstitialButtonManager(canvasManager);
 const tutorialManager = makeTutorialManager(
   canvasManager,
   onTutorialStart,
@@ -123,11 +123,12 @@ canvasManager.getElement().addEventListener("pointerdown", (e) => {
   const { pointerId, offsetX: x, offsetY: y } = e;
 
   if (levelManager.isInterstitialShowing()) {
-    continueButtonManager.handleClick(
+    interstitialButtonManager.handleClick(
       { x, y },
       levelManager.isGameOver() || levelManager.isLastLevel()
         ? resetGame
-        : levelManager.dismissInterstitialAndAdvanceLevel
+        : levelManager.dismissInterstitialAndAdvanceLevel,
+      onShare
     );
   } else {
     activePointers.push(
@@ -169,7 +170,7 @@ canvasManager.getElement().addEventListener("pointermove", (e) => {
   });
 
   if (levelManager.isInterstitialShowing())
-    continueButtonManager.handleHover({ x, y });
+    interstitialButtonManager.handleHover({ x, y });
 
   e.preventDefault();
 });
@@ -181,10 +182,6 @@ document.addEventListener("keydown", ({ key }) => {
     resetGame();
   } else if (validKey && levelManager.isInterstitialShowing()) {
     levelManager.dismissInterstitialAndAdvanceLevel();
-  }
-
-  if (key === "s") {
-    showShareSheet();
   }
 });
 
@@ -336,7 +333,12 @@ animate((deltaTime) => {
           },
           [`Preview of “${previewData.name}”`]
         ).draw(msElapsed);
-        continueButtonManager.draw(deltaTime, msElapsed, 80, "Play Preview");
+        interstitialButtonManager.draw(
+          deltaTime,
+          msElapsed,
+          80,
+          "Play Preview"
+        );
       },
       initialMessage: (msElapsed) => {
         makeTextBlock(
@@ -353,27 +355,44 @@ animate((deltaTime) => {
               : "Pop the bubble",
           ]
         ).draw(msElapsed);
-        continueButtonManager.draw(deltaTime, msElapsed, 80, "Play");
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 80,
+          text: "Play",
+        });
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw();
-        shareImageDraw();
-        continueButtonManager.draw(deltaTime, msElapsed, 960);
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 960,
+          isSharable: true,
+        });
       },
       defaultMessage: (msElapsed) => {
         scoreDisplay.draw();
-        shareImageDraw();
-        continueButtonManager.draw(deltaTime, msElapsed, 960);
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 960,
+          isSharable: true,
+        });
       },
       endGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        shareImageDraw();
-        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Try Again");
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 1920,
+          text: "Try Again",
+          isSharable: true,
+        });
       },
       reachedEndOfGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        shareImageDraw();
-        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Play Again");
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 1920,
+          text: "Play Again",
+          isSharable: true,
+        });
       },
     });
 
@@ -515,7 +534,9 @@ function onTutorialComplete() {
   setTimeout(resetGame, 1400);
 }
 
-function shareImageDraw() {
+function drawShareImage() {
+  // TODO draw level info
+
   const shareCTX = shareImageCanvasManager.getContext();
   shareCTX.save();
   shareCTX.fillStyle = background;
@@ -530,7 +551,7 @@ function shareImageDraw() {
   shareImageScoreDisplay.draw();
 }
 
-function showShareSheet() {
+function onShare() {
   shareImageCanvasManager.getBlob().then((blob) => {
     const data = {
       files: [
