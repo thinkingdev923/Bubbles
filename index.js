@@ -182,6 +182,10 @@ document.addEventListener("keydown", ({ key }) => {
   } else if (validKey && levelManager.isInterstitialShowing()) {
     levelManager.dismissInterstitialAndAdvanceLevel();
   }
+
+  if (key === "s") {
+    showShareSheet();
+  }
 });
 
 // Scale or translate the entire game
@@ -465,7 +469,6 @@ function onGameEnd() {
 function onInterstitial() {
   scoreDisplay.update();
   shareImageScoreDisplay.update();
-  captureShareImage();
   resetOngoingVisuals();
 }
 
@@ -527,22 +530,19 @@ function shareImageDraw() {
   shareImageScoreDisplay.draw();
 }
 
-function captureShareImage() {
-  setTimeout(() => {
-    shareImageCanvasManager.getBlob().then((blob) => {
-      const data = {
-        files: [
-          new File([blob], "share.jpeg", {
-            type: "image/jpeg",
-          }),
-        ],
-        title: "My title",
-        text: "Some text",
-      };
+function showShareSheet() {
+  shareImageCanvasManager.getBlob().then((blob) => {
+    const data = {
+      files: [
+        new File([blob], "share.jpeg", {
+          type: "image/jpeg",
+        }),
+      ],
+      text: "Made it to level N! https://ehmorris.com/bubbles",
+    };
 
-      if (navigator.canShare && navigator.canShare(data)) {
-        navigator.share(data);
-      }
-    });
-  }, 800);
+    if (navigator.canShare && navigator.canShare(data)) {
+      navigator.share(data);
+    }
+  });
 }
