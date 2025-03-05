@@ -1,4 +1,4 @@
-import { easeInOutSine, easeOutQuart } from "./easings.js";
+import { easeOutExpo, easeOutQuart } from "./easings.js";
 import { clampedProgress, transition } from "./helpers.js";
 import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { randomColor, background } from "./colors.js";
@@ -15,9 +15,9 @@ export const makeContinueButtonManager = (canvasManager) => {
   let buttonColor = randomColor();
 
   const hoverSpring = makeSpring(0, {
-    stiffness: 90,
-    damping: 12,
-    mass: 1.2,
+    stiffness: 80,
+    damping: 8,
+    mass: 1,
     precision: 200,
   });
 
@@ -77,16 +77,18 @@ export const makeContinueButtonManager = (canvasManager) => {
   const draw = (deltaTime, msElapsed, delay, text = "Continue") => {
     hoverSpring.update(deltaTime);
     withinDelay = msElapsed - delay > 0;
-    const introProgress = clampedProgress(0, 1000, msElapsed - delay);
-    const wipeProgress = clampedProgress(0, 450, msElapsed - delay);
-    const fadeIn = transition(0, 1, introProgress, easeOutQuart);
-    const animateUp = transition(12, 0, introProgress, easeOutQuart);
-    const animateScale = transition(0.9, 1, introProgress, easeOutQuart);
-    const rotateIn = transition(Math.PI / 12, 0, introProgress, easeOutQuart);
-    const buttonBackgroundWipe = transition(
+    const introProgress1 = clampedProgress(0, 800, msElapsed - delay);
+    const introProgress2 = clampedProgress(0, 1200, msElapsed - delay);
+    const fadeIn = transition(0, 1, introProgress1, easeOutQuart);
+    const animateUp = transition(12, 0, introProgress1, easeOutQuart);
+    const animateScaleX = transition(0.8, 1, introProgress1, easeOutExpo);
+    const animateScaleY = transition(0.9, 1, introProgress1, easeOutExpo);
+    const rotateIn = transition(Math.PI / 12, 0, introProgress2, easeOutQuart);
+    const clipInRadius = transition(
       0,
-      2 * Math.PI - 0.00001,
-      wipeProgress
+      buttonWidth / 2 + 24,
+      introProgress2,
+      easeOutQuart
     );
 
     const hoverShapeScale = transition(
@@ -117,7 +119,7 @@ export const makeContinueButtonManager = (canvasManager) => {
     CTX.globalAlpha = fadeIn;
     CTX.translate(0, animateUp);
     CTX.rotate(rotateIn);
-    CTX.scale(animateScale, animateScale);
+    CTX.scale(animateScaleX, animateScaleY);
     CTX.scale(hoverShapeScale, hoverShapeScale);
     CTX.stroke(buttonPath);
 
@@ -125,24 +127,10 @@ export const makeContinueButtonManager = (canvasManager) => {
     CTX.save();
     CTX.clip(buttonPath);
     CTX.fillStyle = buttonColor;
-    CTX.rotate(-Math.PI / 2);
     CTX.beginPath();
-    CTX.arc(0, 0, buttonWidth / 2 + 12, 0, buttonBackgroundWipe);
+    CTX.arc(0, 0, clipInRadius, 0, Math.PI * 2);
     CTX.fill();
     CTX.restore();
-
-    // Draw a perimeter highlight stroke
-    CTX.strokeStyle = "rgba(255, 255, 255, .3)";
-    CTX.lineWidth = 1.2;
-    CTX.beginPath();
-    CTX.roundRect(
-      -buttonWidth / 2,
-      -buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      16
-    );
-    CTX.stroke();
 
     // Rotate text in addition to button
     CTX.rotate(rotateIn);
