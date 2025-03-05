@@ -1,4 +1,4 @@
-import { makeCanvasManager } from "./canvas.js";
+import { makeCanvasManager, makeOffscreenCanvas } from "./canvas.js";
 import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import {
   animate,
@@ -18,7 +18,7 @@ import { makeRipple } from "./ripple.js";
 import { makeAudioManager } from "./audio.js";
 import { makeLifeManager } from "./lifeManager.js";
 import { makeLevelManager } from "./level.js";
-import { makeContinueButtonManager } from "./continueButton.js";
+import { makeInterstitialButtonManager } from "./interstitialButton.js";
 import { makeActivePointer } from "./activePointer.js";
 import { makeTextBlock } from "./textBlock.js";
 import { makeScoreDisplay } from "./scoreDisplay.js";
@@ -62,12 +62,21 @@ const levelManager = makeLevelManager(
 );
 const scoreStore = makeScoreStore(levelManager);
 const scoreDisplay = makeScoreDisplay(canvasManager, scoreStore, levelManager);
-const continueButtonManager = makeContinueButtonManager(canvasManager);
+const interstitialButtonManager = makeInterstitialButtonManager(canvasManager);
 const tutorialManager = makeTutorialManager(
   canvasManager,
   onTutorialStart,
   onTutorialAdvance,
   onTutorialComplete
+);
+const shareImageCanvasManager = makeOffscreenCanvas({
+  width: 420,
+  height: 420,
+});
+const shareImageScoreDisplay = makeScoreDisplay(
+  shareImageCanvasManager,
+  scoreStore,
+  levelManager
 );
 const CTX = canvasManager.getContext();
 
@@ -114,11 +123,12 @@ canvasManager.getElement().addEventListener("pointerdown", (e) => {
   const { pointerId, offsetX: x, offsetY: y } = e;
 
   if (levelManager.isInterstitialShowing()) {
-    continueButtonManager.handleClick(
+    interstitialButtonManager.handleClick(
       { x, y },
       levelManager.isGameOver() || levelManager.isLastLevel()
         ? resetGame
-        : levelManager.dismissInterstitialAndAdvanceLevel
+        : levelManager.dismissInterstitialAndAdvanceLevel,
+      onShare
     );
   } else {
     activePointers.push(
@@ -160,7 +170,7 @@ canvasManager.getElement().addEventListener("pointermove", (e) => {
   });
 
   if (levelManager.isInterstitialShowing())
-    continueButtonManager.handleHover({ x, y });
+    interstitialButtonManager.handleHover({ x, y });
 
   e.preventDefault();
 });
@@ -323,7 +333,12 @@ animate((deltaTime) => {
           },
           [`Preview of “${previewData.name}”`]
         ).draw(msElapsed);
-        continueButtonManager.draw(deltaTime, msElapsed, 80, "Play Preview");
+        interstitialButtonManager.draw(
+          deltaTime,
+          msElapsed,
+          80,
+          "Play Preview"
+        );
       },
       initialMessage: (msElapsed) => {
         makeTextBlock(
@@ -340,23 +355,44 @@ animate((deltaTime) => {
               : "Pop the bubble",
           ]
         ).draw(msElapsed);
-        continueButtonManager.draw(deltaTime, msElapsed, 80, "Play");
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 80,
+          text: "Play",
+        });
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(deltaTime, msElapsed, 960);
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 960,
+          isSharable: true,
+        });
       },
       defaultMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(deltaTime, msElapsed, 960);
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 960,
+          isSharable: true,
+        });
       },
       endGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Try Again");
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 1920,
+          text: "Try Again",
+          isSharable: true,
+        });
       },
       reachedEndOfGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        continueButtonManager.draw(deltaTime, msElapsed, 1920, "Play Again");
+        drawShareImage();
+        interstitialButtonManager.draw(deltaTime, msElapsed, {
+          delay: 1920,
+          text: "Play Again",
+          isSharable: true,
+        });
       },
     });
 
@@ -451,6 +487,7 @@ function onGameEnd() {
 
 function onInterstitial() {
   scoreDisplay.update();
+  shareImageScoreDisplay.update();
   resetOngoingVisuals();
 }
 
@@ -495,4 +532,38 @@ function onTutorialAdvance() {
 function onTutorialComplete() {
   // Pause before transitioning to the first level
   setTimeout(resetGame, 1400);
+}
+
+function drawShareImage() {
+  // TODO draw level info
+
+  const shareCTX = shareImageCanvasManager.getContext();
+  shareCTX.save();
+  shareCTX.fillStyle = background;
+  shareCTX.fillRect(
+    0,
+    0,
+    shareImageCanvasManager.getWidth(),
+    shareImageCanvasManager.getHeight()
+  );
+  shareCTX.restore();
+
+  shareImageScoreDisplay.draw();
+}
+
+function onShare() {
+  shareImageCanvasManager.getBlob().then((blob) => {
+    const data = {
+      files: [
+        new File([blob], "share.jpeg", {
+          type: "image/jpeg",
+        }),
+      ],
+      text: "Made it to level N! https://ehmorris.com/bubbles",
+    };
+
+    if (navigator.canShare && navigator.canShare(data)) {
+      navigator.share(data);
+    }
+  });
 }
