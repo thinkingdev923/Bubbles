@@ -552,18 +552,46 @@ function drawShareImage() {
 }
 
 function onShare() {
+  const stats = {
+    score: scoreStore.overallScoreNumber(),
+    taps: scoreStore.getTaps(),
+    tapsPopped: scoreStore.sumCategoryLevelEvents("taps").numPopped,
+    slingshots: scoreStore.getSlingshots(),
+    blasts: scoreStore.getBlasts(),
+  };
+
+  const shareText = `Made it to level ${levelManager.getLevel()} in Bubbles!
+${stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""}${
+    stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
+  } par overall
+  
+https://ehmorris.com/bubbles
+
+👆 Tapped ${stats.taps.length} times: ${stats.tapsPopped} ${
+    stats.tapsPopped === 1 ? "hit" : "hits"
+  }, ${stats.taps.length - stats.tapsPopped} ${
+    stats.taps.length - stats.tapsPopped === 1 ? "miss" : "misses"
+  }
+☄️ Launched ${stats.slingshots.length} ${
+    stats.slingshots.length === 1 ? "slingshot" : "slingshots"
+  }
+💥 Detonated ${stats.blasts.length} ${
+    stats.blasts.length === 1 ? "blast" : "blasts"
+  }
+`;
+
   shareImageCanvasManager.getBlob().then((blob) => {
     const data = {
       files: [
-        new File([blob], "share.jpeg", {
+        new File([blob], "bubbles.jpeg", {
           type: "image/jpeg",
         }),
       ],
-      text: "Made it to level N! https://ehmorris.com/bubbles",
+      text: shareText,
     };
 
-    if (navigator.canShare && navigator.canShare(data)) {
-      navigator.share(data);
-    }
+    navigator.canShare && navigator.canShare(data)
+      ? navigator.share(data)
+      : navigator.clipboard.writeText(shareText);
   });
 }
