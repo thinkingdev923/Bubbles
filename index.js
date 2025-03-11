@@ -25,7 +25,6 @@ import { makeScoreDisplay } from "./scoreDisplay.js";
 import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
 import { makeTutorialManager } from "./tutorial.js";
-import { easeOutElastic, easeOutQuint } from "./easings.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
