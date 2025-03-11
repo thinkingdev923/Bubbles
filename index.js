@@ -71,6 +71,7 @@ const tutorialManager = makeTutorialManager(
 const shareImageCanvasManager = makeOffscreenCanvas({
   width: 400,
   height: 500,
+  scale: 2,
 });
 const shareImageScoreDisplay = makeScoreDisplay(
   shareImageCanvasManager,
