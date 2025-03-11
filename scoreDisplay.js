@@ -33,6 +33,7 @@ export const makeScoreDisplay = (
   const numPoppedTextWidth = 40;
   let scoreDisplayStart = Date.now();
   let stats = null;
+  let scoreHeight = null;
 
   const topText = makeTextBlock(
     canvasManager,
@@ -156,6 +157,8 @@ export const makeScoreDisplay = (
 
     CTX.globalAlpha = opacityTransition;
     CTX.translate(0, slideUpTransition);
+    scoreHeight =
+      topText.getHeight() + topText.getYPos() + verticalMarginBetweenSections;
 
     if (stats.taps.length) {
       drawTitleLine(
@@ -166,6 +169,7 @@ export const makeScoreDisplay = (
       );
 
       CTX.translate(0, verticalMargin);
+      scoreHeight += verticalMargin;
 
       const tapsGrid = makeGrid(canvasManager, stats.taps, {
         itemWidth: iconSize,
@@ -177,12 +181,14 @@ export const makeScoreDisplay = (
       tapsGrid.drawItems(drawTapItem);
 
       CTX.translate(0, tapsGrid.getHeight() + verticalMarginBetweenSections);
+      scoreHeight += tapsGrid.getHeight() + verticalMarginBetweenSections;
     }
 
     if (stats.slingshots.length) {
       drawTitleLine("SLINGSHOTS", `${stats.slingshots.length} Launched`);
 
       CTX.translate(0, verticalMargin);
+      scoreHeight += verticalMargin;
 
       const slingshotsGrid = makeGrid(canvasManager, stats.slingshots, {
         itemWidth: iconSize + 8 + numPoppedTextWidth,
@@ -196,12 +202,14 @@ export const makeScoreDisplay = (
         0,
         slingshotsGrid.getHeight() + verticalMarginBetweenSections
       );
+      scoreHeight += slingshotsGrid.getHeight() + verticalMarginBetweenSections;
     }
 
     if (stats.blasts.length) {
       drawTitleLine("BLASTS", `${stats.blasts.length} Detonated`);
 
-      CTX.translate(0, edgeMargin);
+      CTX.translate(0, verticalMargin);
+      scoreHeight += verticalMargin;
 
       const blastsGrid = makeGrid(canvasManager, stats.blasts, {
         itemWidth: iconSize + 8 + numPoppedTextWidth,
@@ -211,6 +219,8 @@ export const makeScoreDisplay = (
       });
 
       blastsGrid.drawItems(drawBlastItem);
+
+      scoreHeight += blastsGrid.getHeight() + verticalMarginBetweenSections;
     }
 
     CTX.restore();
@@ -462,7 +472,12 @@ export const makeScoreDisplay = (
     CTX.fillText(`x${popped}`, 32, iconRadius + textHeight / 2);
   }
 
-  return { draw, update };
+  const getHeight = () => {
+    draw();
+    return scoreHeight;
+  };
+
+  return { draw, update, getHeight };
 };
 
 function applyTextStyle1(CTX) {

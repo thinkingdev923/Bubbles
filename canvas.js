@@ -39,24 +39,43 @@ export const makeCanvasManager = ({
   };
 };
 
-export const makeOffscreenCanvas = ({ width, height, scale }) => {
+export const makeOffscreenCanvas = ({
+  width,
+  height,
+  scale = window.devicePixelRatio,
+}) => {
   const offscreenElement = new OffscreenCanvas(width, height);
   const context = offscreenElement.getContext("2d", {
     colorSpace: "display-p3",
   });
-  const scaleFactor = scale || window.devicePixelRatio;
+  let _width = width;
+  let _height = height;
+  let _scale = scale;
 
-  offscreenElement.width = Math.floor(width * scaleFactor);
-  offscreenElement.height = Math.floor(height * scaleFactor);
-  context.scale(scaleFactor, scaleFactor);
+  const setCanvasSize = ({
+    width = _width,
+    height = _height,
+    scale = _scale,
+  } = {}) => {
+    _width = width;
+    _height = height;
+    _scale = scale;
+
+    offscreenElement.width = Math.floor(_width * _scale);
+    offscreenElement.height = Math.floor(_height * _scale);
+    context.scale(_scale, _scale);
+  };
+
+  setCanvasSize();
 
   return {
     getContext: () => context,
     getBitmap: () => offscreenElement.transferToImageBitmap(),
     getBlob: () =>
       offscreenElement.convertToBlob({ type: "image/jpeg", quality: 0.8 }),
-    getWidth: () => width,
-    getHeight: () => height,
-    getScaleFactor: () => scaleFactor,
+    getWidth: () => _width,
+    getHeight: () => _height,
+    getScaleFactor: () => _scale,
+    setCanvasSize,
   };
 };

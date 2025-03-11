@@ -538,7 +538,13 @@ function onTutorialComplete() {
 }
 
 function drawShareImage() {
-  // TODO draw level info
+  // TODO draw level info somewhere
+
+  const shareImageHeight = shareImageScoreDisplay.getHeight();
+
+  if (shareImageCanvasManager.getHeight() !== shareImageHeight) {
+    shareImageCanvasManager.setCanvasSize({ height: shareImageHeight });
+  }
 
   const shareCTX = shareImageCanvasManager.getContext();
   shareCTX.save();
