@@ -76,7 +76,8 @@ const shareImageCanvasManager = makeOffscreenCanvas({
 const shareImageScoreDisplay = makeScoreDisplay(
   shareImageCanvasManager,
   scoreStore,
-  levelManager
+  levelManager,
+  { edgeMargin: 24, verticalMarginBetweenSections: 32 }
 );
 const CTX = canvasManager.getContext();
 

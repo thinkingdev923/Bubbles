@@ -17,15 +17,20 @@ import {
 import { makeGrid } from "./grid.js";
 import { makeTextBlock } from "./textBlock.js";
 
-const edgeMargin = 32;
-const verticalMargin = 32;
-const verticalMarginBetweenSections = 48;
-const iconSize = 24;
-const iconRadius = iconSize / 2;
-const numPoppedTextWidth = 40;
-
-export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
+export const makeScoreDisplay = (
+  canvasManager,
+  scoreStore,
+  levelManager,
+  {
+    edgeMargin = 32,
+    verticalMargin = 32,
+    verticalMarginBetweenSections = 48,
+  } = {}
+) => {
   const CTX = canvasManager.getContext();
+  const iconSize = 24;
+  const iconRadius = iconSize / 2;
+  const numPoppedTextWidth = 40;
   let scoreDisplayStart = Date.now();
   let stats = null;
 
@@ -165,6 +170,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const tapsGrid = makeGrid(canvasManager, stats.taps, {
         itemWidth: iconSize,
         itemHeight: iconSize,
+        edgeMargin,
         maxRows: 2,
       });
 
@@ -181,6 +187,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const slingshotsGrid = makeGrid(canvasManager, stats.slingshots, {
         itemWidth: iconSize + 8 + numPoppedTextWidth,
         itemHeight: iconSize,
+        edgeMargin,
       });
 
       slingshotsGrid.drawItems(drawSlingshotItem);
@@ -199,6 +206,7 @@ export const makeScoreDisplay = (canvasManager, scoreStore, levelManager) => {
       const blastsGrid = makeGrid(canvasManager, stats.blasts, {
         itemWidth: iconSize + 8 + numPoppedTextWidth,
         itemHeight: iconSize,
+        edgeMargin,
         maxRows: 2,
       });
 
