@@ -25,6 +25,7 @@ import { makeScoreDisplay } from "./scoreDisplay.js";
 import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
 import { makeTutorialManager } from "./tutorial.js";
+import { makeFirework } from "./firework.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -87,6 +88,7 @@ let pointerTriggerOutput;
 let previousLevelBalls;
 let balls;
 let ripples;
+let fireworks;
 
 function resetGame() {
   activePointers = [];
@@ -94,6 +96,7 @@ function resetGame() {
   previousLevelBalls = [];
   balls = [];
   ripples = [];
+  fireworks = [];
   lifeManager.reset();
   levelManager.reset();
   tutorialManager.isTutorialComplete()
@@ -105,6 +108,7 @@ function resetGame() {
 resetGame();
 
 function resetLevelData() {
+  fireworks = [];
   audioManager.resetPluckSequence();
 }
 
@@ -413,6 +417,7 @@ animate((deltaTime) => {
     // Draw main game elements
     ripples.forEach((r) => r.draw());
     previousLevelBalls.forEach((b) => b.draw(deltaTime));
+    fireworks.forEach((f) => f.draw(deltaTime));
 
     if (levelManager.showLevelCountdown()) {
       levelManager.drawLevelCountdown();
@@ -493,6 +498,10 @@ function onInterstitial() {
   scoreDisplay.update();
   shareImageScoreDisplay.update();
   resetOngoingVisuals();
+
+  if (levelManager.getLevel() > 1) {
+    fireworks = new Array(8).fill().map(() => makeFirework(canvasManager));
+  }
 }
 
 function onLevelAdvance() {
