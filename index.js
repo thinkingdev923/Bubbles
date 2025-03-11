@@ -532,8 +532,7 @@ function onTutorialAdvance() {
 }
 
 function onTutorialComplete() {
-  // Pause before transitioning to the first level
-  setTimeout(resetGame, 1400);
+  resetGame();
 }
 
 function drawShareImage() {

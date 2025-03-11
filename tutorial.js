@@ -212,6 +212,11 @@ export const makeTutorialManager = (
         drawUpwardsArrow();
         drawThumbPlaceholder();
       }
+    } else if (
+      currentTutorialStep === 6 &&
+      Date.now() - stepStarted > successMessageDuration
+    ) {
+      advance();
     }
     CTX.restore();
   };
@@ -324,6 +329,12 @@ function getTutorialData(canvasManager) {
           fill: turquoise,
         },
       ],
+    },
+    {
+      step: 6,
+      initialText: "Woo!",
+      textYPos: canvasManager.getHeight() / 2 - 8,
+      balls: [],
     },
   ];
 }
