@@ -59,6 +59,7 @@
 @media (max-width: 540px) {
   .actionsBottom {
     padding: 0 16px 16px;
+    grid-gap: 4px;
   }
 }
 
@@ -78,6 +79,12 @@
   transition: all 0.15s ease-in-out;
   -webkit-backdrop-filter: blur(32px);
   backdrop-filter: blur(32px);
+}
+
+@media (max-width: 540px) {
+  .actionsBottom-button {
+    padding: 16px 8px;
+  }
 }
 
 .actionsBottom-button:hover {
@@ -110,4 +117,10 @@
 .actionsBottom-button-shortcut {
   opacity: 0.65;
   transition: transform 0.15s ease-in-out;
+}
+
+@media (max-width: 540px) {
+  .actionsBottom-button-shortcut {
+    display: none;
+  }
 }

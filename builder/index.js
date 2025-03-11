@@ -23,6 +23,7 @@ const layoutPreviewEl = document.querySelector("#layout-preview");
 const addRowEl = document.querySelector("#addRow");
 const copyToClipboardEl = document.querySelector("#copyToClipboard");
 const openPreviewEl = document.querySelector("#openPreview");
+const submitLevelEl = document.querySelector("#submitLevel");
 let selectedBallEl;
 let selectedBallRow;
 let selectedBallCell;
@@ -51,6 +52,21 @@ const updateLevelHref = () => {
       "/builder/",
       `/?level=${encodeURIComponent(JSON.stringify(currentlyDisplayedData))}`
     )
+  );
+
+  const levelInCodeBlock = `\`\`\` JSON\n${JSON.stringify(
+    currentlyDisplayedData
+  )}\n\`\`\``;
+  const playLink = `[Play Preview](https://ehmorris.com/bubbles/?level=${encodeURIComponent(
+    JSON.stringify(currentlyDisplayedData)
+  )})`;
+  const discussionText = `Please write something interesting here about this level\n---\n${levelInCodeBlock}\n\n${playLink}`;
+
+  submitLevelEl.setAttribute(
+    "href",
+    `https://github.com/ehmorris/bubbles/discussions/new?category=level-suggestions&title=${
+      currentlyDisplayedData.name
+    }&body=${encodeURIComponent(discussionText)}`
   );
 };
 
