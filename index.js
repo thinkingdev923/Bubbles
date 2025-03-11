@@ -260,50 +260,53 @@ const detectCollisionsForGameObjects = () => {
   });
 };
 
-const drawComboMessages = () => {
-  scoreStore.recentCombos(levelManager.getLevel()).forEach((c) => {
-    // TODO: use springs and animate out as well
-    const boundedPosition = getBoundedPosition(canvasManager, c.position, 100);
-    const text = `x${c.popped}!`;
-    const textHeight = 48;
+const drawComboMessages = (deltaTime) => {
+  scoreStore
+    .getCombos()
+    .filter(({ hasShownCombo }) => !hasShownCombo)
+    .forEach(({ popped, position, spring }) => {
+      spring.update(deltaTime);
 
-    const slideUp = transition(
-      boundedPosition.y + 60,
-      boundedPosition.y + textHeight / 2,
-      clampedProgress(0, 300, Date.now() - c.timestamp),
-      easeOutQuint
-    );
-    const rotateIn = transition(
-      -Math.PI / 2,
-      Math.PI / 80,
-      clampedProgress(0, 1600, Date.now() - c.timestamp),
-      easeOutElastic
-    );
-    const scaleIn = transition(
-      0.01,
-      1,
-      clampedProgress(0, 400, Date.now() - c.timestamp),
-      easeOutQuint
-    );
+      const boundedPosition = getBoundedPosition(canvasManager, position, 100);
+      const text = `x${popped}!`;
+      const textHeight = 48;
 
-    CTX.save();
-    CTX.translate(boundedPosition.x, slideUp);
-    CTX.rotate(rotateIn);
-    CTX.scale(scaleIn, scaleIn);
-    CTX.font = `${FONT_WEIGHT_BOLD} 64px ${FONT}`;
+      const fadeIn = transition(
+        0,
+        1,
+        clampedProgress(0, 1, spring.getCurrentValue())
+      );
+      const slideUp = transition(
+        boundedPosition.y + 100,
+        boundedPosition.y + textHeight / 2,
+        spring.getCurrentValue()
+      );
+      const rotateIn = transition(
+        -Math.PI / 2,
+        Math.PI / 80,
+        spring.getCurrentValue()
+      );
+      const scaleIn = transition(0.01, 1, spring.getCurrentValue());
 
-    // Shadow
-    CTX.fillStyle = "#000";
-    CTX.textAlign = "center";
-    CTX.fillText(text, 0, 0);
+      CTX.save();
+      CTX.globalAlpha = fadeIn;
+      CTX.translate(boundedPosition.x, slideUp);
+      CTX.rotate(rotateIn);
+      CTX.scale(scaleIn, scaleIn);
+      CTX.font = `${FONT_WEIGHT_BOLD} 64px ${FONT}`;
 
-    // Text
-    CTX.translate(-2, -3);
-    CTX.fillStyle = "#fff";
-    CTX.fillText(text, 0, 0);
+      // Shadow
+      CTX.fillStyle = "#000";
+      CTX.textAlign = "center";
+      CTX.fillText(text, 0, 0);
 
-    CTX.restore();
-  });
+      // Text
+      CTX.translate(-2, -3);
+      CTX.fillStyle = "#fff";
+      CTX.fillText(text, 0, 0);
+
+      CTX.restore();
+    });
 };
 
 animate((deltaTime) => {
@@ -421,7 +424,7 @@ animate((deltaTime) => {
 
     // Draw combo messages over everything
     if (tutorialManager.isTutorialComplete()) {
-      drawComboMessages();
+      drawComboMessages(deltaTime);
     }
   });
 });

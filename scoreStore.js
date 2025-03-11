@@ -1,4 +1,5 @@
 import { levels as levelData } from "./levelData.js";
+import { makeSpring } from "./spring.js";
 
 export const makeScoreStore = (levelManager) => {
   // MAP STRUCTURE EXAMPLE
@@ -16,8 +17,8 @@ export const makeScoreStore = (levelManager) => {
   //   [
   //     "slingshots",
   //     [
-  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, velocity: { x: 0, y: 0 }, popped: 3 },
-  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, velocity: { x: 0, y: 0 }, popped: 2 }
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, velocity: { x: 0, y: 0 }, popped: 3, spring: [object], hasShownCombo: false },
+  //       { timestamp: 1234, level: 1, position: { x: 42, y: 56 }, velocity: { x: 0, y: 0 }, popped: 2, spring: [object], hasShownCombo: false }
   //     ],
   //   ],
   //   [
@@ -72,6 +73,7 @@ export const makeScoreStore = (levelManager) => {
         position: { ...position },
         velocity: { ...velocity },
         popped,
+        hasShownCombo: false,
       },
     ]);
 
@@ -87,6 +89,21 @@ export const makeScoreStore = (levelManager) => {
 
     slingshotsCopy[slingshotIndex].popped = popped;
 
+    if (!slingshotsCopy[slingshotIndex].spring) {
+      slingshotsCopy[slingshotIndex].spring = makeSpring(0, {
+        stiffness: 70,
+        damping: 6,
+        mass: 1,
+        precision: 100,
+      });
+
+      slingshotsCopy[slingshotIndex].spring.setEndValue(1).then(() => {
+        slingshotsCopy[slingshotIndex].spring.setEndValue(0).then(() => {
+          slingshotsCopy[slingshotIndex].hasShownCombo = true;
+        });
+      });
+    }
+
     store.set("slingshots", slingshotsCopy);
   };
 
@@ -101,6 +118,7 @@ export const makeScoreStore = (levelManager) => {
         position,
         power,
         popped,
+        hasShownCombo: false,
       },
     ]);
 
@@ -115,6 +133,21 @@ export const makeScoreStore = (levelManager) => {
     const blastsCopy = [...store.get("blasts")];
 
     blastsCopy[blastIndex].popped = popped;
+
+    if (!blastsCopy[blastIndex].spring) {
+      blastsCopy[blastIndex].spring = makeSpring(0, {
+        stiffness: 70,
+        damping: 6,
+        mass: 1,
+        precision: 100,
+      });
+
+      blastsCopy[blastIndex].spring.setEndValue(1).then(() => {
+        blastsCopy[blastIndex].spring.setEndValue(0).then(() => {
+          blastsCopy[blastIndex].hasShownCombo = true;
+        });
+      });
+    }
 
     store.set("blasts", blastsCopy);
   };
@@ -166,28 +199,10 @@ export const makeScoreStore = (levelManager) => {
     return totalPopped;
   };
 
-  const recentCombos = (level) => {
-    const recentTimeframeInMS = 2400;
-
-    return [
-      ...store
-        .get("slingshots")
-        .filter(
-          (s) =>
-            s.level === level &&
-            s.popped > 1 &&
-            Date.now() - s.timestamp < recentTimeframeInMS
-        ),
-      ...store
-        .get("blasts")
-        .filter(
-          (b) =>
-            b.level === level &&
-            b.popped > 1 &&
-            Date.now() - b.timestamp < recentTimeframeInMS
-        ),
-    ];
-  };
+  const getCombos = () => [
+    ...store.get("slingshots").filter((s) => s.popped > 1),
+    ...store.get("blasts").filter((b) => b.popped > 1),
+  ];
 
   const levelScoreNumber = () => {
     const level = levelManager.getLevel();
@@ -241,7 +256,7 @@ export const makeScoreStore = (levelManager) => {
     recordMiss,
     sumCategoryLevelEvents,
     sumPopped,
-    recentCombos,
+    getCombos,
     levelScoreNumber,
     overallScoreNumber,
     getTaps,
