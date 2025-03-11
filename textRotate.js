@@ -8,9 +8,9 @@ export const drawTextRotate = (
   newValue
 ) => {
   const CTX = canvasManager.getContext();
-  const levelAnimationProgress = clampedProgress(
+  const animationProgress = clampedProgress(
     0,
-    160,
+    180,
     Date.now() - animationStart
   );
   const travelDistance = 20;
@@ -19,13 +19,13 @@ export const drawTextRotate = (
   CTX.save();
   CTX.translate(
     0,
-    transition(0, -travelDistance, levelAnimationProgress, easeInOutSine)
+    transition(0, -travelDistance, animationProgress, easeInOutSine)
   );
-  CTX.globalAlpha = transition(1, 0, levelAnimationProgress, easeInOutSine);
+  CTX.globalAlpha = transition(1, 0, animationProgress, easeInOutSine);
   CTX.filter = `blur(${transition(
     0,
     blurAmount,
-    levelAnimationProgress,
+    animationProgress,
     easeInOutSine
   )}px)`;
   CTX.fillText(previousValue, 0, 0);
@@ -34,13 +34,13 @@ export const drawTextRotate = (
   CTX.save();
   CTX.translate(
     0,
-    transition(travelDistance, 0, levelAnimationProgress, easeInOutSine)
+    transition(travelDistance, 0, animationProgress, easeInOutSine)
   );
-  CTX.globalAlpha = transition(0, 1, levelAnimationProgress, easeInOutSine);
+  CTX.globalAlpha = transition(0, 1, animationProgress, easeInOutSine);
   CTX.filter = `blur(${transition(
     blurAmount,
     0,
-    levelAnimationProgress,
+    animationProgress,
     easeInOutSine
   )}px)`;
   CTX.fillText(newValue, 0, 0);
