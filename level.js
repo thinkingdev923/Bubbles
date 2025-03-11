@@ -5,6 +5,7 @@ import { drawTextRotate } from "./textRotate.js";
 import { clampedProgress, transition } from "./helpers.js";
 
 import { makeTextBlock } from "./textBlock.js";
+import { easeOutCirc, easeOutElastic } from "./easings.js";
 
 export const makeLevelManager = (
   canvasManager,
@@ -127,12 +128,24 @@ export const makeLevelManager = (
   };
 
   const drawLevelNumber = () => {
+    const showLargeDuringCountdown = clampedProgress(
+      countdownDuration,
+      countdownDuration + 240,
+      Date.now() - levelStarted
+    );
+    const yPos = transition(
+      canvasManager.getHeight() / 2 - 24,
+      24,
+      showLargeDuringCountdown,
+      easeOutCirc
+    );
+
     CTX.save();
     CTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
     CTX.fillStyle = yellow;
     CTX.letterSpacing = "1px";
     CTX.textAlign = "center";
-    CTX.translate(canvasManager.getWidth() / 2, 24);
+    CTX.translate(canvasManager.getWidth() / 2, yPos);
 
     if (!previewData && previousLevelValue) {
       drawTextRotate(
