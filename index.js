@@ -499,7 +499,7 @@ function onInterstitial() {
   shareImageScoreDisplay.update();
   resetOngoingVisuals();
 
-  if (levelManager.getLevel() > 1) {
+  if (!levelManager.isGameOver() && levelManager.isLastLevel()) {
     fireworks = new Array(8).fill().map(() => makeFirework(canvasManager));
   }
 }
