@@ -94,20 +94,23 @@ https://ehmorris.com/bubbles
     }
 `;
 
-    shareImageCanvasManager.getBlob().then((blob) => {
-      const data = {
-        files: [
-          new File([blob], "bubbles.jpeg", {
-            type: "image/jpeg",
-          }),
-        ],
-        text: shareText,
-      };
+    shareImageCanvasManager
+      .getElement()
+      .convertToBlob({ type: "image/jpeg", quality: 0.8 })
+      .then((blob) => {
+        const data = {
+          files: [
+            new File([blob], "bubbles.jpeg", {
+              type: "image/jpeg",
+            }),
+          ],
+          text: shareText,
+        };
 
-      navigator.canShare && navigator.canShare(data)
-        ? navigator.share(data)
-        : navigator.clipboard.writeText(shareText);
-    });
+        navigator.canShare && navigator.canShare(data)
+          ? navigator.share(data)
+          : navigator.clipboard.writeText(shareText);
+      });
   };
 
   return { update, draw, share };

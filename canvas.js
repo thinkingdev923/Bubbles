@@ -71,8 +71,7 @@ export const makeOffscreenCanvas = ({
   return {
     getContext: () => context,
     getBitmap: () => offscreenElement.transferToImageBitmap(),
-    getBlob: () =>
-      offscreenElement.convertToBlob({ type: "image/jpeg", quality: 0.8 }),
+    getElement: () => offscreenElement,
     getWidth: () => _width,
     getHeight: () => _height,
     getScaleFactor: () => _scale,
