@@ -4,7 +4,7 @@ import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { randomColor, background, purple, white } from "./colors.js";
 import { makeSpring } from "./spring.js";
 
-const edgeMargin = 24;
+const edgeMargin = 26;
 const spaceBetween = 16;
 const borderRadius = 16;
 
