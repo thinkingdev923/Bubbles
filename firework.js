@@ -20,8 +20,9 @@ export const makeFirework = (canvasManager) => {
   );
 
   const draw = (deltaTime) => {
-    if (!baseBall.isPopped() && baseBall.getVelocity().y > 0) {
-      baseBall.pop();
+    if (!baseBall.isPopped() && baseBall.getVelocity().y > 1) {
+      // Give fireworks pops a downwards trajectory
+      baseBall.pop({ x: 0, y: 2 });
     }
 
     baseBall.draw(deltaTime);

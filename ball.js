@@ -78,9 +78,9 @@ export const makeBall = (
     // the center of the popped ball. They all move outwards at different speeds.
     const outerParticles = new Array(numberOfPopPieces).fill().map(() => {
       const randomAngle = Math.random() * Math.PI * 2;
-      const minSize = 2;
-      const maxSize = 8;
-      const innerMargin = 12;
+      const minSize = radius / 22;
+      const maxSize = radius / 5;
+      const innerMargin = radius / 4;
       const randomSize = randomBetween(minSize, maxSize);
       const randomSpeedMultiplier = transition(
         10,
@@ -116,9 +116,9 @@ export const makeBall = (
       .fill()
       .map(() => {
         const randomAngle = Math.random() * Math.PI * 2;
-        const minSize = 6;
-        const maxSize = 14;
-        const innerMargin = 22;
+        const minSize = radius / 7;
+        const maxSize = radius / 3;
+        const innerMargin = radius / 2;
         const randomSize = randomBetween(minSize, maxSize);
         const randomSpeedMultiplier = transition(
           12,
