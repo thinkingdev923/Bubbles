@@ -1,5 +1,10 @@
 import { makeCanvasManager, makeOffscreenCanvas } from "./canvas.js";
-import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
+import {
+  BLAST_MAX_DURATION,
+  FONT,
+  FONT_WEIGHT_BOLD,
+  FONT_WEIGHT_NORMAL,
+} from "./constants.js";
 import {
   animate,
   clampedProgress,
@@ -8,7 +13,7 @@ import {
   transition,
   getBoundedPosition,
 } from "./helpers.js";
-import { background } from "./colors.js";
+import { background, white, yellow } from "./colors.js";
 import {
   checkParticleCollision,
   adjustParticlePositions,
@@ -78,7 +83,7 @@ const shareImageScoreDisplay = makeScoreDisplay(
   shareImageCanvasManager,
   scoreStore,
   levelManager,
-  { edgeMargin: 24, verticalMarginBetweenSections: 32 }
+  { edgeMargin: 20, verticalMarginBetweenSections: 36 }
 );
 const CTX = canvasManager.getContext();
 
@@ -566,6 +571,22 @@ function drawShareImage() {
     shareImageCanvasManager.getWidth(),
     shareImageCanvasManager.getHeight()
   );
+
+  shareCTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
+  shareCTX.fillStyle = yellow;
+  shareCTX.letterSpacing = "1px";
+  shareCTX.fillText(`LEVEL ${levelManager.getLevel()}`, 20, 36);
+
+  shareCTX.font = `${FONT_WEIGHT_NORMAL} 10px ${FONT}`;
+  shareCTX.fillStyle = "rgba(255, 255, 255, 0.4)";
+  shareCTX.letterSpacing = "0px";
+  shareCTX.textAlign = "right";
+  shareCTX.fillText(
+    `ehmorris.com/bubbles`,
+    shareImageCanvasManager.getWidth() - 20,
+    24
+  );
+
   shareCTX.restore();
 
   shareImageScoreDisplay.draw();
