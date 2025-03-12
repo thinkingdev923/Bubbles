@@ -472,12 +472,9 @@ export const makeScoreDisplay = (
     CTX.fillText(`x${popped}`, 32, iconRadius + textHeight / 2);
   }
 
-  const getHeight = () => {
-    draw();
-    return scoreHeight;
-  };
+  const getCurrentHeight = () => scoreHeight;
 
-  return { draw, update, getHeight };
+  return { draw, update, getCurrentHeight };
 };
 
 function applyTextStyle1(CTX) {

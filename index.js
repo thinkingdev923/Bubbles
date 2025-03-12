@@ -1,10 +1,5 @@
-import { makeCanvasManager, makeOffscreenCanvas } from "./canvas.js";
-import {
-  BLAST_MAX_DURATION,
-  FONT,
-  FONT_WEIGHT_BOLD,
-  FONT_WEIGHT_NORMAL,
-} from "./constants.js";
+import { makeCanvasManager } from "./canvas.js";
+import { BLAST_MAX_DURATION, FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import {
   animate,
   clampedProgress,
@@ -13,7 +8,7 @@ import {
   transition,
   getBoundedPosition,
 } from "./helpers.js";
-import { background, white, yellow } from "./colors.js";
+import { background } from "./colors.js";
 import {
   checkParticleCollision,
   adjustParticlePositions,
@@ -31,6 +26,7 @@ import { makeLevelBalls } from "./levelData.js";
 import { makeScoreStore } from "./scoreStore.js";
 import { makeTutorialManager } from "./tutorial.js";
 import { makeFirework } from "./firework.js";
+import { makeShareImageManager } from "./shareImage.js";
 
 const URLParams = new URLSearchParams(window.location.search);
 const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
@@ -74,17 +70,8 @@ const tutorialManager = makeTutorialManager(
   onTutorialAdvance,
   onTutorialComplete
 );
-const shareImageCanvasManager = makeOffscreenCanvas({
-  width: 400,
-  height: 500,
-  scale: 2,
-});
-const shareImageScoreDisplay = makeScoreDisplay(
-  shareImageCanvasManager,
-  scoreStore,
-  levelManager,
-  { edgeMargin: 20, verticalMarginBetweenSections: 36 }
-);
+const shareImageManager = makeShareImageManager(scoreStore, levelManager);
+
 const CTX = canvasManager.getContext();
 
 // These are all reset on game restart
@@ -138,7 +125,7 @@ canvasManager.getElement().addEventListener("pointerdown", (e) => {
       levelManager.isGameOver() || levelManager.isLastLevel()
         ? resetGame
         : levelManager.dismissInterstitialAndAdvanceLevel,
-      onShare
+      shareImageManager.share
     );
   } else {
     activePointers.push(
@@ -375,7 +362,7 @@ animate((deltaTime) => {
       },
       firstMissMessage: (msElapsed) => {
         scoreDisplay.draw();
-        drawShareImage();
+        shareImageManager.draw();
         interstitialButtonManager.draw(deltaTime, msElapsed, {
           delay: 960,
           isSharable: true,
@@ -383,7 +370,7 @@ animate((deltaTime) => {
       },
       defaultMessage: (msElapsed) => {
         scoreDisplay.draw();
-        drawShareImage();
+        shareImageManager.draw();
         interstitialButtonManager.draw(deltaTime, msElapsed, {
           delay: 960,
           isSharable: true,
@@ -391,7 +378,7 @@ animate((deltaTime) => {
       },
       endGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        drawShareImage();
+        shareImageManager.draw();
         interstitialButtonManager.draw(deltaTime, msElapsed, {
           delay: 1920,
           text: "Try Again",
@@ -400,7 +387,7 @@ animate((deltaTime) => {
       },
       reachedEndOfGameMessage: (msElapsed) => {
         scoreDisplay.draw();
-        drawShareImage();
+        shareImageManager.draw();
         interstitialButtonManager.draw(deltaTime, msElapsed, {
           delay: 1920,
           text: "Play Again",
@@ -501,7 +488,7 @@ function onGameEnd() {
 
 function onInterstitial() {
   scoreDisplay.update();
-  shareImageScoreDisplay.update();
+  shareImageManager.update();
   resetOngoingVisuals();
 
   if (!levelManager.isGameOver() && levelManager.isLastLevel()) {
@@ -551,88 +538,4 @@ function onTutorialAdvance() {
 
 function onTutorialComplete() {
   resetGame();
-}
-
-function drawShareImage() {
-  // TODO draw level info somewhere
-
-  const shareImageHeight = shareImageScoreDisplay.getHeight();
-
-  if (shareImageCanvasManager.getHeight() !== shareImageHeight) {
-    shareImageCanvasManager.setCanvasSize({ height: shareImageHeight });
-  }
-
-  const shareCTX = shareImageCanvasManager.getContext();
-  shareCTX.save();
-  shareCTX.fillStyle = background;
-  shareCTX.fillRect(
-    0,
-    0,
-    shareImageCanvasManager.getWidth(),
-    shareImageCanvasManager.getHeight()
-  );
-
-  shareCTX.font = `${FONT_WEIGHT_BOLD} 14px ${FONT}`;
-  shareCTX.fillStyle = yellow;
-  shareCTX.letterSpacing = "1px";
-  shareCTX.fillText(`LEVEL ${levelManager.getLevel()}`, 20, 36);
-
-  shareCTX.font = `${FONT_WEIGHT_NORMAL} 10px ${FONT}`;
-  shareCTX.fillStyle = "rgba(255, 255, 255, 0.4)";
-  shareCTX.letterSpacing = "0px";
-  shareCTX.textAlign = "right";
-  shareCTX.fillText(
-    `ehmorris.com/bubbles`,
-    shareImageCanvasManager.getWidth() - 20,
-    24
-  );
-
-  shareCTX.restore();
-
-  shareImageScoreDisplay.draw();
-}
-
-function onShare() {
-  const stats = {
-    score: scoreStore.overallScoreNumber(),
-    taps: scoreStore.getTaps(),
-    tapsPopped: scoreStore.sumCategoryLevelEvents("taps").numPopped,
-    slingshots: scoreStore.getSlingshots(),
-    blasts: scoreStore.getBlasts(),
-  };
-
-  const shareText = `Made it to level ${levelManager.getLevel()} in Bubbles!
-${stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""}${
-    stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
-  } par overall
-  
-https://ehmorris.com/bubbles
-
-👆 Tapped ${stats.taps.length} times: ${stats.tapsPopped} ${
-    stats.tapsPopped === 1 ? "hit" : "hits"
-  }, ${stats.taps.length - stats.tapsPopped} ${
-    stats.taps.length - stats.tapsPopped === 1 ? "miss" : "misses"
-  }
-☄️ Launched ${stats.slingshots.length} ${
-    stats.slingshots.length === 1 ? "slingshot" : "slingshots"
-  }
-💥 Detonated ${stats.blasts.length} ${
-    stats.blasts.length === 1 ? "blast" : "blasts"
-  }
-`;
-
-  shareImageCanvasManager.getBlob().then((blob) => {
-    const data = {
-      files: [
-        new File([blob], "bubbles.jpeg", {
-          type: "image/jpeg",
-        }),
-      ],
-      text: shareText,
-    };
-
-    navigator.canShare && navigator.canShare(data)
-      ? navigator.share(data)
-      : navigator.clipboard.writeText(shareText);
-  });
 }
