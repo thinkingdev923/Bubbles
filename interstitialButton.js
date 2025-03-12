@@ -134,6 +134,7 @@ export const makeInterstitialButtonManager = (canvasManager) => {
     // Rotate text in addition to button
     CTX.save();
     continueButtonSize.transform();
+    CTX.globalAlpha = fadeIn;
     CTX.rotate(rotateIn);
     CTX.rotate(hoverTextAngle);
     CTX.scale(hoverTextScale, hoverTextScale);
