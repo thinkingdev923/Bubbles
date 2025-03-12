@@ -9,6 +9,7 @@ export const makeActivePointer = (
   tutorialManager,
   pointerId,
   startPosition,
+  ballsSnapshot,
   onTrigger,
   defaultPointerAction
 ) => {
@@ -69,7 +70,7 @@ export const makeActivePointer = (
       );
       audioManager.playImpact();
     } else if (tapAllowed()) {
-      defaultPointerAction(startPosition);
+      defaultPointerAction(startPosition, ballsSnapshot);
     }
   };
 
