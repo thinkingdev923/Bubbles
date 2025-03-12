@@ -500,7 +500,9 @@ function onInterstitial() {
   resetOngoingVisuals();
 
   if (!levelManager.isGameOver() && levelManager.isLastLevel()) {
-    fireworks = new Array(8).fill().map(() => makeFirework(canvasManager));
+    fireworks = new Array(8)
+      .fill()
+      .map(() => makeFirework(canvasManager, audioManager));
   }
 }
 

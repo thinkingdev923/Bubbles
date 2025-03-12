@@ -2,7 +2,7 @@ import { makeBall } from "./ball.js";
 import { randomColor } from "./colors.js";
 import { randomBetween } from "./helpers.js";
 
-export const makeFirework = (canvasManager) => {
+export const makeFirework = (canvasManager, audioManager) => {
   const baseBall = makeBall(
     canvasManager,
     {
@@ -23,6 +23,7 @@ export const makeFirework = (canvasManager) => {
     if (!baseBall.isPopped() && baseBall.getVelocity().y > 1) {
       // Give fireworks pops a downwards trajectory
       baseBall.pop({ x: 0, y: 2 });
+      audioManager.playSequentialPluck();
     }
 
     baseBall.draw(deltaTime);
