@@ -442,12 +442,12 @@ function handleGameClick(currentTapPosition, ballAtPointOfInitialTap) {
   const collidingBall = ballAtPointOfInitialTap || collisionOnPointerUp;
 
   if (collidingBall) {
-    scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
+    scoreStore.recordTap(currentTapPosition, 1, collidingBall.getFill());
     collidingBall.pop();
     audioManager.playSequentialPluck();
   } else {
-    scoreStore.recordTap({ x, y }, 0);
-    ripples.push(makeRipple(canvasManager, { x, y }));
+    scoreStore.recordTap(currentTapPosition, 0);
+    ripples.push(makeRipple(canvasManager, currentTapPosition));
     audioManager.playMiss();
   }
 }
