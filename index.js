@@ -136,7 +136,7 @@ canvasManager.getElement().addEventListener("pointerdown", (e) => {
         tutorialManager,
         pointerId,
         { x, y },
-        [...balls],
+        findBallAtPoint(balls, { x, y }),
         onPointerTrigger,
         handleGameClick
       )
@@ -428,16 +428,18 @@ animate((deltaTime) => {
   });
 });
 
-function handleGameClick({ x, y }, ballsSnapshot) {
+function handleGameClick(currentTapPosition, ballAtPointOfInitialTap) {
   // In case of an active tutorial, the ball pop may be the first interaction
   // Subsequent calls are ignored.
   audioManager.initialize();
 
   // Taps are delayed until pointerup so that we can determine whether a tap
   // is a slingshot, blast, or tap, and not trigger two events from one gesture.
-  // However so taps don't feel slow, we want to trigger a collision based on
-  // the pointerdown position + the pointerdown game state.
-  const collidingBall = findBallAtPoint(ballsSnapshot, { x, y });
+  // So that taps don't feel slow, and the game isn't frustrating, we detect
+  // what ball the user would have popped on pointerdown as well as pointerup
+  // and let them have the pop in either case.
+  const collisionOnPointerUp = findBallAtPoint(balls, currentTapPosition);
+  const collidingBall = ballAtPointOfInitialTap || collisionOnPointerUp;
 
   if (collidingBall) {
     scoreStore.recordTap({ x, y }, 1, collidingBall.getFill());
