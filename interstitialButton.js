@@ -40,12 +40,12 @@ export const makeInterstitialButtonManager = (canvasManager) => {
       showingShare && pointInButton(coordinates, shareButton.sizes.default);
 
     if (isContinueButtonHovered !== isHoveringContinueButton) {
-      continueButton.spring.setEndValue(isContinueButtonHovered ? 100 : 0);
+      continueButton.spring.setEndValue(isContinueButtonHovered ? 1 : 0);
       isHoveringContinueButton = isContinueButtonHovered;
     }
 
     if (isShareButtonHovered !== isHoveringShareButton) {
-      shareButton.spring.setEndValue(isShareButtonHovered ? 100 : 0);
+      shareButton.spring.setEndValue(isShareButtonHovered ? 1 : 0);
       isHoveringShareButton = isShareButtonHovered;
     }
 
@@ -70,7 +70,9 @@ export const makeInterstitialButtonManager = (canvasManager) => {
       showingShare &&
       pointInButton(coordinates, shareButton.sizes.default)
     ) {
-      shareButton.spring.setEndValue(0);
+      shareButton.spring
+        .setEndValue(-2)
+        .then(() => shareButton.spring.setEndValue(0));
       isHoveringShareButton = false;
       document.body.classList.remove("buttonHover");
       onShare();
@@ -105,7 +107,7 @@ export const makeInterstitialButtonManager = (canvasManager) => {
       easeOutQuart
     );
 
-    const continueButtonSpring = continueButton.spring.getCurrentValue() / 100;
+    const continueButtonSpring = continueButton.spring.getCurrentValue();
     const hoverShapeScale = transition(1, 1.03, continueButtonSpring);
     const hoverTextScale = transition(1, 1.08, continueButtonSpring);
     const hoverTextAngle = transition(0, -Math.PI / 120, continueButtonSpring);
@@ -184,7 +186,7 @@ export const makeInterstitialButtonManager = (canvasManager) => {
       const shareHoverShapeScale = transition(
         1,
         1.03,
-        shareButton.spring.getCurrentValue() / 100
+        shareButton.spring.getCurrentValue()
       );
 
       CTX.save();
@@ -252,7 +254,7 @@ function makeShareButton(canvasManager) {
       stiffness: 80,
       damping: 8,
       mass: 1,
-      precision: 200,
+      precision: 400,
     }),
   };
 }
@@ -313,7 +315,7 @@ function makeContinueButton(canvasManager, shareButton) {
       stiffness: 80,
       damping: 8,
       mass: 1,
-      precision: 200,
+      precision: 400,
     }),
   };
 }
