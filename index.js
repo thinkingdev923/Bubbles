@@ -29,7 +29,7 @@ import { makeFirework } from "./firework.js";
 import { makeShareImageManager } from "./shareImage.js";
 
 const URLParams = new URLSearchParams(window.location.search);
-const previewData = JSON.parse(decodeURIComponent(URLParams.get("level")));
+const previewData = JSON.parse(atob(URLParams.get("level")));
 const previewDataPresent = !!window.location.search && previewData;
 
 if (previewDataPresent) {

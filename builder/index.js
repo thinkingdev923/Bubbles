@@ -50,14 +50,14 @@ const updateLevelHref = () => {
     "href",
     window.location.href.replace(
       "/builder/",
-      `/?level=${encodeURIComponent(JSON.stringify(currentlyDisplayedData))}`
+      `/?level=${btoa(JSON.stringify(currentlyDisplayedData))}`
     )
   );
 
   const levelInCodeBlock = `\`\`\` JSON\n${JSON.stringify(
     currentlyDisplayedData
   )}\n\`\`\``;
-  const playLink = `[Play Preview](https://ehmorris.com/bubbles/?level=${encodeURIComponent(
+  const playLink = `[Play Preview](https://ehmorris.com/bubbles/?level=${btoa(
     JSON.stringify(currentlyDisplayedData)
   )})`;
   const discussionText = `Please write something interesting here about this level\n---\n${levelInCodeBlock}\n\n${playLink}`;
