@@ -32,7 +32,7 @@ export const makeLevelManager = (
     canvasManager,
     {
       xPos: canvasManager.getWidth() / 2,
-      yPos: canvasManager.getHeight() / 2 - circleRadius + 12,
+      yPos: canvasManager.getHeight() / 2 - circleRadius + 10,
       textAlign: "center",
       verticalAlign: "center",
       fontSize: 32,
@@ -40,7 +40,7 @@ export const makeLevelManager = (
     [""]
   );
 
-  const parLabel = makeTextBlock(
+  const overallParLabel = makeTextBlock(
     canvasManager,
     {
       xPos: canvasManager.getWidth() / 2,
@@ -55,7 +55,7 @@ export const makeLevelManager = (
     [""]
   );
 
-  const parText = makeTextBlock(
+  const overallParText = makeTextBlock(
     canvasManager,
     {
       xPos: canvasManager.getWidth() / 2,
@@ -117,9 +117,9 @@ export const makeLevelManager = (
 
     levelCountdownText.updateLines([`Par of ${getLevelData().par}`]);
 
-    parLabel.updateLines(["TOTAL"]);
+    overallParLabel.updateLines(["TOTAL"]);
     const score = scoreStore.overallScoreNumber(false);
-    parText.updateLines([
+    overallParText.updateLines([
       `${score > 0 || score < 0 ? `${Math.abs(score)} ` : ""}${
         score > 0 ? "over" : score < 0 ? "under" : "Even with"
       } par so far`,
@@ -173,7 +173,7 @@ export const makeLevelManager = (
       Date.now() - levelStarted
     );
     const yPos = transition(
-      canvasManager.getHeight() / 2 - circleRadius - 10,
+      canvasManager.getHeight() / 2 - circleRadius - 12,
       24,
       showLargeDuringCountdown,
       easeOutExpo
@@ -206,8 +206,8 @@ export const makeLevelManager = (
     levelCountdownText.draw();
 
     if (level > 1) {
-      parLabel.draw();
-      parText.draw();
+      overallParLabel.draw();
+      overallParText.draw();
     }
 
     CTX.save();
