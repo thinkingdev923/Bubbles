@@ -3,9 +3,8 @@ import { FONT, FONT_WEIGHT_BOLD } from "./constants.js";
 import { levels as levelData, getLevelDataByNumber } from "./levelData.js";
 import { drawTextRotate } from "./textRotate.js";
 import { clampedProgress, transition } from "./helpers.js";
-
 import { makeTextBlock } from "./textBlock.js";
-import { easeOutCirc, easeOutElastic } from "./easings.js";
+import { easeOutExpo } from "./easings.js";
 
 export const makeLevelManager = (
   canvasManager,
@@ -129,15 +128,15 @@ export const makeLevelManager = (
 
   const drawLevelNumber = () => {
     const showLargeDuringCountdown = clampedProgress(
-      countdownDuration,
-      countdownDuration + 240,
+      countdownDuration - 80,
+      countdownDuration + 500,
       Date.now() - levelStarted
     );
     const yPos = transition(
       canvasManager.getHeight() / 2 - 24,
       24,
       showLargeDuringCountdown,
-      easeOutCirc
+      easeOutExpo
     );
 
     CTX.save();
