@@ -74,7 +74,11 @@ export const makeShareImageManager = (scoreStore, levelManager) => {
       blasts: scoreStore.getBlasts(),
     };
 
-    const shareText = `Made it to level ${levelManager.getLevel()} in Bubbles!
+    const shareText = `${
+      !levelManager.isGameOver() && levelManager.isLastLevel()
+        ? "I beat Bubbles!"
+        : `Made it to level ${levelManager.getLevel()} in Bubbles!`
+    }
 ${stats.score > 0 || stats.score < 0 ? `${Math.abs(stats.score)} ` : ""}${
       stats.score > 0 ? "over" : stats.score < 0 ? "under" : "Even with"
     } par overall
