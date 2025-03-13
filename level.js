@@ -168,8 +168,8 @@ export const makeLevelManager = (
 
   const drawLevelNumber = () => {
     const showLargeDuringCountdown = clampedProgress(
-      countdownDuration - 80,
-      countdownDuration + 500,
+      countdownDuration,
+      countdownDuration + 544,
       Date.now() - levelStarted
     );
     const yPos = transition(
