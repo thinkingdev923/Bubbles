@@ -14,6 +14,8 @@ export const makeLevelManager = (
 ) => {
   const CTX = canvasManager.getContext();
   const countdownDuration = 2400;
+  const circleRadius = 112;
+  let scoreStore;
   let level;
   let previousLevelValue;
   let levelChangeStart;
@@ -30,10 +32,37 @@ export const makeLevelManager = (
     canvasManager,
     {
       xPos: canvasManager.getWidth() / 2,
-      yPos: canvasManager.getHeight() / 2,
+      yPos: canvasManager.getHeight() / 2 - circleRadius + 12,
       textAlign: "center",
       verticalAlign: "center",
       fontSize: 32,
+    },
+    [""]
+  );
+
+  const parLabel = makeTextBlock(
+    canvasManager,
+    {
+      xPos: canvasManager.getWidth() / 2,
+      yPos: canvasManager.getHeight() / 2 + circleRadius - 34,
+      textAlign: "center",
+      verticalAlign: "center",
+      fontWeight: FONT_WEIGHT_BOLD,
+      fontSize: 14,
+      fill: yellow,
+      letterSpacing: "1px",
+    },
+    [""]
+  );
+
+  const parText = makeTextBlock(
+    canvasManager,
+    {
+      xPos: canvasManager.getWidth() / 2,
+      yPos: canvasManager.getHeight() / 2 + circleRadius,
+      textAlign: "center",
+      verticalAlign: "center",
+      fontSize: 24,
     },
     [""]
   );
@@ -50,6 +79,9 @@ export const makeLevelManager = (
   };
   reset();
 
+  const getLevelData = () =>
+    previewData ? previewData : getLevelDataByNumber(level);
+
   const isLastLevel = () => level >= levelData.length;
 
   const showLevelInterstitial = () => {
@@ -57,6 +89,9 @@ export const makeLevelManager = (
     interstitialStart = Date.now();
     onInterstitial(interstitialStart);
   };
+
+  const showLevelCountdown = () =>
+    Date.now() - levelStarted < countdownDuration;
 
   const dismissInterstitialAndAdvanceLevel = () => {
     if (previewData) {
@@ -81,6 +116,15 @@ export const makeLevelManager = (
     }
 
     levelCountdownText.updateLines([`Par of ${getLevelData().par}`]);
+
+    parLabel.updateLines(["TOTAL"]);
+    const score = scoreStore.overallScoreNumber(false);
+    parText.updateLines([
+      `${score > 0 || score < 0 ? `${Math.abs(score)} ` : ""}${
+        score > 0 ? "over" : score < 0 ? "under" : "Even with"
+      } par so far`,
+    ]);
+
     interstitialShowing = false;
     interstitialStart = false;
     levelStarted = Date.now();
@@ -93,10 +137,6 @@ export const makeLevelManager = (
     interstitialStart = Date.now();
     gameOver = true;
     onInterstitial(interstitialStart);
-  };
-
-  const setFirstMiss = () => {
-    firstMissLevel = true;
   };
 
   const drawInterstitialMessage = ({
@@ -133,7 +173,7 @@ export const makeLevelManager = (
       Date.now() - levelStarted
     );
     const yPos = transition(
-      canvasManager.getHeight() / 2 - 24,
+      canvasManager.getHeight() / 2 - circleRadius - 10,
       24,
       showLargeDuringCountdown,
       easeOutExpo
@@ -160,19 +200,21 @@ export const makeLevelManager = (
     CTX.restore();
   };
 
-  const showLevelCountdown = () =>
-    Date.now() - levelStarted < countdownDuration;
-
-  const getLevelData = () =>
-    previewData ? previewData : getLevelDataByNumber(level);
-
   const drawLevelCountdown = () => {
     const timeRemaining = countdownDuration - (Date.now() - levelStarted);
 
     levelCountdownText.draw();
 
+    if (level > 1) {
+      parLabel.draw();
+      parText.draw();
+    }
+
     CTX.save();
-    CTX.translate(canvasManager.getWidth() / 2, canvasManager.getHeight() / 2);
+    CTX.translate(
+      canvasManager.getWidth() / 2,
+      canvasManager.getHeight() / 2 - circleRadius
+    );
     CTX.lineWidth = timeRemaining / 400;
     CTX.strokeStyle = white;
     CTX.rotate(-Math.PI / 2);
@@ -180,7 +222,7 @@ export const makeLevelManager = (
     CTX.arc(
       0,
       0,
-      120,
+      circleRadius,
       0,
       transition(
         0,
@@ -195,6 +237,7 @@ export const makeLevelManager = (
 
   return {
     reset,
+    setScoreStore: (s) => (scoreStore = s),
     getLevel: () => level,
     getLevelData,
     drawInterstitialMessage,
@@ -204,7 +247,7 @@ export const makeLevelManager = (
     drawLevelCountdown,
     showLevelInterstitial,
     dismissInterstitialAndAdvanceLevel,
-    setFirstMiss,
+    setFirstMiss: () => (firstMissLevel = true),
     isLastLevel,
     onGameOver,
     isGameOver: () => gameOver,

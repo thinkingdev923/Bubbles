@@ -214,8 +214,17 @@ export const makeScoreStore = (levelManager) => {
     return numMoves - levelManager.getLevelData().par;
   };
 
-  const overallScoreNumber = () => {
-    const maxLevelReached = levelManager.getLevel();
+  const overallScoreNumber = (currentLevelPlayed = false) => {
+    // For the level countdown we want to display the overall par before the
+    // current level is played e.g. on level 3, we want to display the score of
+    // level 1 + level 2.
+    //
+    // For the end-of-game screen we want to display the overall par after the
+    // current level has been played e.g. after level 3, we want to display the
+    // score of level 1 + level 2 + level 3.
+    const maxLevelReached = currentLevelPlayed
+      ? levelManager.getLevel()
+      : levelManager.getLevel() - 1;
     const numMoves =
       store.get("taps").filter((t) => t.level <= maxLevelReached).length +
       store.get("slingshots").filter((s) => s.level <= maxLevelReached).length +

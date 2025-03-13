@@ -13,6 +13,8 @@ export const makeTextBlock = (
     fontSize = 24,
     fontWeight = FONT_WEIGHT_NORMAL,
     lineHeight = 32,
+    letterSpacing = "0px",
+    fill = white,
   },
   initialLinesArray
 ) => {
@@ -33,8 +35,9 @@ export const makeTextBlock = (
   const draw = (passedMSElapsed = false) => {
     CTX.save();
     CTX.font = `${fontWeight} ${fontSize}px ${FONT}`;
-    CTX.fillStyle = white;
+    CTX.fillStyle = fill;
     CTX.textAlign = textAlign;
+    CTX.letterSpacing = letterSpacing;
     CTX.translate(xPos, yPos - verticalOffset);
     linesArray.forEach((line, index) => {
       const lineYPos = (index + 1) * lineHeight;

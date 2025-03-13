@@ -72,8 +72,9 @@ const tutorialManager = makeTutorialManager(
   onTutorialComplete
 );
 const shareImageManager = makeShareImageManager(scoreStore, levelManager);
-
 const CTX = canvasManager.getContext();
+
+levelManager.setScoreStore(scoreStore);
 
 // These are all reset on game restart
 let activePointers;
