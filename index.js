@@ -29,7 +29,8 @@ import { makeFirework } from "./firework.js";
 import { makeShareImageManager } from "./shareImage.js";
 
 const URLParams = new URLSearchParams(window.location.search);
-const previewData = JSON.parse(atob(URLParams.get("level")));
+const previewData =
+  URLParams.get("level") && JSON.parse(atob(URLParams.get("level")));
 const previewDataPresent = !!window.location.search && previewData;
 
 if (previewDataPresent) {
