@@ -71,7 +71,7 @@ export const makeInterstitialButtonManager = (canvasManager) => {
       pointInButton(coordinates, shareButton.sizes.default)
     ) {
       shareButton.spring
-        .setEndValue(-2)
+        .setEndValue(-3)
         .then(() => shareButton.spring.setEndValue(0));
       isHoveringShareButton = false;
       document.body.classList.remove("buttonHover");
