@@ -15,8 +15,4 @@
 
 - Better end-level and end-game screens
   - Some kind of replay or map?
-  - Generate combo screencap that's sharable?
-    - Could capture game state and save canvas to data url, put into image src attr
-      - Canvas width/height
-      - Balls + slingshots + blasts arrays
   - Slo-mo replay of combos?
