@@ -352,11 +352,9 @@ animate((deltaTime) => {
             textAlign: "center",
             verticalAlign: "center",
           },
-          [
-            tutorialManager.isTutorialCompletedThisSession()
-              ? "You’re ready"
-              : "Pop the bubble",
-          ]
+          tutorialManager.isTutorialCompletedThisSession()
+            ? ["You’re ready", "", "Eyes up top…"]
+            : ["Pop the bubble"]
         ).draw(msElapsed);
         interstitialButtonManager.draw(deltaTime, msElapsed, {
           delay: 80,

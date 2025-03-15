@@ -84,13 +84,13 @@ export const makeActivePointer = (
       );
 
       if (!tutorialManager.isTutorialComplete()) {
-        tutorialManager.previewingSlingshot(startPosition, currentPosition);
+        tutorialManager.previewingSlingshot();
       }
     } else if (isHoldBlast() && blastAllowed()) {
       drawHoldBlastPreview(canvasManager, startPosition, pointerStart);
 
       if (!tutorialManager.isTutorialComplete()) {
-        tutorialManager.previewingBlast(startPosition, pointerStart);
+        tutorialManager.previewingBlast();
       }
     }
   };

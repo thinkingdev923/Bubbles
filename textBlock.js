@@ -20,7 +20,7 @@ export const makeTextBlock = (
 ) => {
   const CTX = canvasManager.getContext();
   let linesArray = [...initialLinesArray];
-  const verticalOffset =
+  let verticalOffset =
     verticalAlign === "center" ? (linesArray.length / 2) * lineHeight : 0;
   let yPos = initialYPos;
   let textStart = Date.now();
@@ -28,9 +28,20 @@ export const makeTextBlock = (
   const updateLines = (newLines) => {
     textStart = Date.now();
     linesArray = [...newLines];
+    verticalOffset =
+      verticalAlign === "center" ? (linesArray.length / 2) * lineHeight : 0;
   };
 
   const updateYPos = (newYPos) => (yPos = newYPos);
+
+  const getBoundingBox = () => {
+    const leading = lineHeight - fontSize;
+
+    return {
+      top: yPos - verticalOffset + leading,
+      bottom: yPos - verticalOffset + leading + lineHeight * linesArray.length,
+    };
+  };
 
   const draw = (passedMSElapsed = false) => {
     CTX.save();
@@ -70,7 +81,7 @@ export const makeTextBlock = (
   return {
     draw,
     getHeight: () => linesArray.length * lineHeight,
-    getYPos: () => yPos,
+    getBoundingBox,
     getLines: () => linesArray,
     updateLines,
     updateYPos,

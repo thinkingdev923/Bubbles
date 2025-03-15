@@ -148,9 +148,11 @@ export const makeScoreDisplay = (
     );
     const slideUpTransition = transition(
       topText.getHeight() +
-        topText.getYPos() +
+        topText.getBoundingBox().top +
         verticalMarginBetweenSections * 1.4,
-      topText.getHeight() + topText.getYPos() + verticalMarginBetweenSections,
+      topText.getHeight() +
+        topText.getBoundingBox().top +
+        verticalMarginBetweenSections,
       clampedProgress(0, 816, Date.now() - scoreDisplayStart),
       easeOutExpo
     );
@@ -158,7 +160,9 @@ export const makeScoreDisplay = (
     CTX.globalAlpha = opacityTransition;
     CTX.translate(0, slideUpTransition);
     scoreHeight =
-      topText.getHeight() + topText.getYPos() + verticalMarginBetweenSections;
+      topText.getHeight() +
+      topText.getBoundingBox().top +
+      verticalMarginBetweenSections;
 
     if (stats.taps.length) {
       drawTitleLine(
