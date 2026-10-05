@@ -1232,6 +1232,6 @@ See the repository license file for the applicable licensing terms.
 
 Repository:
 
-[github.com/thinkingdev923/Bubbles](https://github.com/thinkingdev923/Bubbles?utm_source=chatgpt.com)
+[github.com/thinkingdev923/Bubbles](https://github.com/thinkingdev923/Bubbles)
 
 The project currently contains the complete browser-side game implementation, including the rendering engine, physics, interaction system, level management, scoring, tutorials, audio, and visual effects.
