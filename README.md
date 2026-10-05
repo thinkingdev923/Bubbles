@@ -24,7 +24,7 @@ Bubbles follows an event-driven architecture designed for high-concurrency clien
                                     |
                   +-----------------v-----------------+
                   |       FastAPI Gateway / API       |
-                  |   (Auth, Routing, Rate Limiting)   |
+                  |   (Auth, Routing, Rate Limiting)  |
                   +--------+----------------+---------+
                            |                |
                 Task Queue |                | Pub/Sub
